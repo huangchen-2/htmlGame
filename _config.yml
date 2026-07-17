@@ -1,1 +1,18 @@
+# 主题配置
+theme: jekyll-theme-minimal
 
+# 网站基础信息（重点修改这里）
+title: 我的个人主页
+description: 自己写的小游戏
+author: 黄晨
+github_username: huanchen-2
+
+# 侧边栏右上角链接
+show_downloads: false # 是否显示下载按钮
+google_analytics: # 留空不用填
+
+# 导航/侧边栏自定义链接（可选）
+header_pages:
+  - index.md
+  - about.md
+  - blog.md
