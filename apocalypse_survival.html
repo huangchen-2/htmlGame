@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>末日求生 - 废土纪元</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700&display=swap');
+:root{--bg:#0c0c0c;--panel:#151515;--border:#282828;--accent:#ff6b35;--accent2:#ff4500;--danger:#e63946;--success:#2ecc71;--warning:#f39c12;--text:#bbb;--text-bright:#eee;--text-dim:#777;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;min-height:100vh;overflow-x:hidden;background-image:radial-gradient(ellipse at 15% 40%,rgba(255,107,53,0.04) 0%,transparent 55%),radial-gradient(ellipse at 85% 30%,rgba(255,69,0,0.03) 0%,transparent 55%);}
+#header{text-align:center;padding:6px 20px 2px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(21,21,21,0.98) 0%,rgba(12,12,12,0) 100%);}
+#header h1{font-family:'Orbitron',sans-serif;font-size:1.3em;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,#ff6b35,#ff4500,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+#header .sub{font-size:0.55em;color:var(--text-dim);letter-spacing:3px;}
+#info-bar{display:flex;gap:6px;padding:4px 10px;max-width:1100px;margin:0 auto;justify-content:center;flex-wrap:wrap;align-items:center;font-size:0.68em;}
+.info-chip{padding:4px 8px;background:#111;border:1px solid #222;border-radius:14px;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.info-chip .ic-emoji{font-size:1em;}.info-chip .ic-val{font-weight:700;color:var(--text-bright);}
+.info-chip.warn{border-color:var(--warning);}.info-chip.danger{border-color:var(--danger);animation:pulse-border 1.5s infinite;}
+@keyframes pulse-border{0%,100%{border-color:var(--danger)}50%{border-color:transparent}}
+#main{display:flex;gap:10px;padding:6px 10px;max-width:1100px;margin:0 auto;min-height:calc(100vh - 210px);}
+@media(max-width:850px){#main{flex-direction:column;align-items:center;}}
+#left-col{width:270px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+@media(max-width:850px){#left-col{width:100%;max-width:340px;}}
+#char-container{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px;text-align:center;position:relative;}
+#char-title{font-family:'Orbitron',sans-serif;font-size:0.6em;letter-spacing:2px;color:var(--text-dim);margin-bottom:2px;}
+#char-svg{width:120px;height:240px;}
+.bp{cursor:pointer;transition:all 0.3s;}.bp:hover{filter:brightness(1.5);}
+.bp-healthy{fill:#3d4a3d;stroke:#4a5a4a;}.bp-minor{fill:#6b5a1a;stroke:#8a7a2a;animation:pulse-yel 1.5s infinite;}
+.bp-wound{fill:#8b2a1a;stroke:#aa3a2a;animation:pulse-red 1s infinite;}.bp-severe{fill:#6b0000;stroke:#aa0000;animation:pulse-red 0.6s infinite;}
+.bp-infected{fill:#5b1a5b;stroke:#8b2a8b;animation:pulse-pur 1.2s infinite;}.bp-bandaged{fill:#5a5a5a;stroke:#7a7a7a;}
+@keyframes pulse-red{0%,100%{filter:drop-shadow(0 0 3px rgba(255,0,0,0.4))}50%{filter:drop-shadow(0 0 10px rgba(255,0,0,0.8))}}
+@keyframes pulse-yel{0%,100%{filter:drop-shadow(0 0 2px rgba(255,180,0,0.3))}50%{filter:drop-shadow(0 0 6px rgba(255,180,0,0.6))}}
+@keyframes pulse-pur{0%,100%{filter:drop-shadow(0 0 3px rgba(180,0,180,0.4))}50%{filter:drop-shadow(0 0 8px rgba(180,0,180,0.7))}}
+.blood-drip{animation:drip 0.8s ease-in infinite;}
+@keyframes drip{0%{opacity:0;transform:translateY(0)}30%{opacity:1}100%{opacity:0;transform:translateY(12px)}}
+.bp-tooltip{position:absolute;pointer-events:none;background:#000;color:#fff;padding:3px 7px;border-radius:4px;font-size:0.6em;white-space:nowrap;display:none;z-index:50;border:1px solid #444;}
+.side-panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:0.68em;}
+.sp-title{font-family:'Orbitron',sans-serif;font-size:0.65em;letter-spacing:1px;color:var(--accent);margin-bottom:4px;padding-bottom:3px;border-bottom:1px solid #222;}
+.sp-section{margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #1a1a1a;}.sp-section:last-child{border-bottom:none;margin-bottom:0;}
+.sp-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;}
+.sp-label{color:var(--text-dim);}.sp-val{font-weight:700;}
+.v-good{color:var(--success);}.v-warn{color:var(--warning);}.v-danger{color:var(--danger);}.v-info{color:#3498db;}
+.cloth-slot{padding:3px 6px;background:#111;border-radius:4px;margin-top:2px;display:flex;justify-content:space-between;align-items:center;font-size:0.75em;}
+.cloth-slot .cs-part{color:var(--text-dim);min-width:28px;}.cloth-slot .cs-name{color:var(--text-bright);flex:1;margin:0 6px;}.cloth-slot .cs-stat{font-size:0.7em;margin-left:3px;}.cloth-slot.wet{background:#1a2530;border-left:2px solid #3498db;}
+.party-member{padding:3px 6px;background:#111;border-radius:4px;margin-top:2px;display:flex;justify-content:space-between;align-items:center;font-size:0.75em;}
+.party-member .pm-name{font-weight:700;color:var(--text-bright);}.party-member .pm-skill{font-size:0.75em;color:var(--text-dim);margin-left:4px;}
+#story-panel{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+#story-box{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-y:auto;max-height:48vh;min-height:150px;line-height:1.7;font-size:0.82em;}
+#story-box::-webkit-scrollbar{width:4px;}#story-box::-webkit-scrollbar-thumb{background:#333;border-radius:2px;}
+.msg{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #1a1a1a;animation:fadeIn 0.4s;}
+.msg.ai{color:#c9b1ff;}.msg.system{color:var(--text-dim);font-size:0.72em;font-style:italic;}
+.msg.action{color:var(--accent);font-size:0.72em;}.msg.medical{color:#ff8888;font-size:0.72em;border-left:2px solid var(--danger);padding-left:8px;}
+.msg.camp{color:#ffbb88;font-size:0.72em;border-left:2px solid var(--warning);padding-left:8px;}
+.msg.party{color:#88ccff;font-size:0.72em;border-left:2px solid #3498db;padding-left:8px;}
+.msg.weather{color:#aaddaa;font-size:0.72em;border-left:2px solid var(--success);padding-left:8px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+#choices-area{display:flex;flex-direction:column;gap:5px;}
+.choice-btn{width:100%;text-align:left;padding:9px 12px;background:#111;border:1px solid #2a2a2a;border-radius:6px;color:var(--text);font-size:0.78em;cursor:pointer;transition:all 0.2s;font-family:'Noto Sans SC',sans-serif;}
+.choice-btn:hover{border-color:var(--accent);background:#1a1a1a;color:#fff;}.choice-btn:active{transform:scale(0.98);}.choice-btn:disabled{opacity:0.3;cursor:not-allowed;}
+#bottom{display:flex;gap:6px;padding:4px 10px 10px;max-width:1100px;margin:0 auto;justify-content:center;flex-wrap:wrap;align-items:center;}
+.btn{font-family:'Orbitron',sans-serif;font-size:0.6em;font-weight:700;letter-spacing:1px;padding:7px 14px;border:2px solid var(--accent);background:transparent;color:var(--accent);border-radius:6px;cursor:pointer;transition:all 0.3s;text-transform:uppercase;}
+.btn:hover{background:var(--accent);color:#000;box-shadow:0 0 14px rgba(255,107,53,0.25);}.btn:active{transform:scale(0.96);}.btn.primary{background:var(--accent);color:#000;}
+.btn.primary:hover{box-shadow:0 0 20px rgba(255,69,0,0.35);}.btn.small{padding:4px 8px;font-size:0.5em;}.btn:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none;}
+#status-line{text-align:center;font-size:0.65em;color:var(--warning);min-height:16px;padding:0 10px;}
+#inv-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:0.68em;color:var(--text-dim);}
+.inv-chip{padding:2px 7px;background:#111;border:1px solid #2a2a2a;border-radius:10px;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-size:0.72em;}
+.inv-chip:hover{border-color:var(--accent);color:#fff;}.inv-chip.usable{border-color:#3a5a3a;}
+#modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:100;justify-content:center;align-items:center;}
+#modal-overlay.active{display:flex;}
+#modal{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;}
+#modal h3{font-family:'Orbitron',sans-serif;color:var(--accent);margin-bottom:6px;letter-spacing:2px;font-size:0.8em;}
+#modal .wound-card{padding:6px 8px;background:#111;border-radius:4px;margin-bottom:5px;border-left:3px solid var(--danger);font-size:0.72em;line-height:1.4;}
+#modal .wound-card.bandaged{border-left-color:#888;opacity:0.7;}.wound-card.infected{border-left-color:#b44;}
+#modal .treatment-row{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;}
+#modal .treatment-btn{font-size:0.62em;padding:3px 7px;border:1px solid var(--success);background:transparent;color:var(--success);border-radius:4px;cursor:pointer;transition:all 0.2s;font-family:'Noto Sans SC',sans-serif;}
+#modal .treatment-btn:hover{background:var(--success);color:#000;}
+#modal .btn-row{display:flex;gap:5px;justify-content:flex-end;margin-top:8px;}
+#death-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(100,0,0,0.93);z-index:200;justify-content:center;align-items:center;flex-direction:column;}
+#death-overlay.active{display:flex;}
+#death-overlay h2{font-family:'Orbitron',sans-serif;font-size:2.2em;color:#fff;letter-spacing:8px;margin-bottom:4px;}
+#death-overlay .death-info{color:#ffaaaa;margin:6px 20px;text-align:center;line-height:1.7;max-width:460px;font-size:0.8em;}
+#death-overlay .death-days{color:#ccc;margin-bottom:12px;font-size:0.82em;}
+.typing::after{content:'▊';animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</head>
+<body>
+
+<div id="header"><h1>废 土 纪 元</h1><div class="sub">W A S T E L A N D &nbsp; S U R V I V A L</div></div>
+
+<div id="info-bar">
+  <div class="info-chip"><span class="ic-emoji" id="ib-se-icon">🌸</span><span id="ib-season">春</span><span>第</span><span class="ic-val" id="ib-day">1</span><span>天</span></div>
+  <div class="info-chip"><span class="ic-emoji" id="ib-biome-icon">🏘️</span><span id="ib-biome">郊区</span></div>
+  <div class="info-chip"><span class="ic-emoji">🕐</span><span class="ic-val" id="ib-time">08:00</span></div>
+  <div class="info-chip"><span>🌡️</span><span class="ic-val" id="ib-temp">22</span><span>°C</span></div>
+  <div class="info-chip"><span>💧</span><span class="ic-val" id="ib-hum">55</span><span>%</span></div>
+  <div class="info-chip" id="ib-precip-chip"><span class="ic-emoji" id="ib-precip-icon">☀️</span><span class="ic-val" id="ib-precip">晴</span></div>
+  <div class="info-chip"><span>💨</span><span class="ic-val" id="ib-wind">微风</span></div>
+  <div class="info-chip"><span>📍</span><span>距营地</span><span class="ic-val" id="ib-dist">0</span><span>km</span></div>
+  <div class="info-chip" id="ib-camp-chip"><span class="ic-emoji">🏕️</span><span class="ic-val" id="ib-camp-status">在营地</span></div>
+  <div class="info-chip"><span class="ic-emoji">👥</span><span>小队</span><span class="ic-val" id="ib-party">1</span><span>人</span></div>
+  <div class="info-chip"><span class="ic-emoji" id="ib-rep-icon">🌱</span><span id="ib-rep">无名</span></div>
+  <div class="info-chip" id="ib-fire-chip" style="display:none"><span class="ic-emoji">🔥</span><span>篝火</span></div>
+</div>
+
+<div id="main">
+  <div id="left-col">
+    <div id="char-container">
+      <div id="char-title">🫀 身体状况</div>
+      <svg id="char-svg" viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg">
+        <ellipse id="bp-head" class="bp bp-healthy" cx="60" cy="24" rx="18" ry="22" stroke-width="1.5"/><circle cx="55" cy="20" r="2" fill="#1a1a1a"/><circle cx="65" cy="20" r="2" fill="#1a1a1a"/><path d="M55 32 Q60 36 65 32" fill="none" stroke="#1a1a1a" stroke-width="1"/><rect id="bp-neck" class="bp bp-healthy" x="54" y="44" width="12" height="8" rx="2" stroke-width="1"/>
+        <path id="bp-chest" class="bp bp-healthy" d="M42 52 Q38 52 36 60 L32 120 Q32 130 40 134 L80 134 Q88 130 88 120 L84 60 Q82 52 78 52 Z" stroke-width="1.5"/>
+        <path id="bp-leftArm" class="bp bp-healthy" d="M40 54 L20 72 Q14 78 15 96 L16 112 Q17 118 22 120 L26 120 Q28 118 28 113 L27 96 Q28 82 34 74 L42 64 Z" stroke-width="1.5"/><ellipse cx="23" cy="124" rx="7" ry="5" fill="#3d4a3d" stroke="#4a5a4a" stroke-width="1"/>
+        <path id="bp-rightArm" class="bp bp-healthy" d="M80 54 L100 72 Q106 78 105 96 L104 112 Q103 118 98 120 L94 120 Q92 118 92 113 L93 96 Q92 82 86 74 L78 64 Z" stroke-width="1.5"/><ellipse cx="97" cy="124" rx="7" ry="5" fill="#3d4a3d" stroke="#4a5a4a" stroke-width="1"/>
+        <path id="bp-leftLeg" class="bp bp-healthy" d="M44 132 L38 148 Q34 164 32 184 L30 210 Q30 220 36 222 L45 224 Q52 224 51 218 L50 184 Q49 164 54 148 L60 134 Z" stroke-width="1.5"/><ellipse cx="41" cy="228" rx="10" ry="4.5" fill="#3d4a3d" stroke="#4a5a4a" stroke-width="1"/>
+        <path id="bp-rightLeg" class="bp bp-healthy" d="M76 132 L82 148 Q86 164 88 184 L90 210 Q90 220 84 222 L75 224 Q68 224 69 218 L70 184 Q71 164 66 148 L60 134 Z" stroke-width="1.5"/><ellipse cx="79" cy="228" rx="10" ry="4.5" fill="#3d4a3d" stroke="#4a5a4a" stroke-width="1"/>
+        <circle id="drip-head" class="blood-drip" cx="60" cy="48" r="2" fill="#f00" display="none"/><circle id="drip-chest" class="blood-drip" cx="60" cy="136" r="2" fill="#f00" display="none"/><circle id="drip-leftArm" class="blood-drip" cx="23" cy="126" r="2" fill="#f00" display="none"/><circle id="drip-rightArm" class="blood-drip" cx="97" cy="126" r="2" fill="#f00" display="none"/><circle id="drip-leftLeg" class="blood-drip" cx="41" cy="230" r="2" fill="#f00" display="none"/><circle id="drip-rightLeg" class="blood-drip" cx="79" cy="230" r="2" fill="#f00" display="none"/>
+      </svg>
+      <div id="bp-tooltip" class="bp-tooltip"></div>
+    </div>
+    <div class="side-panel"><div class="sp-title">💉 生命体征</div><div id="vitals-list"></div></div>
+    <div class="side-panel">
+      <div class="sp-title">🧥 穿着 <span style="font-weight:400;font-size:0.7em;color:var(--text-dim)" id="cloth-warmth"></span></div>
+      <div id="clothing-list"></div>
+      <div style="margin-top:3px;font-size:0.7em;color:var(--text-dim)">💦 身体湿度: <span id="body-wetness">0%</span></div>
+      <div style="font-size:0.7em;color:var(--text-dim)">🔥 体感温度: <span id="feels-like">22°C</span></div>
+    </div>
+    <div class="side-panel">
+      <div class="sp-title">🏕️ 营地 & 👥 小队</div>
+      <div class="sp-section"><div class="sp-row"><span class="sp-label">营地状态</span><span id="cp-condition" class="v-good">完好</span></div><div class="sp-row"><span class="sp-label">防御</span><span id="cp-defense">无</span></div><div class="sp-row"><span class="sp-label">仓库</span><span id="cp-supplies">0件</span></div></div>
+      <div class="sp-section"><div id="party-list"></div></div>
+    </div>
+  </div>
+  <div id="story-panel"><div id="story-box"></div><div id="choices-area"></div></div>
+</div>
+
+<div id="status-line"></div>
+<div id="bottom">
+  <div id="inv-row">🎒<span style="color:var(--text-dim)">随身:</span></div>
+  <button class="btn primary" onclick="continueStory()">▶ 继续推进</button>
+  <button class="btn" onclick="returnToCamp()">🏕️ 返回营地</button>
+  <button class="btn" onclick="restAtCamp()">😴 休息</button>
+  <button class="btn" onclick="buildCampfire()">🔥 生篝火</button>
+  <button class="btn" onclick="openCrafting()">🔧 工作台</button>
+  <button class="btn" id="btn-map" onclick="if(!hasMap()){setStatus('需要地图才能查看！');return;}showMapView()">🗺️ 地图</button>
+  <button class="btn" id="btn-travel" onclick="if(!hasMap()){setStatus('需要地图才能远行！');return;}travelToBiome()">🌍 远行</button>
+  <button class="btn" id="btn-enemy" onclick="if(!hasMap()){setStatus('需要地图才能侦察敌营！');return;}showEnemyCamps()">⚔️ 敌营</button>
+  <button class="btn" onclick="changeGovernance()">🏛️ 治理</button>
+  <button class="btn" onclick="showCampView()">🏕️ 营地</button>
+  <button class="btn" id="btn-rebuild" onclick="rebuildCamp()" style="display:none;">🏗️ 重建</button>
+  <button class="btn" onclick="openStorageUI()">📦 仓库</button>
+  <button class="btn" onclick="upgradeChest()">📦 升级箱</button>
+  <button class="btn" id="btn-attackmap" onclick="showAttackMinimap()">🗺️ 战况</button>
+  <button class="btn small" onclick="resetGame()">🔄 重新开始</button>
+</div>
+
+<div id="modal-overlay"><div id="modal"></div></div>
+<div id="death-overlay"><h2>💀 你死了</h2><div class="death-days"></div><div class="death-info"></div><button class="btn primary" onclick="resetGame()">🔄 重新开始</button></div>
+
+<script>
+// ============================================================
+// 废土纪元 — 完全内置，百种物资 + 百种事件
+// ============================================================
+const BODY_PARTS=['head','chest','leftArm','rightArm','leftLeg','rightLeg'];
+const PL={head:'头部',chest:'躯干',leftArm:'左臂',rightArm:'右臂',leftLeg:'左腿',rightLeg:'右腿'};
+const SEASONS=[
+  {id:'spring',name:'春',icon:'🌸',baseTemp:{min:8,max:22},tempRange:[5,28],humRange:[40,80],rainChance:0.25,dayLen:{rise:6,set:19}},
+  {id:'summer',name:'夏',icon:'☀️',baseTemp:{min:20,max:38},tempRange:[15,45],humRange:[30,90],rainChance:0.20,dayLen:{rise:5,set:20}},
+  {id:'autumn',name:'秋',icon:'🍂',baseTemp:{min:5,max:20},tempRange:[0,25],humRange:[35,75],rainChance:0.30,dayLen:{rise:6,set:18}},
+  {id:'winter',name:'冬',icon:'❄️',baseTemp:{min:-15,max:3},tempRange:[-25,8],humRange:[20,60],rainChance:0.15,snowChance:0.30,dayLen:{rise:8,set:16}},
+];
+
+// ===== 生物群系 =====
+const BIOMES=[
+  {id:'city_center',name:'市中心',icon:'🏙️',desc:'高楼林立危机四伏，物资密集但掠夺者横行',food:3,water:2,danger:8,materials:6,sp:[{n:'电子零件',q:[1,3]},{n:'武器零件',q:[1,2]},{n:'弹药',q:[1,3]}]},
+  {id:'suburb',name:'郊区',icon:'🏘️',desc:'居民区废墟，物资分散但相对安全',food:5,water:4,danger:4,materials:5,sp:[{n:'罐头',q:[1,3]},{n:'工具',q:[1,1]},{n:'布料',q:[1,2]}]},
+  {id:'farmland',name:'农田',icon:'🌾',desc:'开阔农业区，食物充沛但缺乏其他物资',food:9,water:5,danger:3,materials:3,sp:[{n:'种子',q:[1,3]},{n:'罐头',q:[2,4]},{n:'变异兽肉',q:[1,3]}]},
+  {id:'desert',name:'沙漠',icon:'🏜️',desc:'干旱贫瘠，水和食物极度匮乏',food:1,water:1,danger:6,materials:2,sp:[{n:'电池',q:[1,2]},{n:'金属片',q:[1,3]},{n:'机油',q:[1,2]}]},
+  {id:'forest',name:'森林',icon:'🌲',desc:'茂密森林木材丰富，有水源但野兽出没',food:4,water:6,danger:5,materials:7,sp:[{n:'木材',q:[2,5]},{n:'草药',q:[1,2]},{n:'蘑菇干',q:[1,3]}]},
+  {id:'mountain',name:'山区',icon:'⛰️',desc:'崎岖山地易守难攻，矿产丰富',food:2,water:3,danger:4,materials:8,sp:[{n:'金属片',q:[2,4]},{n:'铁皮',q:[1,2]},{n:'武器零件',q:[1,2]}]},
+  {id:'wasteland',name:'辐射荒原',icon:'☢️',desc:'重度辐射区遗物遍地，但空气都在杀人',food:2,water:2,danger:9,materials:4,sp:[{n:'防辐射药',q:[1,2]},{n:'军用口粮',q:[1,3]},{n:'电子零件',q:[2,5]}]},
+  {id:'coast',name:'海岸',icon:'🌊',desc:'海边废墟，可捕鱼但海风潮湿寒冷',food:6,water:3,danger:5,materials:3,sp:[{n:'鱼干',q:[1,3]},{n:'净水',q:[1,2]},{n:'绳子',q:[1,2]}]},
+];
+
+// ===== 营地治理 =====
+const GOVERN_TYPES={
+  dictatorship:{name:'独裁',icon:'👑',desc:'你一人说了算。效率高但民心不稳。',loyaltyDecay:2,decisionBonus:'可直接决定所有事务'},
+  democracy:{name:'民主',icon:'🗳️',desc:'集体决策。民心稳定但决策缓慢。',loyaltyDecay:0,loyaltyGrowth:2,decisionBonus:'重大决定需队友投票'},
+};
+
+// ===== 敌营生成模板 =====
+const ENEMY_CAMP_NAMES=['铁牙帮','赤色旅','灰烬会','拾荒者联盟','净化者','第七连','黑水寨','雷鸣堡','毒蛇窝','自由民'];
+const ENEMY_LEADERS=['独眼杰克','血手玛丽','老维克多','刀锋','铁腕周','疯狗','鬼面','雷公','夜枭','疤面'];
+const ENEMY_TRAITS=['残忍嗜杀','精于防守','内部分裂','物资充裕','士气低落','训练有素','腐败横行','狂热信仰'];
+
+// ===== 物资数据库（100+）=====
+const ITEMS={
+  // 医疗类
+  '绷带':{e:'🩹',cat:'medical',d:'止血包扎伤口',med:{act:'bandage'}},
+  '医疗包':{e:'💊',cat:'medical',d:'缝合伤口、消毒',med:{act:'treat'}},
+  '抗生素':{e:'💉',cat:'medical',d:'对抗细菌感染',med:{act:'antibiotic'}},
+  '止痛药':{e:'💊',cat:'medical',d:'缓解全身疼痛',med:{act:'painkiller'}},
+  '止血粉':{e:'🩹',cat:'medical',d:'快速止血粉末',med:{act:'bandage'}},
+  '消毒酒精':{e:'🧴',cat:'medical',d:'消毒伤口防感染',med:{act:'clean'}},
+  '缝合针线':{e:'🪡',cat:'medical',d:'缝合深层伤口',med:{act:'treat'}},
+  '退烧药':{e:'💊',cat:'medical',d:'降低体温缓解发热',med:{act:'antibiotic'}},
+  '碘伏':{e:'🫧',cat:'medical',d:'广谱消毒液',med:{act:'clean'}},
+  '止血带':{e:'🩹',cat:'medical',d:'紧急止血绑带',med:{act:'bandage'}},
+  '烧伤膏':{e:'🧴',cat:'medical',d:'治疗烧伤烫伤',med:{act:'treat'}},
+  '抗病毒药':{e:'💉',cat:'medical',d:'对抗病毒感染',med:{act:'antibiotic'}},
+  '吗啡':{e:'💉',cat:'medical',d:'强效止痛但可能上瘾',med:{act:'painkiller'}},
+  '手术刀':{e:'🔪',cat:'medical',d:'精密手术工具',med:{act:'treat'}},
+  '草药':{e:'🌿',cat:'medical',d:'天然草药缓解症状',med:{act:'clean'}},
+  '青霉素':{e:'💉',cat:'medical',d:'强效抗生素，治疗严重感染',med:{act:'antibiotic'}},
+  '夹板':{e:'🪵',cat:'medical',d:'固定腿部骨折，加速恢复',med:{act:'splint'}},
+  '支架':{e:'🔩',cat:'medical',d:'固定手臂骨折，加速恢复',med:{act:'brace'}},
+  '手术包':{e:'🏥',cat:'medical',d:'用于严重胸部创伤的手术工具',med:{act:'treat'}},
+  // 食物
+  '罐头':{e:'🥫',cat:'food',d:'保质期超长的罐头食品',use:{nutrition:22}},
+  '干粮':{e:'🍞',cat:'food',d:'压缩饼干，难吃但管饱',use:{nutrition:14}},
+  '军用口粮':{e:'🎖️',cat:'food',d:'高热量军用口粮',use:{nutrition:32}},
+  '压缩饼干':{e:'🍪',cat:'food',d:'战前军需品',use:{nutrition:18}},
+  '腌肉':{e:'🥓',cat:'food',d:'盐腌保存的肉类',use:{nutrition:24}},
+  '鱼干':{e:'🐟',cat:'food',d:'风干鱼，蛋白质丰富',use:{nutrition:20}},
+  '能量棒':{e:'🍫',cat:'food',d:'高热量能量补给',use:{nutrition:26}},
+  '脱水蔬菜':{e:'🥬',cat:'food',d:'战前应急储备',use:{nutrition:10}},
+  '花生酱':{e:'🥜',cat:'food',d:'高热量高蛋白',use:{nutrition:28}},
+  '蜂蜜':{e:'🍯',cat:'food',d:'天然防腐的甜味剂',use:{nutrition:16}},
+  '奶粉':{e:'🥛',cat:'food',d:'冲泡饮用补充营养',use:{nutrition:12}},
+  '方便面':{e:'🍜',cat:'food',d:'战前垃圾食品变成奢侈品',use:{nutrition:14}},
+  '大米':{e:'🍚',cat:'food',d:'5公斤装，需要烹饪',use:{nutrition:20}},
+  '变异兽肉':{e:'🥩',cat:'food',d:'有副作用风险',use:{nutrition:28}},
+  '蘑菇干':{e:'🍄',cat:'food',d:'野生蘑菇可能有毒',use:{nutrition:8}},
+  // 饮品
+  '净水':{e:'💧',cat:'drink',d:'经过净化的饮用水',use:{hydration:20},med:{act:'clean'}},
+  '咖啡':{e:'☕',cat:'drink',d:'珍贵的战前咖啡提神',use:{fatigue:-15}},
+  '茶包':{e:'🍵',cat:'drink',d:'暖身提神',use:{fatigue:-8}},
+  '能量饮料':{e:'🥤',cat:'drink',d:'战前遗留的功能饮料',use:{fatigue:-20}},
+  '酒':{e:'🍺',cat:'drink',d:'消毒或暖身用',use:{fatigue:-5},med:{act:'clean'}},
+  '果汁':{e:'🧃',cat:'drink',d:'维生素来源',use:{hydration:14}},
+  '牛奶':{e:'🥛',cat:'drink',d:'补钙营养',use:{nutrition:8,hydration:10}},
+  '汤料包':{e:'🍲',cat:'drink',d:'热水冲泡即食',use:{nutrition:12,hydration:14}},
+  '电解质水':{e:'🧪',cat:'drink',d:'快速补充水分电解质',use:{hydration:28}},
+  // 衣物-头部
+  '破旧帽子':{e:'🧢',cat:'clothing',slot:'head',warmth:2,wp:10,d:'褪色的棒球帽'},
+  '毛线帽':{e:'🎿',cat:'clothing',slot:'head',warmth:8,wp:30,d:'厚羊毛帽子'},
+  '防寒面罩':{e:'😷',cat:'clothing',slot:'head',warmth:12,wp:50,d:'全覆盖保暖面罩'},
+  '钢盔':{e:'🪖',cat:'clothing',slot:'head',warmth:4,wp:80,d:'军用钢盔坚固耐用'},
+  '斗笠':{e:'👒',cat:'clothing',slot:'head',warmth:1,wp:60,d:'遮阳挡雨'},
+  '皮帽':{e:'🤠',cat:'clothing',slot:'head',warmth:6,wp:40,d:'皮革帽子'},
+  '围巾':{e:'🧣',cat:'clothing',slot:'head',warmth:5,wp:15,d:'保护脖颈不受寒风'},
+  '护目镜':{e:'🥽',cat:'clothing',slot:'head',warmth:1,wp:60,d:'防风沙护目'},
+  // 衣物-上衣
+  '破旧夹克':{e:'🧥',cat:'clothing',slot:'upper',warmth:5,wp:20,d:'多处磨损的夹克'},
+  '雨衣':{e:'🧥',cat:'clothing',slot:'upper',warmth:3,wp:80,d:'防水雨衣'},
+  '羽绒服':{e:'🧥',cat:'clothing',slot:'upper',warmth:18,wp:40,d:'保暖性极好'},
+  '军大衣':{e:'🧥',cat:'clothing',slot:'upper',warmth:14,wp:35,d:'厚重军大衣'},
+  '皮夹克':{e:'🧥',cat:'clothing',slot:'upper',warmth:8,wp:50,d:'防风皮衣'},
+  '棉袄':{e:'🧥',cat:'clothing',slot:'upper',warmth:12,wp:25,d:'传统棉袄'},
+  '卫衣':{e:'👕',cat:'clothing',slot:'upper',warmth:6,wp:15,d:'加绒卫衣'},
+  '毛衣':{e:'👕',cat:'clothing',slot:'upper',warmth:10,wp:10,d:'手工编织羊毛衣'},
+  '背心':{e:'🦺',cat:'clothing',slot:'upper',warmth:2,wp:5,d:'战术背心'},
+  '防弹衣':{e:'🛡️',cat:'clothing',slot:'upper',warmth:4,wp:40,d:'旧式防弹衣'},
+  // 衣物-裤子
+  '破旧裤子':{e:'👖',cat:'clothing',slot:'lower',warmth:3,wp:15,d:'膝盖磨破的长裤'},
+  '工装裤':{e:'👖',cat:'clothing',slot:'lower',warmth:8,wp:35,d:'结实耐穿'},
+  '保暖棉裤':{e:'👖',cat:'clothing',slot:'lower',warmth:16,wp:25,d:'加厚棉裤'},
+  '防水裤':{e:'👖',cat:'clothing',slot:'lower',warmth:6,wp:70,d:'防水材质'},
+  '军裤':{e:'👖',cat:'clothing',slot:'lower',warmth:7,wp:30,d:'军用迷彩裤'},
+  '牛仔裤':{e:'👖',cat:'clothing',slot:'lower',warmth:5,wp:20,d:'厚实牛仔裤'},
+  // 衣物-鞋子
+  '旧靴子':{e:'👢',cat:'clothing',slot:'feet',warmth:4,wp:30,d:'鞋底磨平的皮靴'},
+  '防水靴':{e:'👢',cat:'clothing',slot:'feet',warmth:8,wp:70,d:'高帮防水靴'},
+  '雪地靴':{e:'👢',cat:'clothing',slot:'feet',warmth:15,wp:50,d:'加绒防滑雪地靴'},
+  '军靴':{e:'👢',cat:'clothing',slot:'feet',warmth:9,wp:45,d:'结实耐用的军靴'},
+  '运动鞋':{e:'👟',cat:'clothing',slot:'feet',warmth:3,wp:10,d:'轻便但防护差'},
+  '凉鞋':{e:'🩴',cat:'clothing',slot:'feet',warmth:0,wp:0,d:'废土最不实用的鞋'},
+  // 武器
+  '弹药':{e:'🔫',cat:'weapon',d:'珍贵弹药交易自卫都用它'},
+  '手枪':{e:'🔫',cat:'weapon',d:'9mm手枪，便于携带'},
+  '步枪':{e:'🔫',cat:'weapon',d:'老旧但可靠的步枪'},
+  '猎刀':{e:'🔪',cat:'weapon',d:'锋利的猎刀'},
+  '弓箭':{e:'🏹',cat:'weapon',d:'复合弓+箭矢'},
+  '钢管':{e:'🔧',cat:'weapon',d:'简易近战武器'},
+  '斧头':{e:'🪓',cat:'weapon',d:'砍柴兼武器'},
+  '长矛':{e:'🗡️',cat:'weapon',d:'削尖的长矛'},
+  '铁锤':{e:'🔨',cat:'weapon',d:'沉重的工程锤'},
+  '匕首':{e:'🗡️',cat:'weapon',d:'隐藏的防身武器'},
+  // 工具
+  '工具':{e:'🔧',cat:'tool',d:'多功能修理工具'},
+  '电池':{e:'🔋',cat:'tool',d:'还能用的电池'},
+  '手电筒':{e:'🔦',cat:'tool',d:'夜晚照明必备'},
+  '绳索':{e:'🪢',cat:'tool',d:'攀爬捆绑多用'},
+  '指南针':{e:'🧭',cat:'tool',d:'废土中不迷路'},
+  '打火机':{e:'🔥',cat:'tool',d:'生火必备'},
+  '收音机':{e:'📻',cat:'tool',d:'收听残余无线电信号'},
+  '望远镜':{e:'🔭',cat:'tool',d:'观察远处情况'},
+  '背包':{e:'🎒',cat:'tool',d:'+3背包格数'},
+  '水壶':{e:'🫗',cat:'tool',d:'储水容器'},
+  '渔网':{e:'🪝',cat:'tool',d:'捕鱼工具'},
+  '铁锹':{e:'🪏',cat:'tool',d:'挖掘工具'},
+  '防辐射药':{e:'🧪',cat:'medical',d:'抗辐射药物',med:{act:'antirad'}},
+  // 营地
+  '木材':{e:'🪵',cat:'camp',d:'生火和建造用'},
+  '金属片':{e:'🔩',cat:'camp',d:'加固营地防御'},
+  '钉子':{e:'📌',cat:'camp',d:'建造材料'},
+  '防水布':{e:'🏕️',cat:'camp',d:'搭建帐篷防雨'},
+  '睡袋':{e:'🛌',cat:'camp',d:'保暖睡眠装备'},
+  '铁皮':{e:'🪨',cat:'camp',d:'加固围墙'},
+  '铁丝网':{e:'🪤',cat:'camp',d:'防御工事'},
+  '机油':{e:'🛢️',cat:'camp',d:'润滑和燃料'},
+  '太阳能板':{e:'☀️',cat:'camp',d:'提供电力'},
+  // 特殊
+  '种子':{e:'🌱',cat:'special',d:'还能发芽的种子',use:{morale:5}},
+  '书籍':{e:'📚',cat:'special',d:'精神食粮',use:{morale:15}},
+  '地图碎片':{e:'🗺️',cat:'special',d:'指向某处',use:{morale:8}},
+  '香烟':{e:'🚬',cat:'special',d:'珍贵的精神慰藉',use:{morale:5,fatigue:-3}},
+  '电子零件':{e:'⚡',cat:'tool',d:'修复电子设备'},
+  '武器零件':{e:'⚙️',cat:'weapon',d:'维修和改装武器'},
+  '急救手册':{e:'📕',cat:'special',d:'战前医疗指南'},
+  '收音机零件':{e:'📡',cat:'special',d:'电路板和调谐器——收音机的核心'},
+  '天线':{e:'📡',cat:'special',d:'收音机天线，接收信号的关键'},
+  '区域地图':{e:'🗺️',cat:'special',d:'标注附近民用建筑',use:{map:'local'}},
+  '军事地图':{e:'🗺️',cat:'special',d:'标注军事设施位置',use:{map:'military'}},
+  '完整地图':{e:'🗺️',cat:'special',d:'完整废土地图',use:{map:'all'}},
+  '胶带':{e:'📎',cat:'craft',d:'万能修补材料'},
+  '布料':{e:'🧵',cat:'craft',d:'可用于制作和修补'},
+  '绳子':{e:'🪢',cat:'craft',d:'结实的尼龙绳'},
+  '收音机':{e:'📻',cat:'special',d:'组装好的收音机，可接收废土广播'},
+};
+
+// ===== 制作配方 =====
+const RECIPES=[
+  {id:'craft_radio',name:'组装收音机',need:{'收音机零件':1,'天线':1,'电池':1},result:{'收音机':1},desc:'组装一台能接收废土广播的收音机'},
+  {id:'repair_defense',name:'加固营地围栏',need:{'木材':2,'金属片':1,'绳子':1},result:{},desc:'使用材料加固营地防御 +20',campDef:20},
+  {id:'make_bandage',name:'制作绷带',need:{'布料':1},result:{'绷带':2},desc:'把布料撕成绷带'},
+  {id:'make_torch',name:'制作火把',need:{'木材':1,'布料':1,'机油':1},result:{},desc:'制作一支燃烧火把，夜间探索更安全',fire:true},
+  {id:'make_splint',name:'制作夹板',need:{'木材':2,'胶带':1},result:{'夹板':1},desc:'用于固定骨折'},
+  {id:'repair_weapon',name:'修理武器',need:{'武器零件':2,'金属片':1,'胶带':1},result:{},desc:'修复一把损坏的武器'},
+  {id:'make_raincoat',name:'制作简易雨披',need:{'防水布':1,'绳子':1},result:{'雨衣':1},desc:'简易防水披风'},
+  {id:'make_bag',name:'制作简易背包',need:{'布料':2,'绳子':1},result:{},desc:'增加随身携带能力'},
+  {id:'water_filter',name:'制作简易滤水器',need:{'布料':1,'木材':1},result:{'净水':3},desc:'用布料和木炭过滤脏水'},
+  {id:'make_trap',name:'制作捕兽陷阱',need:{'金属片':2,'绳子':1,'木材':1},result:{'变异兽肉':3},desc:'在营地周围设置捕兽陷阱'},
+];
+
+// ===== 地图地点 =====
+const MAP_LOCATIONS=[
+  {id:'hospital',name:'废弃医院',icon:'🏥',desc:'大量医疗物资',dist:8,dir:'北',tags:['civilian','military'],items:[{n:'医疗包',q:[1,2]},{n:'抗生素',q:[1,2]}],maxVisits:3},
+  {id:'gas_station_poi',name:'加油站',icon:'⛽',desc:'燃料和便利店物资',dist:3,dir:'东',tags:['local','civilian'],items:[{n:'机油',q:[1,2]},{n:'罐头',q:[1,3]}],maxVisits:4},
+  {id:'warehouse',name:'旧仓库',icon:'🏭',desc:'大批物资储存地',dist:5,dir:'东南',tags:['local','civilian'],items:[{n:'金属片',q:[2,4]},{n:'工具',q:[1,1]}],maxVisits:3},
+  {id:'school',name:'废弃学校',icon:'🏫',desc:'图书馆和医务室',dist:6,dir:'西',tags:['local','civilian'],items:[{n:'书籍',q:[1,3]},{n:'急救手册',q:[1,1]}],maxVisits:3},
+  {id:'radio_tower',name:'广播塔',icon:'🗼',desc:'信号设备和电子零件',dist:10,dir:'北',tags:['military','special'],items:[{n:'天线',q:[1,2]},{n:'电子零件',q:[1,3]}],maxVisits:2},
+  {id:'police_station',name:'派出所',icon:'🏛️',desc:'武器弹药库',dist:7,dir:'西南',tags:['military','local'],items:[{n:'弹药',q:[2,5]},{n:'手枪',q:[1,1]}],maxVisits:2},
+  {id:'farm',name:'废弃农场',icon:'🌾',desc:'种子和食物',dist:4,dir:'南',tags:['local'],items:[{n:'种子',q:[1,3]},{n:'罐头',q:[1,2]}],maxVisits:5},
+  {id:'bunker',name:'防空洞',icon:'🛡️',desc:'战前避难所，军用物资',dist:12,dir:'东北',tags:['military','special'],items:[{n:'军用口粮',q:[2,4]},{n:'防辐射药',q:[1,2]}],maxVisits:2},
+  {id:'market',name:'旧市场',icon:'🏪',desc:'各种物资交易点',dist:2,dir:'东',tags:['local','civilian'],items:[{n:'罐头',q:[1,3]},{n:'布料',q:[1,2]}],maxVisits:4},
+  {id:'water_tower',name:'水塔',icon:'💧',desc:'干净的水源',dist:3,dir:'西北',tags:['local'],items:[{n:'净水',q:[3,6]}],maxVisits:5},
+];
+
+// Map types + which item gives them
+const MAP_TYPES={
+  '区域地图':{e:'🗺️',tags:['local'],desc:'标注了附近民用建筑的位置'},
+  '军事地图':{e:'🗺️',tags:['military'],desc:'标注了军事设施和武器库的位置'},
+  '完整地图':{e:'🗺️',tags:['local','civilian','military','special'],desc:'完整的废土地图，标注了所有已知地点'},
+};
+
+// ===== 收音机广播消息 =====
+const RADIO_MSGS=[
+  {type:'news',msg:'"这里是第七避难所广播。我们还有空间接纳幸存者。坐标：北纬34度，东经118度。重复——我们还有空间。"'},
+  {type:'news',msg:'"紧急通报：一支大型掠夺者团伙正在向南移动。所有听到广播的幸存者请避开南线公路。"'},
+  {type:'news',msg:'"天气预警：未来48小时内将有大规模辐射风暴。请所有幸存者寻找掩体，储备物资。"'},
+  {type:'news',msg:'"这里是自由电台。今天是我们坚持广播的第2034天。只要还有人听，我们就继续播。"'},
+  {type:'news',msg:'"通报：西区水处理厂发现了可用的净水设备。坐标已加密，请联系附近避难所获取。"'},
+  {type:'news',msg:'"医疗通告：如果有幸存者拥有抗生素，请送往第七避难所。我们有重伤员需要救助。必有重谢。"'},
+  {type:'news',msg:'"这里是新希望营地的无线电呼叫。我们是一个由15名幸存者组成的社区。欢迎加入。"'},
+  {type:'news',msg:'"军方残余频道——重复播放：所有军事人员请前往东部基地集结。此消息每24小时重播。"'},
+  {type:'static',msg:'收音机传来断断续续的信号，夹杂着静电噪音。你隐约听到几个词："...物资...危险...不要..."然后信号中断了。'},
+  {type:'static',msg:'你调了几个频率，只能听到白噪音。废土上空的电磁波几乎一片死寂。偶尔有微弱的摩尔斯电码信号。'},
+  {type:'static',msg:'收音机里传来一段重复播放的预录广播，声音机械而冷静："紧急广播系统已激活。请留在室内。等待进一步指示。"——这条消息已经循环了7年。'},
+  {type:'music',msg:'奇迹般地，你调到了一个还在播放音乐的老电台。一首战前的老歌在废土的夜空中回荡——这几乎让你哭了。'},
+  {type:'distress',msg:'"救救我——如果有人听到——我们在东区商场的地下车库——有五个幸存者——食物快吃完了——"信号中断，只剩下静电声。'},
+  {type:'distress',msg:'"Mayday, Mayday——这里是第七侦察队——遭遇掠夺者伏击——伤亡惨重——请求支援——"枪声在背景中响起，然后一片寂静。'},
+];
+
+// ===== NPC 数据库 =====
+const NPC_DB=[
+  {name:'老陈',skill:'combat',sn:'战斗',d:'前军人，沉默寡言但枪法极准',e:'🎖️',gender:'男',age:45},
+  {name:'小雨',skill:'medical',sn:'医疗',d:'战前是护士，懂得处理各种伤口',e:'💉',gender:'女',age:28},
+  {name:'铁锤',skill:'scavenge',sn:'搜刮',d:'废土拾荒者，擅长找到隐藏物资',e:'🔍',gender:'男',age:34},
+  {name:'阿星',skill:'scout',sn:'侦察',d:'敏捷的年轻人，能提前发现危险',e:'👀',gender:'男',age:19},
+  {name:'老周',skill:'build',sn:'建造',d:'工程师出身，擅长加固防御',e:'🔧',gender:'男',age:52},
+  {name:'小北',skill:'combat',sn:'战斗',d:'年轻猎人，弓箭好手',e:'🏹',gender:'女',age:22},
+  {name:'三爷',skill:'medical',sn:'医术',d:'老中医，懂得草药疗法',e:'🌿',gender:'男',age:67},
+  {name:'刀疤',skill:'combat',sn:'近战',d:'雇佣兵出身，近战专家',e:'⚔️',gender:'男',age:38},
+  {name:'小七',skill:'scavenge',sn:'拾荒',d:'孤儿，对废土地形了如指掌',e:'🧒',gender:'女',age:14},
+  {name:'王工',skill:'build',sn:'工程',d:'电气工程师，会修电子设备',e:'⚡',gender:'男',age:41},
+  {name:'苏姐',skill:'medical',sn:'护理',d:'战地护士长，经验丰富',e:'💊',gender:'女',age:36},
+  {name:'黑子',skill:'scout',sn:'潜行',d:'前小偷，擅长潜入和侦查',e:'🕵️',gender:'男',age:25},
+  {name:'小梅',skill:'medical',sn:'草药',d:'采药女，认识废土上各种草药',e:'🌸',gender:'女',age:20},
+  {name:'大壮',skill:'build',sn:'农耕',d:'战前是农民，懂得种植和养殖',e:'🌾',gender:'男',age:48},
+  {name:'灵儿',skill:'scavenge',sn:'采集',d:'从小在废土长大，熟悉野外生存',e:'🍃',gender:'女',age:17},
+  {name:'石头',skill:'combat',sn:'重武',d:'沉默的巨人，力大无穷',e:'🪨',gender:'男',age:31},
+];
+
+// ===== 事件数据库（100+）=====
+// 每个事件: {id,cat,ctx:{minDist,maxDist,night,day,seasons,weather,atCamp,injured,hasParty},narr,choices:[{text,eff:{},items:[],dist}]}
+const EVENTS=[
+  // === 营地附近探索 (0-5km) ===
+  {id:'abandoned_car',cat:'discovery',ctx:{minDist:0,maxDist:5},narr:'路边停着一辆报废的汽车。车窗碎裂，车身上布满弹孔。你小心翼翼地靠近，发现车内似乎还有东西。',
+    choices:[{text:'搜刮车内',outcomes:[
+      {w:5,eff:{fatigue:5},items:[{n:'罐头',q:[1,2]},{n:'弹药',q:[1,3]}],desc:'你在座椅下找到了几罐罐头和一个弹药盒——看来前车主走得匆忙。'},
+      {w:3,eff:{fatigue:3,health:-3},items:[{n:'罐头',q:[1,1]}],desc:'翻找时被碎玻璃划破了手，但你还是找到了一个完好的罐头。'},
+      {w:2,eff:{fatigue:6},desc:'车内已经被洗劫过，只剩下一些无用的碎片和满地的弹壳。'},
+    ]},{text:'检查引擎',outcomes:[
+      {w:4,eff:{fatigue:8},items:[{n:'电池',q:[1,1]},{n:'电子零件',q:[1,2]}],desc:'引擎盖下居然还有完好的电池和一些可用的电子元件。'},
+      {w:4,eff:{fatigue:8},items:[{n:'机油',q:[1,1]}],desc:'电池已经报废了，但你在引擎舱里找到了一小瓶还能用的机油。'},
+      {w:2,eff:{fatigue:5,health:-2},desc:'引擎盖的弹簧突然弹开，砸到了你的手。除了淤青什么都没得到。'},
+    ]},{text:'无视继续前行',eff:{fatigue:1},outcome:'你决定不在这辆破车上浪费时间，继续赶路。'}]},
+  {id:'ruined_house',cat:'discovery',ctx:{minDist:0,maxDist:6},narr:'一栋半塌的民宅矗立在路边。墙壁上爬满了藤蔓，屋顶塌了一半，但地下室入口还完好。',
+    choices:[{text:'进入地下室搜索',outcomes:[
+      {w:5,eff:{fatigue:10},items:[{n:'罐头',q:[1,3]},{n:'净水',q:[1,2]},{n:'绷带',q:[1,2]}],desc:'地下室里堆满了战前储备——罐头、瓶装水，还有急救箱。捡到大便宜了。'},
+      {w:3,eff:{fatigue:8},items:[{n:'罐头',q:[1,2]}],desc:'地下室大部分东西都霉烂了，只找到几个还没开封的罐头。'},
+      {w:2,eff:{fatigue:12,health:-5},desc:'地下室的楼梯突然坍塌！你摔了下去，腿擦伤了。里面除了瓦砾什么都没有。'},
+    ]},{text:'在楼上搜索',outcomes:[
+      {w:4,eff:{fatigue:5},items:[{n:'干粮',q:[1,2]},{n:'书籍',q:[1,1]}],desc:'在卧室床头柜找到了几包压缩干粮和一本旧书。'},
+      {w:3,eff:{fatigue:4},items:[{n:'布料',q:[1,2]}],desc:'从衣柜里翻出几件还能用的衣物布料。'},
+      {w:3,eff:{fatigue:6},desc:'楼上已经被火烧过，只剩下焦黑的墙壁。什么都没留下。'},
+    ]},{text:'房子看起来不安全，离开',eff:{fatigue:1},outcome:'安全第一。你绕过危房继续前行。在废土上，冒险的代价往往是生命。'}]},
+  {id:'wild_berries',cat:'discovery',ctx:{minDist:0,maxDist:8,seasons:['spring','summer','autumn']},narr:'灌木丛中长着一些野生浆果。深紫色的果实看起来饱满多汁，但你无法确定它们是否有毒。',
+    choices:[{text:'采摘食用',eff:{nutrition:12},items:[{n:'蘑菇干',q:[1,2]}]},{text:'少量尝试再决定',eff:{nutrition:4}},{text:'可能有毒，不碰',eff:{}}]},
+  {id:'water_puddle',cat:'discovery',ctx:{minDist:0,maxDist:5,weather:['rain','heavy_rain']},narr:'雨水在地面低洼处汇成了一个小水坑。水面看起来还算清澈，但废土上的水都可能含有辐射或细菌。',
+    choices:[{text:'用容器收集',eff:{hydration:12}},{text:'直接饮用',eff:{hydration:16,infection:5}},{text:'水太脏了',eff:{}}]},
+  {id:'trader_encounter',cat:'npc',ctx:{minDist:0,maxDist:8},narr:'远处走来一个背着大包的人。走近后发现是一个流浪商人，他的背包里塞满了各种物资。"嘿，幸存者。要不要交换点东西？我急缺弹药，可以用食物和水跟你换——2发子弹换你一天的口粮，怎么样？"',
+    choices:[{text:'用弹药交换食物和水',eff:{morale:5},items:[{n:'弹药',q:[-2,-2]},{n:'罐头',q:[2,3]},{n:'净水',q:[1,2]}]},{text:'用绷带换净水',items:[{n:'绷带',q:[-1,-1]},{n:'净水',q:[2,3]}]},{text:'婉拒继续赶路',eff:{}}]},
+  {id:'broken_drone',cat:'discovery',ctx:{minDist:0,maxDist:10},narr:'一架战前军用无人机残骸散落在地上。机体已经严重损坏，但上面的传感器和电子元件或许还能用。',
+    choices:[{text:'拆卸电子零件',outcomes:[
+      {w:4,eff:{fatigue:8},items:[{n:'电子零件',q:[2,4]},{n:'电池',q:[1,2]}],desc:'你小心翼翼地拆下了还能用的电路板和电池——这些东西在废土上比黄金还值钱。'},
+      {w:4,eff:{fatigue:8,health:-3},items:[{n:'电子零件',q:[1,2]}],desc:'拆卸时一个电容器突然放电——手指被电麻了。不过还是拆下了几个零件。'},
+      {w:2,eff:{fatigue:6},desc:'无人机的核心部件已经被高温烧毁，只剩下熔化的塑料和扭曲的金属。白费力气。'},
+    ]},{text:'查看是否有武器残留',outcomes:[
+      {w:4,eff:{fatigue:5},items:[{n:'武器零件',q:[1,2]}],desc:'无人机的武器挂架还在，上面的零件虽然旧了但还能用。'},
+      {w:3,eff:{fatigue:5},items:[{n:'弹药',q:[1,2]}],desc:'武器系统已经毁了，但在附近的残骸中找到了几发未使用的弹药。'},
+      {w:3,eff:{fatigue:5},desc:'武器系统被彻底摧毁了，只剩下扭曲的金属残骸。'},
+    ]},{text:'快速通过',eff:{fatigue:1},outcome:'军用设备在废土上往往意味着麻烦——不管是故障还是陷阱。你决定不碰这个。'}]},
+  {id:'small_shelter',cat:'discovery',ctx:{minDist:1,maxDist:8},narr:'一个简易的地下避难所入口半掩在废墟中。铁门上刷着褪色的字："内有物资，请自取，不要破坏。"',
+    choices:[{text:'进入查看',outcomes:[
+      {w:5,eff:{fatigue:8},items:[{n:'罐头',q:[2,4]},{n:'净水',q:[1,3]},{n:'绷带',q:[1,3]}],desc:'避难所里物资齐全——前主人慷慨地留下了罐头、水和医疗用品。你还看到墙上有人用粉笔写了"祝你好运"。'},
+      {w:3,eff:{fatigue:8},items:[{n:'罐头',q:[1,2]}],desc:'大部分物资已经被取走了，只剩下几罐被遗忘在角落的罐头。不过总比没有好。'},
+      {w:2,eff:{fatigue:8,health:-5},desc:'你没注意到门后有个破瓶子——一脚踩上去，玻璃扎穿了鞋底。流血了。避难所的物资也不多。'},
+    ]},{text:'小心可能有陷阱',outcomes:[
+      {w:6,eff:{fatigue:3},items:[{n:'干粮',q:[1,2]}],desc:'谨慎没错——你在门后发现了一个简易报警装置。解除后安全进入，在入口附近找到了干粮。'},
+      {w:4,eff:{fatigue:3},desc:'检查了一圈，没有发现陷阱。但物资也大部分被搬空了，只找到几包过期的饼干。'},
+    ]},{text:'关上门离开',eff:{},outcome:'你轻轻关上门离开了。"内有物资请自取"——能这样写的人，不是圣人就是陷阱。不过留个善念总是好的。'}]},
+  {id:'squirrel_hunt',cat:'hunt',ctx:{minDist:0,maxDist:8},narr:'一只松鼠样的变异小动物正在翻找垃圾。它的体型比战前大了两倍，但看起来仍然可以当作食物。',
+    choices:[{text:'尝试捕捉',eff:{fatigue:10},items:[{n:'变异兽肉',q:[2,4]}]},{text:'用石头吓走它',eff:{fatigue:3}},{text:'悄悄观察',eff:{morale:2}}]},
+  {id:'phone_ringing',cat:'mystery',ctx:{minDist:0,maxDist:6},narr:'废墟中突然传来手机铃声——一首战前流行歌曲。在这片死寂的废土上，这个声音既诡异又令人怀念。',
+    choices:[{text:'循声寻找来源',eff:{fatigue:6},items:[{n:'电子零件',q:[1,1]},{n:'电池',q:[1,2]}]},{text:'声音太诡异了，离开',eff:{}},{text:'大声回应',eff:{morale:3}}]},
+  {id:'toolbox_find',cat:'discovery',ctx:{minDist:0,maxDist:5},narr:'一个生锈的工具箱半埋在土里。锁已经锈坏了，轻轻一碰就打开了。里面整齐地摆放着几件工具。',
+    choices:[{text:'拿走所有工具',eff:{fatigue:4},items:[{n:'工具',q:[1,2]},{n:'钉子',q:[1,3]}]},{text:'只拿需要的',eff:{},items:[{n:'工具',q:[1,1]}]},{text:'留给后来的人',eff:{morale:3}}]},
+
+  // === 中距离探索 (5-12km) ===
+  {id:'raider_camp_ruins',cat:'danger',ctx:{minDist:4,maxDist:14},narr:'前方出现了一个废弃的掠夺者营地。篝火早已熄灭，帐篷被风吹得破破烂烂，地上散落着弹壳和一些物资。掠夺者似乎是匆忙离开的。',
+    choices:[{text:'仔细搜索营地',outcomes:[
+      {w:4,eff:{fatigue:10},items:[{n:'弹药',q:[2,5]},{n:'罐头',q:[1,3]},{n:'金属片',q:[1,2]}],desc:'掠夺者走得急，留下了不少好东西。弹药、罐头、金属片——够你用一阵子了。'},
+      {w:3,eff:{fatigue:8},items:[{n:'弹药',q:[1,2]},{n:'罐头',q:[1,1]}],desc:'营地大部分物资都被带走了，只找到一些遗漏的弹药和罐头。'},
+      {w:3,eff:{fatigue:12,health:-8},desc:'你踩到了一条绊线——轰！残余的陷阱爆炸了。你被冲击波震倒在地。虽然没有致命伤，但也没拿到东西。'},
+    ]},{text:'快速翻找值钱物品',outcomes:[
+      {w:5,eff:{fatigue:5},items:[{n:'弹药',q:[1,3]}],desc:'你迅速翻了一遍，抓了几盒弹药就撤。效率不错。'},
+      {w:3,eff:{fatigue:3},desc:'快速翻了一遍，除了几个空弹匣什么都没找到。他们走的时候带走了所有值钱的东西。'},
+      {w:2,eff:{fatigue:5,health:-3},items:[{n:'弹药',q:[1,1]}],desc:'匆忙中你被地上的铁丝绊倒了，膝盖擦破了一大块皮。只捡到一盒弹药。'},
+    ]},{text:'可能有埋伏，撤离',eff:{fatigue:1},outcome:'你保持警惕迅速撤离了这片区域。活着的猎人才有下一次机会。'}]},
+  {id:'mutant_beast',cat:'danger',ctx:{minDist:5,maxDist:18},narr:'一声低沉的咆哮从前方废墟中传来。一只体型如牛的变异犬从阴影中走出，浑身散发着辐射的微光，眼中满是饥饿。',
+    choices:[{text:'正面迎战',outcomes:[
+      {w:4,eff:{health:-12,fatigue:15},items:[{n:'变异兽肉',q:[3,6]}],desc:'经过一番搏斗，你用武器击毙了这只变异犬。虽然受了伤，但这么大一只够吃好几顿了。'},
+      {w:3,eff:{health:-20,fatigue:18},items:[{n:'变异兽肉',q:[2,4]}],desc:'变异犬比想象中更难缠。你被撞倒在地，肋骨可能裂了。勉强击退后得到了兽肉，但伤势不轻。'},
+      {w:3,eff:{health:-8,fatigue:10},desc:'你虚张声势地挥舞武器大喊大叫——变异犬犹豫了一下，最终转身跑开了。你没受伤但也没得到食物。'},
+    ]},{text:'悄悄绕开',outcomes:[
+      {w:6,eff:{fatigue:8},desc:'你屏住呼吸，轻手轻脚地绕过了变异犬的警戒范围。安全第一——和怪物战斗不是每次都能赢的。'},
+      {w:4,eff:{fatigue:8,health:-5},desc:'悄悄移动时踩断了一根枯枝。变异犬猛地转头——你拔腿就跑，它追了你几百米才放弃。小腿被灌木刮破了。'},
+    ]},{text:'扔食物引开',outcomes:[
+      {w:6,eff:{nutrition:-5,fatigue:3},desc:'你掏出一些食物扔向远处。变异犬立刻扑向食物，你趁机从另一侧快速通过。'},
+      {w:4,eff:{nutrition:-5},desc:'食物丢出去后变异犬吃完了还追来，你只好又丢了更多才脱身。',lose:1},
+    ]}]},
+  {id:'supply_cache',cat:'discovery',ctx:{minDist:5,maxDist:15},narr:'你发现了一个精心隐藏的战前物资储藏点。塑料箱密封完好，上面贴着"紧急储备 — 2037"的标签。这是一个重大发现。',
+    choices:[{text:'打开所有箱子',outcomes:[
+      {w:5,eff:{fatigue:12},items:[{n:'军用口粮',q:[2,4]},{n:'净水',q:[2,4]},{n:'医疗包',q:[1,2]},{n:'电池',q:[1,3]}],desc:'箱子保存得非常好——军用口粮、净水、医疗包、电池，全是硬通货！这次真是发了一笔。'},
+      {w:3,eff:{fatigue:8},items:[{n:'军用口粮',q:[1,2]},{n:'净水',q:[1,2]}],desc:'有些箱子受潮了，里面的物资已经变质。但你还是找到了几份完好的口粮和水。'},
+      {w:2,eff:{fatigue:10,health:-5},desc:'一个箱子底部有碎玻璃陷阱！你的手被割破了。万幸伤口不深。没有拿走任何东西。'},
+    ]},{text:'先检查有无陷阱',outcomes:[
+      {w:6,eff:{fatigue:6},items:[{n:'军用口粮',q:[1,3]},{n:'急救手册',q:[1,1]}],desc:'你的谨慎得到了回报。你发现了一个隐藏的捕兽夹，安全解除后拿到了物资和一本急救手册。'},
+      {w:4,eff:{fatigue:4},items:[{n:'军用口粮',q:[1,1]}],desc:'检查花了些时间，确认安全后只找到了少量物资——但至少没有受伤。'},
+    ]},{text:'标记位置下次再来',eff:{fatigue:2},outcome:'你在附近做了标记。好东西不急于一时，稳妥为上。下次带够工具再来搬。'}]},
+  {id:'survivor_campfire',cat:'npc',ctx:{minDist:3,maxDist:12},narr:'远处升起了炊烟。走近发现是几个幸存者围坐在篝火旁。他们看起来疲惫但友好，朝你招手示意可以过来一起取暖。',
+    choices:[{text:'加入他们分享食物',eff:{morale:10,nutrition:8,fatigue:-5}},{text:'远远观察',eff:{fatigue:2}},{text:'尝试招募其中一人',eff:{morale:5}}]},
+  {id:'radioactive_pool',cat:'danger',ctx:{minDist:4,maxDist:16},narr:'前方出现了一个荧光绿色的水潭。水面上飘着奇异的雾气，空气中弥漫着刺鼻的金属味。盖革计数器疯狂作响。',
+    choices:[{text:'快速绕行',eff:{fatigue:10,health:-3}},{text:'穿防辐射装备慢慢通过',eff:{fatigue:5}},{text:'采样研究',eff:{health:-8},items:[{n:'防辐射药',q:[1,1]}]}]},
+  {id:'old_warehouse',cat:'discovery',ctx:{minDist:5,maxDist:15},narr:'一座废弃的大型仓库矗立在荒野中。卷帘门半开着，里面黑暗中隐约能看到堆叠的货架。这是一座未被完全搜刮的宝藏。',
+    choices:[{text:'深入仓库探索',eff:{fatigue:15},items:[{n:'罐头',q:[2,5]},{n:'工具',q:[1,2]},{n:'金属片',q:[2,4]},{n:'木材',q:[1,3]}]},{text:'在门口附近搜刮',eff:{fatigue:6},items:[{n:'罐头',q:[1,2]}]},{text:'建筑可能坍塌，放弃',eff:{}}]},
+  {id:'military_checkpoint',cat:'discovery',ctx:{minDist:6,maxDist:18},narr:'战前军方设置的一个检查站出现在眼前。沙袋工事后面能看到弹药箱和一些武器零件散落。这里似乎发生过激烈交火。',
+    choices:[{text:'仔细搜索',eff:{fatigue:10},items:[{n:'弹药',q:[3,6]},{n:'军用口粮',q:[1,3]},{n:'武器零件',q:[1,2]}]},{text:'只拿武器弹药',eff:{fatigue:5},items:[{n:'弹药',q:[2,4]}]},{text:'可能有未爆弹，小心',eff:{}}]},
+  {id:'landslide',cat:'danger',ctx:{minDist:5,maxDist:15,weather:['rain','heavy_rain']},narr:'连续的雨水让前方的山坡变得松软。突然，一阵轰隆声响起——山体滑坡！石块和泥土朝着你的方向滚滚而来。',
+    choices:[{text:'拼命奔跑躲避',eff:{fatigue:12,health:-3}},{text:'找掩体躲避',eff:{fatigue:6}},{text:'冒险穿越滑坡区',eff:{fatigue:18,health:-8},items:[{n:'金属片',q:[1,2]}]}]},
+  {id:'solar_panels',cat:'discovery',ctx:{minDist:4,maxDist:14,day:true},narr:'一栋建筑的屋顶上安装着几块太阳能板，在阳光下熠熠生辉。连接线缆虽然老旧但看起来还能用。这可是珍贵的电力来源。',
+    choices:[{text:'爬上去拆卸太阳能板',eff:{fatigue:12},items:[{n:'太阳能板',q:[1,2]},{n:'电子零件',q:[1,2]}]},{text:'检查连接设备',eff:{fatigue:6},items:[{n:'电池',q:[1,3]}]},{text:'太危险了',eff:{}}]},
+
+  // === 远距离探索 (12-20km) ===
+  {id:'hospital_ruins',cat:'discovery',ctx:{minDist:10,maxDist:20},narr:'一座废弃的战前医院耸立在远处。虽然大部分建筑已经坍塌，但药房区域似乎还保存完好。这里是医疗物资的天堂。',
+    choices:[{text:'进入药房搜索',outcomes:[
+      {w:4,eff:{fatigue:15,health:-3},items:[{n:'医疗包',q:[2,4]},{n:'抗生素',q:[1,3]},{n:'绷带',q:[2,5]},{n:'止痛药',q:[1,3]}],desc:'太棒了！药房的储备柜完好无损——医疗包、抗生素、绷带、止痛药，够用很久了。'},
+      {w:3,eff:{fatigue:12},items:[{n:'绷带',q:[1,3]},{n:'止痛药',q:[1,2]}],desc:'药房已经被搜刮过一轮了，但你还是在角落的柜子里找到了一些被遗漏的绷带和止痛药。'},
+      {w:3,eff:{fatigue:15,health:-8},desc:'药房的天花板在你进入时坍塌了一部分——碎水泥块砸到了你的后背。你没拿到多少东西就不得不退出来。'},
+    ]},{text:'在急诊室搜刮',outcomes:[
+      {w:4,eff:{fatigue:8},items:[{n:'绷带',q:[1,2]},{n:'手术刀',q:[1,1]}],desc:'急诊室虽然一片狼藉，但你找到了一些还能用的绷带和一把手术刀。'},
+      {w:3,eff:{fatigue:8},items:[{n:'吗啡',q:[1,1]}],desc:'在急救推车上找到了一小瓶吗啡——强效止痛药，废土上很难得的东西。'},
+      {w:3,eff:{fatigue:8,health:-3},desc:'急诊室的地上有碎玻璃。你虽然小心但还是被划了一下。没找到什么有用的。'},
+    ]},{text:'建筑危险放弃',eff:{},outcome:'医院的结构看起来很不稳定——一阵余震就可能坍塌。你理智地选择了撤退。'}]},
+  {id:'bandit_ambush',cat:'danger',ctx:{minDist:8,maxDist:20},narr:'嗖——一支箭矢擦过耳边钉在了旁边的墙上！三个掠夺者从废墟高处朝你射击。他们早就发现了你，一直在等你进入射程。',
+    choices:[{text:'反击！',eff:{health:-15,fatigue:20},items:[{n:'弹药',q:[2,4]},{n:'武器零件',q:[1,2]}]},{text:'丢下物资逃跑',eff:{health:-5,fatigue:15},lose:2},{text:'躲进建筑拖延时间',eff:{fatigue:10}}]},
+  {id:'underground_bunker',cat:'discovery',ctx:{minDist:10,maxDist:20},narr:'地面上一个厚厚的铁门引起了你的注意。打开后，一条向下的楼梯通向一个战前建造的地下掩体。电力系统居然还在运作。',
+    choices:[{text:'深入探索掩体',outcomes:[
+      {w:4,eff:{fatigue:14},items:[{n:'军用口粮',q:[3,6]},{n:'净水',q:[3,5]},{n:'电池',q:[2,4]},{n:'武器零件',q:[1,3]},{n:'急救手册',q:[1,1]}],desc:'掩体保存得极其完好——军用口粮、净水、电池、武器零件，还有一本急救手册。这是你进废土以来最大的收获。'},
+      {w:3,eff:{fatigue:14,health:-5},items:[{n:'军用口粮',q:[1,3]},{n:'净水',q:[1,2]}],desc:'掩体的下层灌满了辐射水。你蹚水进去找到了一些物资，但出来后皮肤有些发红——辐射暴露了。'},
+      {w:3,eff:{fatigue:10},items:[{n:'罐头',q:[1,2]}],desc:'掩体深处传来奇怪的声响——有什么东西在里面。你不想冒险，匆匆拿了些物资就离开了。'},
+    ]},{text:'保持警惕慢慢搜索',outcomes:[
+      {w:5,eff:{fatigue:8},items:[{n:'罐头',q:[2,3]},{n:'净水',q:[1,2]}],desc:'你的谨慎得到了回报——在入口附近就找到了足够的物资，没有触发任何潜在的陷阱。'},
+      {w:3,eff:{fatigue:8},items:[{n:'罐头',q:[1,1]}],desc:'花了不少时间检查每个角落，但安全第一。找到的物资不多，好在毫发无伤。'},
+      {w:2,eff:{fatigue:8},desc:'你在掩体里遇到了一只变异老鼠——它被你的出现吓到，慌不择路地跑进了深处。你们俩都空手而归。'},
+    ]},{text:'这里可能有人住',eff:{},outcome:'你注意到墙角有新鲜的脚印和没燃尽的蜡烛。这里确实有人——也许是暂时离开了。你决定不惹麻烦快速离开。'}]},
+  {id:'radiation_storm',cat:'danger',ctx:{minDist:5,maxDist:20,weather:['sandstorm']},narr:'天空变成了诡异的橙色。辐射风暴即将来临——狂风夹带着发光的辐射尘埃，铺天盖地地席卷而来。你必须立刻寻找掩护！',
+    choices:[{text:'冲进最近的建筑',eff:{fatigue:10,health:-8}},{text:'用衣服遮盖口鼻趴下',eff:{fatigue:5,health:-15}},{text:'服用防辐射药硬抗',eff:{health:-5},need:'防辐射药'}]},
+  {id:'wasteland_beast',cat:'danger',ctx:{minDist:10,maxDist:20},narr:'地面震动——一只三层楼高的巨型变异生物从废墟中站起。它似乎没有注意到你，但每走一步都在震动大地。这是废土的真正统治者。',
+    choices:[{text:'躲在废墟中等它离开',eff:{fatigue:8}},{text:'观察它的行动路线',eff:{fatigue:3,morale:-3}},{text:'冒险绕过继续前进',eff:{fatigue:12}}]},
+
+  // === 夜间事件 ===
+  {id:'night_howl',cat:'danger',ctx:{night:true},narr:'夜幕中传来狼嚎——或者是什么更可怕的生物的叫声。声音此起彼伏，似乎在互相交流。它们正在靠近。',
+    choices:[{text:'生起篝火驱赶',eff:{fatigue:5},need:'木材'},{text:'躲藏保持安静',eff:{fatigue:8}},{text:'爬上树或高處',eff:{fatigue:10}}]},
+  {id:'stranger_night',cat:'npc',ctx:{night:true,minDist:0,maxDist:10},narr:'黑暗中一个人影踉踉跄跄地朝你走来。借着月光，你看到这是一个受了伤的幸存者，身上有明显的咬伤。"帮帮我…"他的声音虚弱。',
+    choices:[{text:'帮他处理伤口',eff:{fatigue:5,morale:8}},{text:'给他一些绷带和水',eff:{morale:5},items:[{n:'绷带',q:[-1,-1]},{n:'净水',q:[-1,-1]}]},{text:'可能是陷阱保持警惕',eff:{}}]},
+  {id:'night_loot',cat:'discovery',ctx:{night:true,minDist:2,maxDist:12},narr:'月光下，你注意到一栋建筑的窗户里透出微弱的光——不是电灯，而是某种荧光。这种光通常意味着里面有放射性物质或发光的变异生物。',
+    choices:[{text:'潜入建筑调查',eff:{fatigue:10,health:-3},items:[{n:'防辐射药',q:[1,2]},{n:'电子零件',q:[1,2]}]},{text:'标记位置明天再来',eff:{}},{text:'远远避开发光建筑',eff:{}}]},
+  {id:'campfire_glow',cat:'npc',ctx:{night:true,minDist:2,maxDist:10},narr:'远处的黑暗中有一团篝火的光芒。走近后你看到两个人影围坐在火旁，烤着什么东西。香味飘过来，令人垂涎。',
+    choices:[{text:'接近并打招呼',eff:{morale:6,nutrition:5}},{text:'暗中观察他们的动向',eff:{fatigue:3}},{text:'绕开避免接触',eff:{}}]},
+
+  // === 天气相关事件 ===
+  {id:'rain_collection',cat:'discovery',ctx:{weather:['rain','heavy_rain']},narr:'雨水顺着建筑的排水管哗哗流下。虽然是雨水，但在废土上每一滴水都弥足珍贵。你可以趁机收集大量用水。',
+    choices:[{text:'拿出所有容器收集',eff:{hydration:20},items:[{n:'净水',q:[2,4]}]},{text:'直接喝个够',eff:{hydration:18,infection:3}},{text:'继续赶路',eff:{bodyWet:20}}]},
+  {id:'lightning_strike',cat:'danger',ctx:{weather:['heavy_rain']},narr:'一道闪电劈在不远处的一棵枯树上，瞬间点燃了树干。在暴雨中形成一个诡异的火柱。附近建筑的金属结构嗡嗡作响。',
+    choices:[{text:'远离金属结构',eff:{fatigue:5}},{text:'利用闪电点燃篝火',eff:{fatigue:3}},{text:'躲进建筑避雷',eff:{}}]},
+  {id:'snow_shelter',cat:'discovery',ctx:{weather:['snow'],seasons:['winter']},narr:'大雪覆盖了一切。你发现了一处被积雪半掩的洞穴。进入后，里面干燥温暖——似乎有地热活动。这是冬季废土上难得的避风港。',
+    choices:[{text:'在洞穴里休息',eff:{fatigue:-15,morale:5}},{text:'搜索洞穴深处',eff:{fatigue:10},items:[{n:'木材',q:[1,3]}]},{text:'短暂休息后离开',eff:{fatigue:-5}}]},
+
+  // === 营地事件 ===
+  {id:'camp_visitor',cat:'npc',ctx:{atCamp:true},narr:'营地的围栏外来了一个陌生人。他举着双手表示没有敌意，腿上有一道还在流血的伤口。"我只是路过，能交换一些物资吗？我需要绷带处理伤口——可以用这些食物跟你换。"他晃了晃手里的几个罐头。',
+    choices:[{text:'给他绷带换罐头',items:[{n:'绷带',q:[-1,-2]},{n:'罐头',q:[2,3]}]},{text:'给医疗包换更多物资',items:[{n:'医疗包',q:[-1,-1]},{n:'罐头',q:[3,4]},{n:'净水',q:[1,2]}]},{text:'免费帮他治疗',eff:{morale:10},items:[{n:'绷带',q:[-1,-1]}]}]},
+  {id:'camp_repair',cat:'camp',ctx:{atCamp:true},narr:'检查营地时你发现几处围栏已经松动，屋顶也有些漏水。也许该花些时间修缮一下营地。',
+    choices:[{text:'全面修缮营地',eff:{fatigue:12},items:[{n:'木材',q:[-2,-2]},{n:'金属片',q:[-1,-1]}]},{text:'简单修补',eff:{fatigue:4}},{text:'暂时不管',eff:{}}]},
+  {id:'camp_garden',cat:'camp',ctx:{atCamp:true,seasons:['spring','summer']},narr:'营地角落的土地看起来可以开垦。你还保留着一些种子，也许可以试着种点什么——虽然废土的土壤可能已经被污染。',
+    choices:[{text:'开垦种植',eff:{fatigue:8,morale:8},items:[{n:'种子',q:[-1,-1]}]},{text:'先测试土壤',eff:{fatigue:3}},{text:'土壤可能被污染',eff:{}}]},
+
+  // === 受伤相关事件 ===
+  {id:'medic_npc',cat:'npc',ctx:{injured:true,minDist:0,maxDist:12},narr:'一个背着医药箱的中年女人从废墟中走出来。她看到了你的伤势，皱起眉头。"你的伤口需要处理。我是医生，可以帮你。"',
+    choices:[{text:'接受治疗',eff:{health:10,morale:8}},{text:'请她加入小队',eff:{morale:5}},{text:'婉拒好意',eff:{}}]},
+  {id:'pain_management',cat:'medical',ctx:{pain:40},narr:'疼痛让每一步都变得艰难。你找到了一个相对隐蔽的角落，可以停下来检查伤口、更换绷带。',
+    choices:[{text:'停下来休息处理伤口',eff:{fatigue:-5,pain:-10}},{text:'咬牙继续前进',eff:{pain:5}},{text:'服用止痛药',eff:{pain:-25},need:'止痛药'}]},
+
+  // === 更多事件 ===
+  {id:'gas_station',cat:'discovery',ctx:{minDist:2,maxDist:15},narr:'一座废弃的加油站出现在路边。地下储油罐可能还有残留的燃料，便利店也可能还有存货。',
+    choices:[{text:'搜索便利店',eff:{fatigue:8},items:[{n:'罐头',q:[1,3]},{n:'打火机',q:[1,1]}]},{text:'检查地下储油罐',eff:{fatigue:5},items:[{n:'机油',q:[1,2]}]},{text:'建筑不安全，离开',eff:{}}]},
+  {id:'school_ruins',cat:'discovery',ctx:{minDist:4,maxDist:16},narr:'一所废弃学校的残骸。教室里的桌椅散乱，黑板上还留着战前最后的板书。图书馆和医务室可能还有值得搜刮的东西。',
+    choices:[{text:'搜索医务室',eff:{fatigue:8},items:[{n:'绷带',q:[1,3]},{n:'退烧药',q:[1,2]}]},{text:'搜索图书馆',eff:{fatigue:6},items:[{n:'书籍',q:[1,3]},{n:'急救手册',q:[1,1]}]},{text:'搜索教师办公室',eff:{fatigue:5},items:[{n:'咖啡',q:[1,2]}]}]},
+  {id:'river_crossing',cat:'danger',ctx:{minDist:5,maxDist:18},narr:'一条湍急的河流挡住了去路。桥梁早已坍塌，剩下的桥墩上锈迹斑斑。河对岸隐约能看到一些建筑和物资。',
+    choices:[{text:'涉水过河',eff:{fatigue:15,bodyWet:60}},{text:'寻找浅滩',eff:{fatigue:10}},{text:'沿着河岸走',eff:{fatigue:6}}]},
+  {id:'sandstorm_coming',cat:'danger',ctx:{weather:['sandstorm']},narr:'远处地平线上升起了一道巨大的沙墙——沙尘暴正在逼近。狂风夹杂着带辐射的沙粒，能见度骤降到几乎为零。',
+    choices:[{text:'紧急寻找掩体',eff:{fatigue:10}},{text:'用衣物护住头面部继续走',eff:{fatigue:8,health:-5}},{text:'趴下等待沙尘暴过去',eff:{fatigue:5,health:-3}}]},
+  {id:'friendly_encounter',cat:'npc',ctx:{minDist:2,maxDist:14},narr:'一个年轻的幸存者从废墟中探出头。"嘿！你也是单独行动的吗？废土上独自生存太难了。也许我们可以结伴？"他眼中充满了渴望。',
+    choices:[{text:'欢迎他加入小队',outcomes:[
+      {w:5,eff:{},desc:'他欣喜若狂地跟上了你。多一个人多一份力——废土上，同伴比黄金更珍贵。'}, // recruit handled by processEvent
+      {w:3,eff:{},desc:'就在他准备跟上来时，远处传来枪声。他脸色一变，说了声抱歉就仓皇逃走了——看来有人在追他。'},
+      {w:2,eff:{},lose:2,desc:'你转身带路，却发现他偷偷伸手摸向你的背包。"嘿！"你猛回头，他拔腿就跑——手里攥着你的物资。'},
+    ]},{text:'给他一些物资然后告别',outcomes:[
+      {w:5,eff:{},items:[{n:'罐头',q:[-1,-1]}],desc:'你把一罐罐头递给他。他感激地接过去，眼眶有点湿润。"谢谢你，好心人。我会记住的。"'},
+      {w:3,eff:{},items:[{n:'罐头',q:[-1,-1]}],desc:'他接过罐头后犹豫了一下，从口袋里掏出一张皱巴巴的地图。"这个可能对你有用..."'},
+      {w:2,eff:{},items:[{n:'罐头',q:[-1,-1]}],desc:'他拿了罐头后头也不回地走了。连声谢谢都没有——这就是废土，不是每个人都有感恩的心。'},
+    ]},{text:'拒绝他自己走了',outcomes:[
+      {w:6,eff:{},desc:'你摇了摇头继续前行。废土上不能随便相信陌生人——这个道理你早就学会了。'},
+      {w:4,eff:{morale:-3},desc:'他失望的眼神让你有些动摇，但你还是坚持了决定。独自行动虽然孤独，至少安全可控。'},
+    ]}]},
+  {id:'food_trap',cat:'danger',ctx:{minDist:3,maxDist:12},narr:'一间小屋的桌上摆着几罐完好的罐头，看起来像是有人遗落的。但地面有不自然的痕迹——这可能是一个陷阱。',
+    choices:[{text:'小心检查陷阱',outcomes:[
+      {w:5,eff:{fatigue:6},items:[{n:'罐头',q:[2,3]}],desc:'你的谨慎得到了回报。你发现了绊线并安全解除，不仅拿到了桌上的罐头，还在柜子里发现了更多。'},
+      {w:3,eff:{fatigue:6},desc:'检查后发现这根本不是什么陷阱——只是风吹倒了家具留下的痕迹。但桌上只有空罐子。白费力气。'},
+      {w:2,eff:{fatigue:6,health:-5},desc:'你虽然发现了绊线，但触碰时引发了另一个隐藏机关。碎玻璃从天而降划破了你的手臂。没拿到罐头。'},
+    ]},{text:'直接用长棍挑开',outcomes:[
+      {w:4,eff:{fatigue:3},items:[{n:'罐头',q:[1,2]}],desc:'你用长棍小心翼翼地把罐头拨了过来——安全！轻松拿到了两罐。'},
+      {w:4,eff:{fatigue:3,health:-3},desc:'长棍碰到了机关——啪！一个捕兽夹弹了起来，碎片溅到你腿上。还好威力不大。没拿到罐头。'},
+      {w:2,eff:{fatigue:3,health:-10},desc:'轰！这不是简单的陷阱——桌子下面埋了炸药！冲击波把你掀翻在地。耳朵嗡嗡作响了好一阵。'},
+    ]},{text:'陷阱太危险了',eff:{fatigue:1},outcome:'你果断放弃了这块诱饵。废土上死于贪心的人比死于饥饿的人还多。'}]},
+  {id:'wounded_animal',cat:'hunt',ctx:{minDist:2,maxDist:14},narr:'一只受伤的变异鹿躺在草地上，后腿有明显的撕裂伤。它已经跑不动了，但还在挣扎着想要站起来。这是送上门的食物。',
+    choices:[{text:'人道地结束它的痛苦',eff:{morale:-3},items:[{n:'变异兽肉',q:[4,8]}]},{text:'尝试救治它',eff:{morale:8,fatigue:6}},{text:'不管它继续走',eff:{}}]},
+  {id:'found_map',cat:'discovery',ctx:{minDist:5,maxDist:18},narr:'一张手绘的地图被钉在墙上。上面标注了附近几个重要地点：水源、物资储藏点、危险区域。虽然有些过时，但非常有用。',
+    choices:[{text:'仔细研究地图',eff:{fatigue:3},items:[{n:'地图碎片',q:[1,2]}]},{text:'按照地图去最近标记点',eff:{fatigue:8},items:[{n:'罐头',q:[1,2]},{n:'净水',q:[1,2]}]},{text:'拿走地图备用',eff:{},items:[{n:'地图碎片',q:[1,1]}]}]},
+
+  // === 最后一批 ===
+  {id:'raider_corpse',cat:'discovery',ctx:{minDist:3,maxDist:15},narr:'一个掠夺者的尸体横在路边，看样子死了大概两三天。身上的武器已经被拿走，但背包还在。',
+    choices:[{text:'搜索背包',eff:{morale:-3},items:[{n:'弹药',q:[1,3]},{n:'罐头',q:[1,2]}]},{text:'埋葬尸体',eff:{morale:5,fatigue:6}},{text:'无视继续走',eff:{}}]},
+  {id:'frozen_lake',cat:'danger',ctx:{minDist:5,maxDist:18,seasons:['winter']},narr:'一片冻结的湖面横跨在前方。远处湖对岸能看到一间小屋。冰面看起来很厚，但废土上的冰层可能不太稳定。',
+    choices:[{text:'小心穿过冰面',eff:{fatigue:12,bodyWet:30}},{text:'绕湖一圈',eff:{fatigue:18}},{text:'测试冰层厚度',eff:{fatigue:4}}]},
+  {id:'tunnel_entrance',cat:'discovery',ctx:{minDist:5,maxDist:18},narr:'一个废弃的地铁隧道入口从瓦砾中露出来。隧道深处漆黑一片，但空气中有股霉味——说明内部空间很大。',
+    choices:[{text:'打手电进入探索',eff:{fatigue:14},items:[{n:'电池',q:[1,2]},{n:'工具',q:[1,2]},{n:'电子零件',q:[1,3]}]},{text:'只在入口附近搜索',eff:{fatigue:5},items:[{n:'金属片',q:[1,2]}]},{text:'太黑了不安全',eff:{}}]},
+  {id:'radio_transmission',cat:'mystery',ctx:{minDist:5,maxDist:20},narr:'你的收音机突然收到了信号——一个声音在重复播放："这里是第七避难所，我们还有空间和物资。坐标在..."信号断断续续，但听起来像是真的。',
+    choices:[{text:'尝试追踪信号',eff:{fatigue:8},items:[{n:'电子零件',q:[1,1]}]},{text:'记下坐标日后探索',eff:{morale:10}},{text:'可能是陷阱',eff:{}}]},
+  {id:'berry_bush_field',cat:'discovery',ctx:{minDist:3,maxDist:10,seasons:['summer','autumn']},narr:'一大片野莓灌木丛。成熟的红色浆果挂满枝头，足够采摘好一阵子。几只小鸟正在啄食——说明它们是可以吃的。',
+    choices:[{text:'大量采摘',eff:{fatigue:8},items:[{n:'干粮',q:[2,4]},{n:'种子',q:[1,2]}]},{text:'吃个饱',eff:{nutrition:16}},{text:'采一些带走',eff:{fatigue:3},items:[{n:'干粮',q:[1,2]}]}]},
+  {id:'collapsed_bridge',cat:'danger',ctx:{minDist:5,maxDist:20},narr:'前方必经之路上的一座桥彻底坍塌了。桥下是深达数十米的峡谷。唯一的办法是从谷底绕过去或寻找其他路径。',
+    choices:[{text:'冒险从峡谷边缘攀爬下去',eff:{fatigue:20,health:-5}},{text:'寻找其他路线',eff:{fatigue:12}},{text:'用工具搭建简易通道',eff:{fatigue:15},need:'工具'}]},
+  // === 新增：环境威胁 ===
+  {id:'toxic_smoke',cat:'danger',ctx:{minDist:3,maxDist:15,weather:['none']},narr:'前方废墟中冒出滚滚浓烟——不知是火灾还是化学泄漏。刺鼻的气味隔着老远都能闻到，浓烟正朝你的方向蔓延。',
+    choices:[{text:'绕道避开浓烟区',eff:{fatigue:8}},{text:'用湿布捂住口鼻快速穿过',eff:{fatigue:6,health:-5},need:'净水'},{text:'原地等待烟雾散去',eff:{fatigue:3}}]},
+  {id:'quake_aftershock',cat:'danger',ctx:{minDist:3,maxDist:18},narr:'地面突然剧烈震动——余震！附近的建筑物发出不祥的嘎吱声，碎玻璃和瓦砾从高处坠落。你必须立刻做出反应。',
+    choices:[{text:'冲向开阔地带',eff:{fatigue:10}},{text:'躲在坚固的桌子或门框下',eff:{fatigue:5}},{text:'护住头部原地蹲下',eff:{fatigue:3,health:-3}}]},
+  {id:'swarm_rats',cat:'danger',ctx:{minDist:2,maxDist:12,night:true},narr:'黑暗中传来窸窣声——几十只变异老鼠从下水道涌出，密密麻麻地填满了小巷。它们的眼睛在黑暗中闪着红光。',
+    choices:[{text:'点燃火把驱赶',eff:{fatigue:5},need:'打火机'},{text:'爬上高处躲避',eff:{fatigue:8}},{text:'快速冲过去',eff:{health:-5,fatigue:6}}]},
+  {id:'dust_storm_warning',cat:'danger',ctx:{minDist:5,maxDist:20,weather:['none']},narr:'天际线变成了一片褐色——巨大的沙尘暴正在逼近。空气中已经能闻到尘土的味道，能见度正在迅速下降。遮天蔽日的沙墙越来越近。',
+    choices:[{text:'立即寻找掩体',eff:{fatigue:8}},{text:'用衣物包裹全身趴下',eff:{bodyWet:10,fatigue:3}},{text:'趁还能看到路赶紧跑',eff:{fatigue:15,health:-5}}]},
+  {id:'flood_warning',cat:'danger',ctx:{minDist:3,maxDist:14,weather:['rain','heavy_rain']},narr:'连续降雨让附近的河流水位暴涨。浑浊的洪水正从上游奔涌而来，淹没了低洼地带。你现在站的位置很快也会被淹没。',
+    choices:[{text:'向高处转移',eff:{fatigue:10}},{text:'涉水快速通过',eff:{bodyWet:50,fatigue:8}},{text:'寻找漂浮物',eff:{fatigue:6}}]},
+  // === 新增：社交遭遇 ===
+  {id:'trader_caravan',cat:'npc',ctx:{minDist:3,maxDist:15},narr:'远处传来驼铃声——一支小型贸易商队正沿着废土公路缓缓前行。三辆改装过的装甲车，车顶架着机枪。一个商人朝你挥手。"需要什么吗，幸存者？我们有武器零件和医疗用品，可以用弹药或食物来换。"',
+    choices:[{text:'用弹药交换医疗用品',items:[{n:'弹药',q:[-3,-3]},{n:'医疗包',q:[1,2]},{n:'绷带',q:[2,3]}]},{text:'用罐头交换武器零件',items:[{n:'罐头',q:[-3,-3]},{n:'武器零件',q:[1,2]},{n:'弹药',q:[1,2]}]},{text:'打听情报就离开',eff:{morale:5}}]},
+  {id:'refugee_family',cat:'npc',ctx:{minDist:1,maxDist:10},narr:'一家三口缩在废墟角落里——父亲、母亲和一个小女孩。他们的物资已经耗尽，小女孩饿得脸色苍白。父亲看到你，眼中闪过一丝希望。',
+    choices:[{text:'分一些食物给他们',eff:{morale:15,nutrition:-8}},{text:'指引他们去你的营地',eff:{morale:10}},{text:'抱歉无法帮忙',eff:{morale:-5}}]},
+  {id:'rival_scavenger',cat:'npc',ctx:{minDist:4,maxDist:16},narr:'一个全副武装的拾荒者从废墟另一侧走出来。他冷冷地盯着你，手指搭在扳机上。"这片区域是我的地盘。你最好离开。"气氛骤然紧张。',
+    choices:[{text:'友好协商共享区域',eff:{fatigue:2},items:[{n:'罐头',q:[1,1]}],outcome:'你举起双手表示没有敌意。"废土够大，没必要自相残杀。"他犹豫了一下，最终放下枪。你们各自分头搜索，他还给你指了一个有物资的方向。'},{text:'展示武力不退让',eff:{fatigue:8,health:-3},outcome:'你也握紧了武器。两人对峙了几秒，他啐了一口转身走了——但你知道这种人不会善罢甘休。'},{text:'换个方向避开冲突',eff:{fatigue:3},outcome:'多一事不如少一事。你默默退出了这片区域，绕道继续前进。在废土上，活下来比面子重要。'}]},
+  {id:'lost_child',cat:'npc',ctx:{minDist:1,maxDist:8},narr:'废墟中传来小孩的哭声。一个七八岁的男孩蜷缩在角落里，身上脏兮兮的，脚上只有一只鞋。他看到你时本能地缩了缩身子。"我...我找不到我妈妈了..."',
+    choices:[{text:'安抚他带他回营地',outcomes:[
+      {w:5,eff:{},desc:'你蹲下来轻声安慰他。孩子犹豫了一下，最终握住了你的手。在废土上挽救一个孩子——无论结果如何，这都让你觉得自己还是个人。营地现在多了一个小成员。'},
+      {w:3,eff:{},desc:'就在你准备带他走时，一个女人从废墟中冲了出来——是他的母亲！她紧紧抱住孩子，泣不成声。"谢谢你照顾他...这些给你。"她塞给你一些物资。',items:[{n:'罐头',q:[1,2]},{n:'净水',q:[1,1]}]},
+      {w:2,eff:{health:-5},desc:'孩子突然狠狠咬了你一口，挣脱后拔腿就跑。远处传来几个成年人的笑声——这是个诱饵！你被引到了掠夺者的埋伏圈边缘。赶紧撤离。'},
+    ]},{text:'给他一些食物和水',outcomes:[
+      {w:5,eff:{nutrition:-3},desc:'孩子狼吞虎咽地吃着，脸上终于有了一丝血色。他指了指一个方向说妈妈往那边走了。你把他留在一个相对安全的地方，留下了一些食物。'},
+      {w:3,eff:{nutrition:-3},desc:'他吃完后沉默了一会儿，然后从口袋里掏出一个小东西递给你——是一枚战前的徽章。虽然没什么用，但这是他最珍贵的东西了。'},
+      {w:2,eff:{nutrition:-3},desc:'食物刚递过去，几个成年人突然从拐角冲出来——又是个陷阱！他们抢走了你身上的一些物资后带着孩子跑了。',lose:1},
+    ]},{text:'帮他寻找母亲',outcomes:[
+      {w:4,eff:{fatigue:10},items:[{n:'罐头',q:[1,2]}],desc:'你带着孩子在废墟中找了几个小时。没有找到他的母亲，但在一栋废弃公寓里发现了一些物资。你把孩子带回了营地——至少这里有篝火和食物。'},
+      {w:3,eff:{fatigue:8},desc:'搜索无果。孩子累了，靠在你肩上睡着了。你在黄昏前返回了营地。也许明天可以继续找。'},
+      {w:3,eff:{fatigue:12,health:-5},desc:'搜寻时你踩到了一块松动的楼板，从二楼摔了下去。孩子吓坏了但没受伤。你的腿需要处理一下。'},
+    ]}]},
+  {id:'radio_distress',cat:'mystery',ctx:{minDist:5,maxDist:20},narr:'收音机里突然传来紧急呼叫——"这里是第七医疗队，我们有重伤员，需要紧急援助！重复，需要紧急援助！坐标是..."信号来自西北方向大约三公里处。',
+    choices:[{text:'赶往信号源救人',eff:{fatigue:12,morale:10}},{text:'谨慎靠近先观察',eff:{fatigue:6}},{text:'可能是掠夺者的陷阱',eff:{}}]},
+  // === 新增：神秘/发现 ===
+  {id:'prewar_lab',cat:'discovery',ctx:{minDist:8,maxDist:20},narr:'一栋不起眼的建筑后面隐藏着一个战前生物实验室的入口。门上贴着生物危害标志，但已经被人撬开过。里面可能还有有价值的医疗和研究设备。',
+    choices:[{text:'穿防护装备进入',eff:{fatigue:12},items:[{n:'医疗包',q:[1,3]},{n:'抗生素',q:[1,2]},{n:'防辐射药',q:[1,2]}]},{text:'只在门口搜索',eff:{fatigue:5},items:[{n:'绷带',q:[1,2]}]},{text:'太危险了放弃',eff:{}}]},
+  {id:'working_vending',cat:'discovery',ctx:{minDist:3,maxDist:14},narr:'一台奇迹般还在运作的自动售货机孤零零地立在废墟中。屏幕闪烁着微弱的蓝光，里面还有不少存货。看来有人用电池给它供过电。',
+    choices:[{text:'用工具撬开取货',eff:{fatigue:5},items:[{n:'罐头',q:[1,3]},{n:'能量饮料',q:[1,2]}]},{text:'检查电路看能否利用',eff:{fatigue:8},items:[{n:'电池',q:[1,2]},{n:'电子零件',q:[1,2]}]},{text:'留作纪念走了',eff:{}}]},
+  {id:'strange_lights',cat:'mystery',ctx:{minDist:6,maxDist:20,night:true},narr:'夜空中出现了奇异的蓝绿色光带，像是极光但更近。光带在地平线上缓缓飘动，照亮了整片废墟。空气中弥漫着微弱的臭氧味。',
+    choices:[{text:'朝光源方向探索',eff:{fatigue:10,morale:5},items:[{n:'电子零件',q:[1,2]}]},{text:'远远观察记录',eff:{morale:8}},{text:'可能是辐射现象远离',eff:{}}]},
+  {id:'graffiti_clue',cat:'mystery',ctx:{minDist:2,maxDist:14},narr:'墙上有一幅新鲜的涂鸦——箭头指向东边，下方写着"安全区域，有净水"。字迹还很新，大概是最近几天画的。但这可能是善意指引，也可能是陷阱。',
+    choices:[{text:'按照指引探索',eff:{fatigue:6},items:[{n:'净水',q:[1,3]}]},{text:'反方向探索',eff:{fatigue:6}},{text:'无视继续原路线',eff:{}}]},
+  {id:'old_bunker_door',cat:'discovery',ctx:{minDist:7,maxDist:20},narr:'一个厚重的圆形钢门半埋在土里——这是战前政府建造的防辐射掩体。门上装有密码锁，但旁边有人用喷漆写下了密码。里面可能保存着完好的战前物资。',
+    choices:[{text:'输入密码打开',eff:{fatigue:14},items:[{n:'军用口粮',q:[2,5]},{n:'净水',q:[2,4]},{n:'武器零件',q:[1,3]},{n:'急救手册',q:[1,1]}]},{text:'小心检查是否有警报',eff:{fatigue:6},items:[{n:'罐头',q:[1,2]}]},{text:'门太重了打不开',eff:{}}]},
+  // === 新增：营地事件 ===
+  {id:'camp_weatherproof',cat:'camp',ctx:{atCamp:true,weather:['rain','heavy_rain']},narr:'雨水从营地屋顶的裂缝滴落。几处漏水让地面变得泥泞。趁雨还没下大，也许该修补一下屋顶和防水。',
+    choices:[{text:'用防水布修补屋顶',eff:{fatigue:8},need:'防水布'},{text:'用木材临时加固',eff:{fatigue:6},need:'木材'},{text:'等雨停了再说',eff:{bodyWet:10}}]},
+  {id:'camp_strange_sound',cat:'camp',ctx:{atCamp:true,night:true},narr:'夜深了，营地外传来奇怪的声音——不是野兽，更像是金属刮擦的声响。有什么东西在营地外围游荡。篝火的光芒似乎让它不敢靠近。',
+    choices:[{text:'拿起武器出去查看',outcomes:[
+      {w:3,eff:{fatigue:8},items:[{n:'金属片',q:[1,3]}],desc:'原来是一只变异穿山甲在翻垃圾。你赶走了它，还在它刨过的地方找到了几块废金属。'},
+      {w:4,eff:{fatigue:8},desc:'你举着火把在营地外转了一圈——什么都没发现。可能是风声，也可能是什么东西已经跑了。'},
+      {w:3,eff:{fatigue:8,health:-8},desc:'黑暗中一个黑影扑了过来！你和一个变异犬缠斗了几个回合，虽然赶走了它但手臂被咬了一口。'},
+    ]},{text:'往篝火里加柴保持明亮',outcomes:[
+      {w:5,eff:{fatigue:2},desc:'你往篝火里添了几根木柴，火焰蹿得更高了。外面的声音渐渐远去——光明是废土最好的护身符。',need:'木材'},
+      {w:5,eff:{fatigue:3},desc:'没有木柴可加。你只能握紧武器盯着黑暗，祈祷篝火撑到天亮。声音在半小时后消失了。'},
+    ]},{text:'待在营地不出声',outcomes:[
+      {w:5,eff:{},desc:'你屏住呼吸一动不动。半小时后，声音渐渐远去。不管那是什么，它没有发现你。'},
+      {w:3,eff:{},lose:1,desc:'第二天早上，你发现营地外围的一些物资不见了。看来那东西是来觅食的——而你的物资刚好在它的菜单上。'},
+      {w:2,eff:{health:-5},desc:'半夜的时候那个东西摸进了营地——一只变异獾。它咬伤了你的小腿后逃走了。伤口需要处理。'},
+    ]}]},
+  {id:'camp_old_photo',cat:'camp',ctx:{atCamp:true},narr:'整理营地时你发现了一张泛黄的照片——照片上是一家人站在房子前微笑。背面写着"永远在一起 2035"。照片中的房子看起来和营地所在的位置很像。',
+    choices:[{text:'把照片挂在墙上当作纪念',eff:{morale:10}},{text:'翻看有没有更多遗物',eff:{morale:5,fatigue:3}},{text:'收起来不看了',eff:{}}]},
+  {id:'camp_visitor_night',cat:'camp',ctx:{atCamp:true,night:true},narr:'营地的篝火在黑暗中格外显眼。一个浑身湿透的幸存者跌跌撞撞地出现在围栏边。他看起来又冷又饿。"求求你...让我烤烤火，我只待一晚..."',
+    choices:[{text:'让他进来分享篝火',outcomes:[
+      {w:4,eff:{fatigue:-3},items:[{n:'罐头',q:[1,2]}],desc:'陌生人在篝火旁暖和过来后，从怀里掏出两罐罐头作为感谢。"我在路上找到的，分你一半。"天亮后他安静地离开了。'},
+      {w:3,eff:{fatigue:-2},desc:'他烤了烤火，暖和过来后道了声谢就走了。没有什么特别的事发生——在废土上，平淡也是一种幸运。'},
+      {w:2,eff:{},lose:2,desc:'早上醒来你发现陌生人已经不见了——同时消失的还有你的部分物资。他利用你的善意偷走了东西。'},
+      {w:1,eff:{health:-10,fatigue:8},desc:'篝火旁，他突然拔出一把匕首刺向你！"抱歉兄弟，废土上只能为自己活。"你奋力将他击退，但胸口被划了一道。'},
+    ]},{text:'给他一些食物和水但不让进',outcomes:[
+      {w:5,eff:{nutrition:-3},desc:'你把食物和水从围栏递出去。他感激地接过去，在营地外找了个角落蜷缩了一晚。第二天早上他已经走了。'},
+      {w:3,eff:{nutrition:-3},items:[{n:'弹药',q:[1,2]}],desc:'他接过食物后犹豫了一下，从兜里掏出几发子弹。"我没什么能回报的...这个给你。"'},
+      {w:2,eff:{nutrition:-3},desc:'他拿了食物后面色一变。"就这点？"他骂骂咧咧地走了——看来你的善心喂了狗。'},
+    ]},{text:'保持警惕拒绝',outcomes:[
+      {w:6,eff:{},desc:'你摇了摇头。"抱歉，我不能冒险。"他叹了口气，转身消失在夜色中。废土让人心变硬——但有时候这能保命。'},
+      {w:4,eff:{morale:-3},desc:'他离开时回头看了你一眼，目光中满是失望。你有些愧疚，但在废土上活着比善良更重要。'},
+    ]}]},
+  // === 新增：饥饿/口渴/疲惫触发的特殊事件 ===
+  {id:'starving_hallucination',cat:'survival',ctx:{tired:true,hungry:true,minDist:3,maxDist:18},narr:'饥饿和疲惫让你的感官开始变得不可靠。你似乎闻到了烤肉的香味——但这不可能，这里是废土。你真的看到了远处有炊烟，还是只是幻觉？',
+    choices:[{text:'跟随香味探查',eff:{fatigue:8},items:[{n:'罐头',q:[1,2]}]},{text:'这是幻觉必须休息',eff:{fatigue:-5}},{text:'不管它继续走',eff:{fatigue:5,morale:-3}}]},
+  {id:'emergency_water_source',cat:'survival',ctx:{thirsty:true,minDist:2,maxDist:14},narr:'干渴让你的喉咙像被砂纸打磨过。就在你快要撑不住的时候，你注意到一栋建筑外墙上有冷凝水管在缓缓滴水。水珠在阳光下闪闪发光。',
+    choices:[{text:'赶紧收集滴水',eff:{hydration:15},items:[{n:'净水',q:[1,2]}]},{text:'直接张嘴接水喝',eff:{hydration:18,infection:5}},{text:'顺着水管寻找水源',eff:{fatigue:8},items:[{n:'净水',q:[2,4]}]}]},
+  {id:'makeshift_bed',cat:'survival',ctx:{tired:true,minDist:1,maxDist:12},narr:'疲惫到了极点——你发现了一个用旧沙发垫和破布搭成的简易床铺，看起来是之前的幸存者留下的。虽然简陋，但在废土上这简直是五星级酒店。',
+    choices:[{text:'躺下休息一会儿',eff:{fatigue:-25}},{text:'短暂闭眼养神',eff:{fatigue:-12}},{text:'不敢在此停留',eff:{}}]},
+  // === 新增：稀有/幸运事件 ===
+  {id:'lucky_find_weapon',cat:'discovery',ctx:{minDist:5,maxDist:20},narr:'你踢到一个硬物——低头一看，一支被泥土半掩的步枪。虽然有些锈迹，但枪机还能正常运作。旁边还有几盒完好的弹药。这可是废土上最值钱的发现之一。',
+    choices:[{text:'捡起步枪和弹药',eff:{morale:12,fatigue:5},items:[{n:'步枪',q:[1,1]},{n:'弹药',q:[3,6]}]},{text:'只拿弹药',eff:{fatigue:3},items:[{n:'弹药',q:[2,4]}]},{text:'检查枪支是否能用',eff:{fatigue:5}}]},
+  {id:'medical_cabinet',cat:'discovery',ctx:{minDist:4,maxDist:18},narr:'一面墙上嵌着一个完好的急救柜——红色的十字标志已经褪色但还看得出。玻璃门有些裂纹但完好无损。里面的药品和绷带整整齐齐地排列着。',
+    choices:[{text:'全部拿走',eff:{fatigue:8},items:[{n:'医疗包',q:[1,3]},{n:'绷带',q:[2,4]},{n:'抗生素',q:[1,2]},{n:'止痛药',q:[1,2]}]},{text:'拿走最需要的',eff:{fatigue:3},items:[{n:'绷带',q:[1,2]},{n:'医疗包',q:[1,1]}]},{text:'留给需要的人',eff:{morale:5}}]},
+  {id:'intact_generator',cat:'discovery',ctx:{minDist:6,maxDist:20},narr:'一座小型发电机组几乎完好地躺在地下室里。油箱里还有燃料，拉了几下启动绳后——它居然轰隆隆地运转起来了！电力在废土上是无价之宝。',
+    choices:[{text:'拆下可用的零件',eff:{fatigue:10},items:[{n:'电子零件',q:[2,5]},{n:'电池',q:[1,3]},{n:'机油',q:[1,2]}]},{text:'尝试搬运回营地',eff:{fatigue:18},items:[{n:'太阳能板',q:[1,1]}]},{text:'标记位置下次带工具来',eff:{morale:5}}]},
+];
+
+// ===== GAME STATE =====
+let widCtr=0;function nwid(){return'w'+(++widCtr);}
+const S={
+  day:1,hour:8,minute:0,season:null,seasonDay:1,distance:0,hasCampfire:false,
+  currentBiome:null,
+  playerGender:pick(['男','女']),playerAge:rand(20,45),spouse:null,children:[],
+  reputation:10, // 0-100, affects diplomacy, recruitment, deterrence
+  backpackSlots:3, // base inventory slots (can increase with better bags)
+  _incomingAttack:null, // {enemyCamp, arriveHour, dir} or null
+  body:{},blood:100,nutrition:80,hydration:85,fatigue:15,pain:0,infectionLevel:0,
+  coreTemp:37,bodyWetness:0,
+  clothing:{head:{name:'无',warmth:0,wp:0,wet:false},upper:{name:'破旧夹克',warmth:5,wp:20,wet:false},lower:{name:'破旧裤子',warmth:3,wp:15,wet:false},feet:{name:'旧靴子',warmth:4,wp:30,wet:false}},
+  inventory:{},camp:{supplies:{},defense:0,condition:100,governance:'dictatorship',stability:60},
+  party:[],enemyCamps:[], // discovered enemy camps
+  weather:{temperature:22,humidity:55,precipType:'none',precipIntensity:0,wind:'calm',windSpeed:5,icon:'☀️',desc:'晴朗温暖',isSnow:false},
+  history:[],recentEvents:[],recentCats:[],isDead:false,causeOfDeath:'',busy:false,_weatherWarned:false,_galeWarned:false,_coldWarned:false,discoveredLocations:[],campGrid:null,_campDefMod:0,_campLevel:1,
+};
+BODY_PARTS.forEach(p=>{S.body[p]={wounds:[]};});
+
+// ===== HELPERS =====
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function randF(min,max){return Math.random()*(max-min)+min;}
+function pick(arr){return arr[rand(0,arr.length-1)];}
+function pickW(items){const t=items.reduce((s,i)=>s+(i.w||1),0);let r=Math.random()*t;for(const it of items){r-=(it.w||1);if(r<=0)return it;}return items[items.length-1];}
+function atCamp(){return S.distance<=0;}
+function isDaytime(){const s=S.season||SEASONS[0];return S.hour>=s.dayLen.rise&&S.hour<s.dayLen.set;}
+function isNight(){return!isDaytime();}
+function timeString(){return String(S.hour).padStart(2,'0')+':'+String(S.minute).padStart(2,'0');}
+
+// ===== INJURY DEBUFFS =====
+function getInjuryDebuffs(){
+  const d={cantLeave:false,cantLeaveReason:'',slotPenalty:0,fatigueExtra:0,needSurgery:false,needSplint:[],needBrace:[]};
+  for(const pid of BODY_PARTS){
+    const ws=S.body[pid].wounds;if(ws.length===0)continue;
+    const maxSev=Math.max(...ws.map(w=>w.severity));
+    const hasBleed=ws.some(w=>w.bleeding&&!w.bandaged);
+    // Legs: severe wounds prevent leaving camp
+    if((pid==='leftLeg'||pid==='rightLeg')&&maxSev>=2){d.cantLeave=true;d.cantLeaveReason=`${PL[pid]}重伤，无法行走`;if(!ws.every(w=>w.bandaged&&w.cleaned))d.needSplint.push(pid);}
+    // Chest: severe wounds prevent leaving + need surgery
+    if(pid==='chest'&&maxSev>=3){d.cantLeave=true;d.cantLeaveReason='胸部重伤，必须手术治疗';d.needSurgery=true;}
+    if(pid==='chest'&&maxSev>=2){d.cantLeave=true;d.cantLeaveReason='胸部受伤，不宜行动';}
+    // Arms: reduce slots + need brace
+    if((pid==='leftArm'||pid==='rightArm')&&maxSev>=2){d.slotPenalty+=1;d.fatigueExtra+=3;if(!ws.every(w=>w.bandaged&&w.cleaned))d.needBrace.push(pid);}
+    if((pid==='leftArm'||pid==='rightArm')&&maxSev>=1){d.fatigueExtra+=2;}
+    // Head: minor effects
+    if(pid==='head'&&maxSev>=2){d.fatigueExtra+=4;}
+  }
+  return d;
+}
+
+// ===== INVENTORY (with backpack slots) =====
+function maxSlots(){let s=S.backpackSlots;if(hasItem('背包',1))s+=3;if(S.fatigue>70)s-=1;s-=getInjuryDebuffs().slotPenalty;return Math.max(1,s);}
+function addItem(name,qty,toCamp=false){
+  if(!name||qty<=0)return;const store=toCamp?S.camp.supplies:S.inventory;
+  if(!toCamp&&Object.keys(S.inventory).length>=maxSlots()&&!S.inventory[name]){
+    // Bag full - auto-store to camp if at camp, otherwise drop
+    if(atCamp()){addItem(name,qty,true);setStatus(`背包满了，「${name}」已存入营地仓库`);return;}
+    addStory(`⚠️ <strong>背包已满(${maxSlots()}格)！</strong>「${name}」无法携带。${atCamp()?'存入营地仓库吧。':'丢弃或使用一些物品腾出空间。'}`,'danger');setStatus(`背包满了！无法获取「${name}」`);return;
+  }
+  const info=ITEMS[name]||{};
+  if(!store[name])store[name]={qty:0,e:info.e||'📦',d:info.d||'',cat:info.cat||'misc',clothing:!!info.slot,med:!!info.med,usable:!!info.use};
+  store[name].qty+=qty;
+}
+function removeItem(name,qty,fromCamp=false){const store=fromCamp?S.camp.supplies:S.inventory;if(!store[name]||store[name].qty<qty)return false;store[name].qty-=qty;if(store[name].qty<=0)delete store[name];return true;}
+function hasItem(name,qty,fromCamp=false){const store=fromCamp?S.camp.supplies:S.inventory;return store[name]&&store[name].qty>=qty;}
+function invCount(){return Object.values(S.inventory).reduce((s,i)=>s+i.qty,0);}
+function campSCount(){return Object.values(S.camp.supplies).reduce((s,i)=>s+i.qty,0);}
+
+// ===== WEATHER =====
+function generateWeather(){
+  const se=S.season||SEASONS[0];const hour=S.hour;
+  const baseT=randF(se.tempRange[0],se.tempRange[1]);const timeMod=-3*Math.cos((hour-4)*Math.PI/12);
+  let temp=clamp(baseT+timeMod+randF(-3,3),-30,48);
+  let hum=clamp(randF(se.humRange[0],se.humRange[1])+randF(-10,10),10,100);
+  let pt='none',pi=0,isS=false;const r=Math.random();
+  if(r<(se.rainChance||0.2)+(se.snowChance||0)){
+    if(r<(se.rainChance||0.2)){const r2=Math.random();if(r2<0.3){pt='drizzle';pi=rand(10,30);temp=clamp(temp-1,-30,48);}else if(r2<0.75){pt='rain';pi=rand(30,60);temp=clamp(temp-3,-30,48);}else{pt='heavy_rain';pi=rand(60,100);temp=clamp(temp-6,-30,48);}if(temp<2){pt='snow';isS=true;}}
+    else{pt='snow';isS=true;pi=rand(20,80);temp=clamp(temp-2,-20,2);}hum=clamp(hum+20,10,100);}
+  let wind,ws;const wr=Math.random();if(wr<0.4){wind='calm';ws=rand(0,8);}else if(wr<0.75){wind='breeze';ws=rand(8,20);}else if(wr<0.92){wind='strong';ws=rand(20,40);temp=clamp(temp-2,-30,48);}else{wind='gale';ws=rand(40,70);temp=clamp(temp-5,-30,48);}
+  if(ws>15)temp=clamp(temp-Math.floor(ws/10),-30,48);
+  let icon,desc;if(pt==='none'){icon=hour>=6&&hour<18?'☀️':'🌙';desc=wind==='calm'?'平静':wind==='breeze'?'微风徐徐':wind==='strong'?'大风呼啸':'狂风大作';}
+  else if(pt==='drizzle'){icon='🌦️';desc='细雨蒙蒙';}else if(pt==='rain'){icon='🌧️';desc='雨水不断';}else if(pt==='heavy_rain'){icon='⛈️';desc='暴雨倾盆';}else if(pt==='snow'&&pi<50){icon='🌨️';desc='雪花飘落';}else{icon='❄️';desc='大雪纷飞';}
+  S.weather={temperature:Math.round(temp),humidity:Math.round(hum),precipType:pt,precipIntensity:Math.round(pi),wind,windSpeed:Math.round(ws),icon,desc,isSnow:isS};
+}
+
+// ===== CLOTHING =====
+function totalWarmth(){let w=0;for(const s of['head','upper','lower','feet']){const c=S.clothing[s];w+=c.warmth;if(c.wet)w=Math.floor(w*0.4);}return w;}
+function getFeelsLike(){let t=S.weather.temperature;if(S.weather.windSpeed>15)t-=Math.floor(S.weather.windSpeed/8);if(S.bodyWetness>0)t-=Math.floor(S.bodyWetness/10);t+=Math.floor(totalWarmth()/3);if(S.hasCampfire)t+=5;return Math.round(t);}
+function applyWetness(){
+  const p=S.weather.precipType;if(p==='none'&&!S.hasCampfire){S.bodyWetness=clamp(S.bodyWetness-8,0,100);return;}
+  let wg=0;if(p==='drizzle')wg=5;else if(p==='rain')wg=15;else if(p==='heavy_rain')wg=30;else if(S.weather.isSnow)wg=8;
+  for(const s of['head','upper','lower','feet']){const c=S.clothing[s];const resist=c.wp/100;const aw=wg*(1-resist);if(aw>3&&Math.random()<aw/20)c.wet=true;else if(aw<5&&c.wet&&Math.random()<0.4)c.wet=false;}
+  S.bodyWetness=clamp(S.bodyWetness+wg,0,100);if(p==='none')S.bodyWetness=clamp(S.bodyWetness-10,0,100);
+  if(S.hasCampfire&&S.bodyWetness>0){S.bodyWetness=clamp(S.bodyWetness-15,0,100);for(const s of['head','upper','lower','feet'])if(S.clothing[s].wet&&Math.random()<0.5)S.clothing[s].wet=false;}
+}
+function updateCoreTemp(){const feels=getFeelsLike();const target=clamp(feels+2,35,39);if(S.coreTemp>target)S.coreTemp=clamp(S.coreTemp-0.3,30,43);else if(S.coreTemp<target)S.coreTemp=clamp(S.coreTemp+0.3,30,43);if(S.infectionLevel>30)S.coreTemp=clamp(S.coreTemp+0.2,30,43);if(S.bodyWetness>60)S.coreTemp=clamp(S.coreTemp-0.4,30,43);}
+
+// ===== WOUNDS =====
+function addWound(pid,severity,desc,bleeding=true){const w={id:nwid(),desc,severity:clamp(severity,1,3),bleeding,infected:false,bandaged:false,cleaned:false,turns_old:0};S.body[pid].wounds.push(w);return w;}
+function getPartStatus(pid){const ws=S.body[pid].wounds;if(ws.length===0)return'healthy';let maxS=0,hB=false,hI=false,allB=true;for(const w of ws){if(!w.bandaged)allB=false;if(w.bleeding)hB=true;if(w.infected)hI=true;if(w.severity>maxS)maxS=w.severity;}if(allB&&!hI)return'bandaged';if(hI)return'infected';if(hB&&maxS>=3)return'severe';if(hB)return'wound';if(maxS>=2)return'wound';return'minor';}
+function getPartCSS(pid){const m={healthy:'bp-healthy',minor:'bp-minor',wound:'bp-wound',severe:'bp-severe',infected:'bp-infected',bandaged:'bp-bandaged'};return m[getPartStatus(pid)]||'bp-healthy';}
+function progressWounds(){
+  let tb=0;for(const pid of BODY_PARTS)for(const w of S.body[pid].wounds){w.turns_old++;
+    if(w.bleeding&&!w.bandaged)tb+=w.severity*3;
+    if(!w.infected&&!w.cleaned&&!w.bandaged&&Math.random()*100<w.severity*5+w.turns_old*2){w.infected=true;addStory(`🦠 <strong>${PL[pid]}伤口感染！</strong>出现红肿化脓`,'medical');}
+    if(w.infected){S.infectionLevel=clamp(S.infectionLevel+w.severity*2,0,100);}if(w.infected&&w.turns_old>6&&!w.bandaged)tb+=w.severity*1;}
+  if(tb>0){S.blood=clamp(S.blood-tb,0,100);addStory(`🩸 失血 <strong>-${tb}</strong>`,'medical');}
+  let tp=0;for(const pid of BODY_PARTS)for(const w of S.body[pid].wounds){tp+=w.bandaged?w.severity*2:w.severity*6;if(w.infected)tp+=8;}S.pain=clamp(tp,0,100);
+  for(const pid of BODY_PARTS)S.body[pid].wounds=S.body[pid].wounds.filter(w=>{if(w.bandaged&&w.cleaned&&!w.infected&&w.turns_old>12)return false;return true;});
+}
+function treatWound(pid,wid,act){
+  const w=S.body[pid].wounds.find(x=>x.id===wid);if(!w)return false;
+  switch(act){
+    case'bandage':if(!hasItem('绷带',1)&&!hasItem('止血带',1)&&!hasItem('止血粉',1))return false;removeItem(hasItem('绷带',1)?'绷带':hasItem('止血带',1)?'止血带':'止血粉',1);w.bandaged=true;w.bleeding=false;addStory(`🩹 包扎了<strong>${PL[pid]}</strong>，止住了流血。`,'medical');break;
+    case'treat':if(!hasItem('医疗包',1)&&!hasItem('缝合针线',1)&&!hasItem('手术刀',1)&&!hasItem('烧伤膏',1))return false;const tn=hasItem('医疗包',1)?'医疗包':hasItem('缝合针线',1)?'缝合针线':hasItem('手术刀',1)?'手术刀':'烧伤膏';removeItem(tn,1);w.cleaned=true;w.severity=Math.max(1,w.severity-1);w.bleeding=false;w.bandaged=true;addStory(`💊 使用${tn}处理了<strong>${PL[pid]}</strong>。`,'medical');break;
+    case'antibiotic':const ab=hasItem('抗生素',1)?'抗生素':hasItem('退烧药',1)?'退烧药':hasItem('抗病毒药',1)?'抗病毒药':null;if(!ab)return false;removeItem(ab,1);w.infected=false;w.cleaned=true;S.infectionLevel=clamp(S.infectionLevel-20,0,100);addStory(`💉 ${PL[pid]}使用${ab}，感染得到控制。`,'medical');break;
+    case'clean':const cl=hasItem('净水',1)?'净水':hasItem('消毒酒精',1)?'消毒酒精':hasItem('碘伏',1)?'碘伏':hasItem('草药',1)?'草药':null;if(!cl)return false;removeItem(cl,1);w.cleaned=true;w.infected=false;addStory(`💧 用${cl}清洗了<strong>${PL[pid]}</strong>。`,'medical');break;
+    case'painkiller':const pk=hasItem('止痛药',1)?'止痛药':hasItem('吗啡',1)?'吗啡':null;if(!pk)return false;removeItem(pk,1);S.pain=clamp(S.pain-25,0,100);addStory(`💊 服用${pk}，疼痛减轻。`,'medical');break;
+    case'splint':if(!hasItem('夹板',1))return false;removeItem('夹板',1);w.bandaged=true;w.bleeding=false;w.cleaned=true;w.severity=Math.max(1,w.severity-1);addStory(`🪵 用夹板固定了<strong>${PL[pid]}</strong>，恢复速度加快。`,'medical');break;
+    case'brace':if(!hasItem('支架',1))return false;removeItem('支架',1);w.bandaged=true;w.bleeding=false;w.cleaned=true;w.severity=Math.max(1,w.severity-1);addStory(`🔩 用支架固定了<strong>${PL[pid]}</strong>，恢复速度加快。`,'medical');break;
+    default:return false;
+  }return true;
+}
+
+// ===== CAMP =====
+function buildCampfire(){if(!hasItem('木材',2)&&!hasItem('打火机',1)){setStatus('需要木材×2 或 打火机来生篝火');return;}if(hasItem('打火机',1)&&!hasItem('木材',1)&&!hasItem('书籍',1)){setStatus('需要燃料（木材或书籍）');return;}const fuel=hasItem('木材',1)?'木材':hasItem('书籍',1)?'书籍':null;if(fuel)removeItem(fuel,1);if(hasItem('打火机',1)){/*keep lighter*/}else if(hasItem('木材',2))removeItem('木材',2);S.hasCampfire=true;addStory('🔥 篝火燃起来了。火焰驱散了黑暗和寒冷。','camp');updateUI();}
+function campUnderAttack(){if(atCamp())return false;const base=5+S.distance*2+(isNight()?10:0);return Math.random()*100<base;}
+function resolveCampAttack(){
+  if(Math.random()*100<S.camp.defense){addStory('🏕️ <strong>营地遭袭！</strong>但防御工事挡住了掠夺者。','camp');return;}
+  const names=Object.keys(S.camp.supplies);if(names.length>0){const lost=[];for(let i=0;i<Math.min(3,names.length);i++){const n=names[rand(0,names.length-1)];const lq=Math.min(rand(1,3),S.camp.supplies[n]?.qty||0);if(lq>0){removeItem(n,lq,true);lost.push(n+'×'+lq);}}addStory(`🏕️ <strong>⚠️ 营地被洗劫！</strong>丢失：${lost.join('、')}`,'camp');}
+  S.camp.condition=clamp(S.camp.condition-rand(10,25),0,100);if(S.camp.defense>0)S.camp.defense=clamp(S.camp.defense-rand(5,15),0,100);
+}
+
+// ===== PARTY (expanded) =====
+const NPC_STATUSES={
+  normal:{icon:'🙂',d:'状态正常'},
+  injured:{icon:'🤕',d:'受伤需要治疗'},
+  hungry:{icon:'🍖',d:'饥饿需要食物'},
+  thirsty:{icon:'💧',d:'口渴需要饮水'},
+  exhausted:{icon:'😫',d:'疲惫需要休息'},
+  depressed:{icon:'😞',d:'心情低落，可能离队'},
+  angry:{icon:'😠',d:'不满，可能背叛'},
+  sick:{icon:'🤒',d:'生病发烧'},
+  hopeful:{icon:'😊',d:'充满希望，工作效率提升'},
+  scared:{icon:'😨',d:'恐惧，忠诚度下降'},
+};
+function getNpcStatus(n){
+  if(!n.alive)return{icon:'💀',d:'已死亡'};
+  if(n.health<25)return NPC_STATUSES.injured;
+  if(n.health<50&&n.hunger<30)return NPC_STATUSES.sick;
+  if(n.hunger<20)return NPC_STATUSES.hungry;
+  if(n.thirst<20)return NPC_STATUSES.thirsty;
+  if(n.fatigue>75)return NPC_STATUSES.exhausted;
+  if(n.morale<25)return NPC_STATUSES.depressed;
+  if(n.loyalty<25)return NPC_STATUSES.angry;
+  if(n.morale>75)return NPC_STATUSES.hopeful;
+  if(n.morale<40)return NPC_STATUSES.scared;
+  return NPC_STATUSES.normal;
+}
+
+function recruitNPC(name){
+  let t;if(name){t=NPC_DB.find(n=>n.name===name);}if(!t){const avail=NPC_DB.filter(n=>!S.party.find(p=>p.name===n.name));if(avail.length===0)return;t=pick(avail);}
+  if(S.party.find(p=>p.name===t.name))return;
+  const npc={id:'n'+Date.now()+rand(0,999),...t,health:100,hunger:70+rand(0,20),thirst:75+rand(0,15),fatigue:rand(10,30),morale:rand(45,75),loyalty:rand(40,80),alive:true,inventory:{},activity:'idle',activityTurns:0,wounds:[]};
+  // Give starter items to teammate
+  addItemToNpc(npc,'罐头',rand(1,2));addItemToNpc(npc,'净水',rand(1,1));
+  S.party.push(npc);addStory(`👥 <strong>${npc.e} ${npc.name}加入了小队！</strong>特长：${npc.sn}。${npc.d}`,'party');updateUI();
+}
+
+function addItemToNpc(npc,name,qty){if(!npc||qty<=0)return;if(!npc.inventory[name])npc.inventory[name]={qty:0};npc.inventory[name].qty+=qty;}
+function removeItemFromNpc(npc,name,qty){if(!npc||!npc.inventory[name]||npc.inventory[name].qty<qty)return false;npc.inventory[name].qty-=qty;if(npc.inventory[name].qty<=0)delete npc.inventory[name];return true;}
+function npcHasItem(npc,name,qty){return npc&&npc.inventory[name]&&npc.inventory[name].qty>=qty;}
+
+function partyInjure(nid,injury){
+  const n=S.party.find(p=>p.id===nid);if(!n||!n.alive)return;
+  n.health=clamp(n.health-injury,0,100);
+  if(n.health<=0){n.alive=false;addStory(`💀 <strong>${n.name}伤重不治...</strong>`,'party');}
+  else{addStory(`🤕 <strong>${n.name}</strong>受伤(-${injury})`,'party');n.wounds.push({desc:'战斗中受伤',severity:Math.ceil(injury/15),bleeding:injury>15,bandaged:false,infected:false,cleaned:false});}
+}
+
+// ===== TEAMMATE UI =====
+function showTeammateDetail(nid){
+  const n=S.party.find(p=>p.id===nid);if(!n)return;
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  const st=getNpcStatus(n);
+  let h=`<h3>${n.e} ${n.name} — ${n.sn}</h3>`;
+  h+=`<div style="font-size:0.78em;line-height:1.6;margin-bottom:8px;">`;
+  h+=`<span>${n.gender||'?'}性 ${n.age||'?'}岁</span> | `;
+  const rel=getRelationship(n);h+=`<span>${rel.icon} ${rel.name}</span> | `;
+  h+=`<span>${st.icon} ${st.d}</span> | <span>❤️生命 ${n.health}</span> | <span>🍖${n.hunger}</span> | <span>💧${n.thirst}</span> | <span>⚡${n.fatigue}</span>`;
+  h+=` | <span>😊士气 ${n.morale}</span> | <span>🤝忠诚 ${n.loyalty}</span>`;
+  if(n.activity!=='idle')h+=` | <span>🔧${n.activity==='scout'?'侦察中':n.activity==='gather'?'搜刮中':'守卫中'}</span>`;
+  h+=`</div>`;
+
+  // Wounds
+  if(n.wounds&&n.wounds.length>0){
+    h+=`<div style="font-size:0.72em;margin-bottom:6px;"><strong>🤕 伤势：</strong>`;
+    n.wounds.forEach((w,i)=>{h+=`<span style="color:${w.bleeding&&!w.bandaged?'var(--danger)':w.infected?'#b44':'var(--text-dim)'}">${w.desc}${w.bleeding&&!w.bandaged?'(流血)':''}${w.infected?'(感染)':''}${w.bandaged?'(已包扎)':''}</span> `;});h+=`</div>`;}
+
+  // Their inventory
+  h+=`<div style="font-size:0.72em;margin-bottom:6px;"><strong>🎒 ${n.name}的背包：</strong>`;
+  const nitems=Object.entries(n.inventory||{});
+  if(nitems.length===0)h+='空';
+  else nitems.forEach(([nm,d])=>{h+=`${ITEMS[nm]?.e||'📦'}${nm}×${d.qty} `;});h+=`</div>`;
+
+  // Give items
+  h+=`<div style="font-size:0.72em;margin-bottom:6px;"><strong>🎁 给予物品：</strong><div class="treatment-row">`;
+  const myItems=Object.entries(S.inventory);
+  if(myItems.length===0)h+='<span style="color:var(--text-dim)">你背包空空</span>';
+  else myItems.forEach(([nm,d])=>{
+    h+=`<button class="treatment-btn" onclick="giveToNpc('${n.id}','${nm}',1)" style="font-size:0.6em;">${d.e}${nm}×1</button>`;
+  });h+=`</div></div>`;
+
+  // Treat wounds
+  if(n.wounds&&n.wounds.some(w=>w.bleeding&&!w.bandaged)&&npcHasItem(n,'绷带',1)){
+    h+=`<button class="treatment-btn" onclick="npcSelfTreat('${n.id}','bandage')">🩹 让${n.name}自己包扎</button> `;}
+  if(n.wounds&&n.wounds.some(w=>!w.cleaned)&&npcHasItem(n,'净水',1)){
+    h+=`<button class="treatment-btn" onclick="npcSelfTreat('${n.id}','clean')">💧 让${n.name}清洗伤口</button> `;}
+
+  // Marriage
+  if(!S.spouse&&n.gender!==S.playerGender&&getRelationship(n).level>=3){
+    h+=`<div style="margin-top:6px;"><button class="treatment-btn" onclick="proposeMarriage('${n.id}')" style="color:#ff69b4;border-color:#ff69b4;">💍 求婚</button></div>`;}
+  if(S.spouse===n.id)h+=`<div style="margin-top:4px;color:#ff69b4;font-size:0.72em;">💍 配偶 | `+(S.children.length>0?`孩子：${S.children.filter(c=>c.alive).map(c=>c.name+'('+c.age.toFixed(0)+'岁)').join('、')}`:'尚未有孩子')+`</div>`;
+  // Activity
+  h+=`<div style="margin-top:6px;"><strong>🔧 分配任务：</strong><div class="treatment-row">`;
+  h+=`<button class="treatment-btn" onclick="assignNpc('${n.id}','scout')">👀侦察</button>`;
+  h+=`<button class="treatment-btn" onclick="assignNpc('${n.id}','gather')">🔍搜刮</button>`;
+  h+=`<button class="treatment-btn" onclick="assignNpc('${n.id}','guard')">🛡️守卫</button>`;
+  h+=`<button class="treatment-btn" onclick="assignNpc('${n.id}','idle')">😴休息</button>`;
+  h+=`</div></div>`;
+
+  h+=`<div class="btn-row" style="margin-top:6px;"><button class="btn small" onclick="closeModal()">关闭</button></div>`;
+  modal.innerHTML=h;ov.classList.add('active');
+}
+
+function giveToNpc(nid,itemName,qty){
+  const n=S.party.find(p=>p.id===nid);if(!n||!n.alive)return;
+  if(!hasItem(itemName,qty)){setStatus('背包中没有足够的'+itemName);return;}
+  removeItem(itemName,qty);addItemToNpc(n,itemName,qty);
+  addStory(`🎁 给了<strong>${n.name}</strong> ${ITEMS[itemName]?.e||''}${itemName}×${qty}`,'party');
+  updateUI();showTeammateDetail(nid);
+}
+
+function npcSelfTreat(nid,action){
+  const n=S.party.find(p=>p.id===nid);if(!n||!n.alive)return;
+  const wound=n.wounds.find(w=>action==='bandage'?w.bleeding&&!w.bandaged:!w.cleaned);
+  if(!wound)return;
+  const item=action==='bandage'?'绷带':'净水';
+  if(!removeItemFromNpc(n,item,1))return;
+  if(action==='bandage'){wound.bandaged=true;wound.bleeding=false;}
+  else{wound.cleaned=true;wound.infected=false;}
+  addStory(`${n.e} <strong>${n.name}</strong>自己处理了伤口。`,'party');
+  updateUI();showTeammateDetail(nid);
+}
+
+function assignNpc(nid,activity){
+  const n=S.party.find(p=>p.id===nid);if(!n||!n.alive)return;
+  n.activity=activity;n.activityTurns=0;
+  const actName={scout:'侦察',gather:'搜刮',guard:'守卫营地',idle:'休息'};
+  addStory(`🔧 <strong>${n.name}</strong>开始${actName[activity]||activity}。`,'party');
+  updateUI();showTeammateDetail(nid);
+}
+
+// ===== TEAMMATE AUTONOMY =====
+function teammateTurn(){
+  for(const n of S.party){
+    if(!n.alive)continue;
+    // === Self-care: use items from own inventory ===
+    if(n.hunger<40&&npcHasItem(n,'罐头',1)){removeItemFromNpc(n,'罐头',1);n.hunger=clamp(n.hunger+22,0,100);}
+    else if(n.hunger<40&&npcHasItem(n,'干粮',1)){removeItemFromNpc(n,'干粮',1);n.hunger=clamp(n.hunger+14,0,100);}
+    if(n.thirst<40&&npcHasItem(n,'净水',1)){removeItemFromNpc(n,'净水',1);n.thirst=clamp(n.thirst+18,0,100);}
+    // Self-treat wounds
+    const bleedW=n.wounds.find(w=>w.bleeding&&!w.bandaged);
+    if(bleedW&&npcHasItem(n,'绷带',1)){removeItemFromNpc(n,'绷带',1);bleedW.bandaged=true;bleedW.bleeding=false;}
+    const dirtyW=n.wounds.find(w=>!w.cleaned);
+    if(dirtyW&&npcHasItem(n,'净水',1)){removeItemFromNpc(n,'净水',1);dirtyW.cleaned=true;}
+
+    // === Vital decay ===
+    n.hunger=clamp(n.hunger+rand(-5,-2),0,100);n.thirst=clamp(n.thirst+rand(-4,-2),0,100);n.fatigue=clamp(n.fatigue+rand(1,4),0,100);
+    // Wound effects
+    for(const w of n.wounds){if(w.bleeding&&!w.bandaged)n.health=clamp(n.health-w.severity*2,0,100);if(w.infected)n.health=clamp(n.health-3,0,100);}
+
+    // === Activity effects ===
+    n.activityTurns++;
+    if(n.activity==='idle'){n.fatigue=clamp(n.fatigue-8,0,100);if(n.health<80)n.health=clamp(n.health+3,0,100);}
+    else if(n.activity==='scout'&&n.activityTurns%3===0){// Every 3 turns, chance to discover location
+      const unknown=MAP_LOCATIONS.filter(l=>!S.discoveredLocations.includes(l.id));
+      if(unknown.length>0&&Math.random()<0.4){const loc=pick(unknown);S.discoveredLocations.push(loc.id);addStory(`👀 <strong>${n.name}</strong>侦察发现了新地点：${loc.icon} <strong>${loc.name}</strong>（${loc.dir}方${loc.dist}km）`,'party');}}
+    else if(n.activity==='gather'&&n.activityTurns%2===0){
+      const loots=[{n:'罐头',q:[1,2]},{n:'净水',q:[1,2]},{n:'木材',q:[1,2]},{n:'布料',q:[1,1]},{n:'弹药',q:[1,2]}];
+      const lt=pick(loots);const q=Array.isArray(lt.q)?rand(lt.q[0],lt.q[1]):lt.q;
+      addItemToNpc(n,lt.n,q);if(Math.random()<0.3){addStory(`🔍 <strong>${n.name}</strong>找到了${ITEMS[lt.n]?.e||''}${lt.n}×${q}`,'party');}}
+    else if(n.activity==='guard'){if(n.activityTurns%4===0)S.camp.defense=clamp(S.camp.defense+2,0,100);}
+
+    // === Morale & Loyalty shifts ===
+    if(n.hunger<25)n.morale=clamp(n.morale-5,0,100);if(n.thirst<25)n.morale=clamp(n.morale-4,0,100);
+    if(n.health<40)n.morale=clamp(n.morale-3,0,100);if(n.fatigue>70)n.morale=clamp(n.morale-3,0,100);
+    if(n.hunger>60&&n.thirst>60&&n.health>60)n.morale=clamp(n.morale+2,0,100);
+    if(atCamp()&&n.activity==='idle')n.morale=clamp(n.morale+2,0,100);
+    if(S.weather&&S.weather.temperature<0)n.morale=clamp(n.morale-2,0,100);
+    // Give items to teammate raises loyalty
+    if(n.morale<25)n.loyalty=clamp(n.loyalty-3,0,100);
+
+    // === Consequences ===
+    // Desertion: low morale + low loyalty
+    if(n.morale<15&&n.loyalty<30&&Math.random()<0.15){
+      addStory(`💔 <strong>${n.name}离开了团队。</strong>"对不起...我撑不下去了。"${n.name}带着自己的背包消失在废土中。`,'party');
+      // Drop their items
+      for(const [nm,d]of Object.entries(n.inventory||{})){for(let i=0;i<d.qty;i++)addItem(nm,1);}
+      n.alive=false;continue;}
+    // Betrayal: very low loyalty
+    if(n.loyalty<15&&Math.random()<0.1){
+      addStory(`💔 <strong>${n.name}背叛了你！</strong>趁着夜色偷走了一些物资，消失得无影无踪。`,'party');
+      const myKeys=Object.keys(S.inventory);for(let i=0;i<Math.min(3,myKeys.length);i++){const k=myKeys[rand(0,myKeys.length-1)];removeItem(k,rand(1,2));}
+      n.alive=false;continue;}
+    // Death from neglect
+    if(n.health<=0){n.alive=false;addStory(`💀 <strong>${n.name}倒下了。</strong>你没能及时照顾队友。`,'party');continue;}
+    if(n.hunger<=0){n.health=clamp(n.health-20,0,100);if(n.health<=0){n.alive=false;addStory(`💀 <strong>${n.name}饿死了...</strong>`,'party');}}
+    if(n.thirst<=0){n.health=clamp(n.health-25,0,100);if(n.health<=0){n.alive=false;addStory(`💀 <strong>${n.name}脱水而死...</strong>`,'party');}}
+
+    // Heal old wounds
+    n.wounds=n.wounds.filter(w=>{if(w.bandaged&&w.cleaned&&!w.infected&&Math.random()<0.3)return false;return true;});
+  }
+}
+
+// ===== RELATIONSHIP & FAMILY =====
+function getRelationship(npc){
+  if(S.spouse===npc.id)return{icon:'💍',name:'配偶',level:5};
+  if(npc.loyalty>80&&npc.morale>70)return{icon:'❤️',name:'亲密',level:4};
+  if(npc.loyalty>60&&npc.morale>50)return{icon:'😊',name:'好友',level:3};
+  if(npc.loyalty>35)return{icon:'🙂',name:'同伴',level:2};
+  return{icon:'🤝',name:'认识',level:1};
+}
+function proposeMarriage(nid){
+  const n=S.party.find(p=>p.id===nid);if(!n||!n.alive)return;
+  if(S.spouse){setStatus('你已经结婚了！');return;}
+  if(n.gender===S.playerGender){setStatus('同性无法在废土繁衍后代...');return;}
+  const rel=getRelationship(n);
+  if(rel.level<4){setStatus(`${n.name}和你的关系还不够亲密（需要❤️亲密）`);return;}
+  if(n.loyalty<70){setStatus(`${n.name}的忠诚度不够（需要>70）`);return;}
+  closeModal();S.spouse=n.id;n.morale=clamp(n.morale+20,0,100);n.loyalty=clamp(n.loyalty+15,0,100);
+  addStory(`💍 <strong>${n.name}接受了你的求婚！</strong>在废土上，两个人的承诺是最奢侈的东西。你们在篝火前交换了誓言。`,'party');
+  updateUI();
+}
+function tryHaveChild(){
+  if(!S.spouse)return;
+  const spouse=S.party.find(p=>p.id===S.spouse);if(!spouse||!spouse.alive)return;
+  // ~5% chance per day when at camp with spouse
+  if(!atCamp()||Math.random()>0.05)return;
+  const childGender=pick(['男','女']);
+  const childNames=childGender==='男'?['小光','石头','阿勇','小杰','晨晨']:['小花','小草','阿美','小雪','星星'];
+  const child={name:pick(childNames),gender:childGender,age:0,alive:true};
+  S.children.push(child);
+  addStory(`👶 <strong>${spouse.name}怀孕了！</strong>九个月后，${child.gender=='男'?'儿子':'女儿'}<strong>${child.name}</strong>出生了。废土上诞生了一个新生命——这简直是奇迹。`,'party');
+}
+function growChildren(){
+  for(const c of S.children){
+    if(!c.alive)continue;c.age+=0.5;
+    if(c.age>=5&&!c._noted5){c._noted5=true;addStory(`👧 <strong>${c.name}</strong>已经5岁了。${c.gender=='男'?'他':'她'}开始在营地帮忙做些小事。`,'party');}
+    if(c.age>=12&&!c._noted12){c._noted12=true;addStory(`🧒 <strong>${c.name}</strong>12岁了。${c.gender=='男'?'他':'她'}已经能分担一些营地工作了。`,'party');}
+    // At 14, child becomes a full teammate
+    if(c.age>=14&&!c._becameNpc){
+      c._becameNpc=true;
+      const skills=['scavenge','scout','build','medical'];const snames={scavenge:'拾荒',scout:'侦察',build:'建造',medical:'医疗'};
+      const sk=pick(skills);
+      const npc={id:'c'+Date.now()+rand(0,999),name:c.name,skill:sk,sn:snames[sk],d:`在废土营地长大的${c.gender=='男'?'少年':'少女'}`,e:c.gender=='男'?'👦':'👧',gender:c.gender,age:14,health:100,hunger:70,thirst:80,fatigue:20,morale:70,loyalty:80,alive:true,inventory:{},activity:'idle',activityTurns:0,wounds:[]};
+      S.party.push(npc);
+      addStory(`🎉 <strong>${c.name}长大了！</strong>这个在废土上出生的孩子如今已经14岁，成了一个能独当一面的${snames[sk]}。${c.gender=='男'?'他':'她'}正式加入了小队。`,'party');
+      modRep(5,'下一代成长');
+      c.alive=false; // removed from children list, now in party
+    }
+  }
+  // Clean up grown children
+  S.children=S.children.filter(c=>c.alive);
+}
+
+// ===== PRODUCTION BUILDING TICK =====
+let _prodTicks=0;
+function tickProduction(){
+  _prodTicks++;if(_prodTicks%2!==0)return; // tick every 2 turns
+  if(!S.campGrid)return;
+  for(let y=0;y<5;y++)for(let x=0;x<5;x++){
+    const cell=S.campGrid[y][x];if(cell.type!=='building')continue;
+    const b=BUILDINGS.find(b=>b.id===cell.id);if(!b||!b.produces)continue;
+    cell._prodCounter=(cell._prodCounter||0)+1;
+    if(cell._prodCounter>=b.produces.interval){
+      cell._prodCounter=0;const q=Array.isArray(b.produces.qty)?rand(b.produces.qty[0],b.produces.qty[1]):b.produces.qty;
+      addItem(b.produces.item,q,true); // store in camp
+    }
+  }
+}
+
+// ===== CAMP ECOLOGY SIMULATION =====
+const CAMP_EVENTS=[
+  {type:'grow',name:'发现物资仓库',icon:'📦',eff:{size:[3,8],defense:[5,15],supplies:[10,30]},msg:'{camp}在废墟中发现了战前物资仓库，实力大增。'},
+  {type:'grow',name:'招募新成员',icon:'👥',eff:{size:[2,6],supplies:[5,15]},msg:'{camp}从流民中招募了一批新成员。'},
+  {type:'grow',name:'发现军工厂',icon:'🏭',eff:{size:[5,10],defense:[10,25],supplies:[15,40]},msg:'{camp}发现了一座废弃军工厂！武器装备和物资大幅增加。',rare:true},
+  {type:'decline',name:'掠夺者袭击',icon:'⚔️',eff:{size:[-5,-2],defense:[-15,-5],supplies:[-20,-10]},msg:'{camp}遭到掠夺者袭击，损失惨重。'},
+  {type:'decline',name:'内部叛乱',icon:'💔',eff:{size:[-8,-3],defense:[-20,-10],loyalty:[-30,-15]},msg:'{camp}发生了内部叛乱，分裂为两派。'},
+  {type:'decline',name:'疾病爆发',icon:'🤒',eff:{size:[-4,-1],loyalty:[-15,-5]},msg:'{camp}爆发了传染病，多人病倒。'},
+  {type:'destroy',name:'暴风雪摧毁',icon:'❄️',seasons:['winter'],msg:'一场猛烈的暴风雪彻底摧毁了{camp}的营地。幸存者四散而去。'},
+  {type:'destroy',name:'被变异兽群摧毁',icon:'🐺',msg:'大群变异兽袭击了{camp}，营地被夷为平地。'},
+  {type:'destroy',name:'辐射泄漏',icon:'☢️',msg:'{camp}的营地地下发生了辐射泄漏，所有人被迫撤离。'},
+  {type:'merge',name:'吞并',icon:'🤝',msg:'{camp1}吞并了{camp2}，实力进一步壮大。'},
+];
+
+function simulateCampEcology(){
+  if(Math.random()>0.25)return; // 25% chance per turn to trigger ecology events
+  // Get all camps in current biome
+  const camps=S.enemyCamps.filter(ec=>ec.alive!==false);
+  if(camps.length===0)return;
+
+  const ev=pick(CAMP_EVENTS);
+
+  if(ev.type==='merge'&&camps.length>=2){
+    // Two camps merge
+    const a=camps[rand(0,camps.length-1)];let b;
+    do{b=camps[rand(0,camps.length-1)];}while(b===a);
+    a.size+=b.size;a.defense=Math.max(a.defense,b.defense)+rand(5,15);a.supplies+=b.supplies;
+    b.alive=false;_reportIntel([a,b],ev.msg.replace('{camp1}',`<strong>${a.name}</strong>`).replace('{camp2}',`<strong>${b.name}</strong>`));
+  }else if(ev.type==='destroy'){
+    if(ev.seasons&&!ev.seasons.includes(S.season?.id))return;
+    const c=pick(camps);c.alive=false;
+    _reportIntel([c],ev.msg.replace('{camp}',`<strong>${c.name}</strong>`));
+    // Clean up dead camps occasionally
+    S.enemyCamps=S.enemyCamps.filter(ec=>ec.alive!==false||Math.random()>0.5);
+  }else if(ev.type==='grow'||ev.type==='decline'){
+    if(ev.rare&&Math.random()>0.15)return; // rare events are less common
+    const c=pick(camps);
+    if(ev.eff.size){const v=ev.eff.size;c.size=clamp(c.size+(Array.isArray(v)?rand(v[0],v[1]):v),1,50);}
+    if(ev.eff.defense){const v=ev.eff.defense;c.defense=clamp(c.defense+(Array.isArray(v)?rand(v[0],v[1]):v),0,100);}
+    if(ev.eff.supplies){const v=ev.eff.supplies;c.supplies=clamp(c.supplies+(Array.isArray(v)?rand(v[0],v[1]):v),0,100);}
+    if(ev.eff.loyalty){const v=ev.eff.loyalty;c.loyalty=clamp(c.loyalty+(Array.isArray(v)?rand(v[0],v[1]):v),0,100);}
+    _reportIntel([c],ev.msg.replace('{camp}',`<strong>${c.name}</strong>`));
+  }
+
+  // New camp formation (small chance)
+  if(Math.random()<0.08&&camps.length<6){
+    const nc=generateEnemyCamp();nc._new=true;S.enemyCamps.push(nc);
+    // Report via radio or scout
+    if(hasItem('收音机',1)){addStory(`📻 收音机报道：一个新的幸存者营地——<strong>${nc.name}</strong>在附近成立了。`,'party');}
+  }
+}
+
+function _reportIntel(camps,msg){
+  // Only report if player has intel on at least one affected camp
+  const hasIntel=camps.some(c=>c.scouted||c.spy);
+  if(!hasIntel&&!hasItem('收音机',1))return; // no intel at all
+  if(hasIntel)addStory(`📡 ${msg}`,'party');
+  else if(hasItem('收音机',1)&&Math.random()<0.5)addStory(`📻 收音机消息：${msg}`,'party');
+  // General "something happened" if no detail
+  const unknown=camps.filter(c=>!c.scouted&&!c.spy);
+  if(unknown.length>0&&hasItem('收音机',1)&&Math.random()<0.3){
+    addStory(`📻 收音机提到附近有营地发生了变化，但细节不明——也许该派侦察去看看。`,'system');
+  }
+}
+
+// ===== CAMP GRID EXPANSION =====
+const CAMP_LEVELS=[
+  {level:1,size:5,cost:{},name:'小型营地',icon:'🏕️'},
+  {level:2,size:7,cost:{'木材':20,'金属片':15,'钉子':8,'铁皮':5},name:'中型营地',icon:'🏘️'},
+  {level:3,size:9,cost:{'木材':40,'金属片':30,'钉子':15,'铁皮':10,'铁丝网':3},name:'大型要塞',icon:'🏰'},
+];
+
+function expandCamp(){
+  const currentLevel=S._campLevel||1;if(currentLevel>=CAMP_LEVELS.length){setStatus('营地已达最大规模');return;}
+  const next=CAMP_LEVELS[currentLevel]; // next level (index = current since level starts at 1)
+  if(!next){setStatus('已达上限');return;}
+  const can=Object.entries(next.cost).every(([n,q])=>hasItem(n,q));
+  if(!can){const missing=Object.entries(next.cost).filter(([n,q])=>!hasItem(n,q)).map(([n,q])=>n+'×'+q).join(',');
+    setStatus('材料不足，还需要：'+missing);return;}
+  for(const [n,q]of Object.entries(next.cost))removeItem(n,q);
+  S._campLevel=next.level;
+  // Expand grid
+  const newSize=next.size;const newGrid=[];
+  for(let y=0;y<newSize;y++){newGrid[y]=[];for(let x=0;x<newSize;x++){if(S.campGrid&&S.campGrid[y]&&S.campGrid[y][x])newGrid[y][x]=S.campGrid[y][x];else newGrid[y][x]={type:'empty',id:null};}}
+  S.campGrid=newGrid;S.campGrid[Math.floor(newSize/2)][Math.floor(newSize/2)]={type:'campfire',id:'center',icon:'🔥',name:'营地中心'};
+  addStory(`🏗️ 营地扩建完成！现在是<strong>${next.icon} ${next.name}</strong>（${newSize}×${newSize}）`,'camp');
+  updateUI();showCampView();
+}
+
+function showExpandInfo(){
+  const cl=S._campLevel||1;const current=CAMP_LEVELS[cl-1];
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  let h=`<h3>🏗️ 扩建营地</h3>`;
+  h+=`<p style="font-size:0.78em;">当前：<strong>${current.icon} ${current.name}</strong>（${current.size}×${current.size}）</p>`;
+  if(cl>=CAMP_LEVELS.length){h+='<p style="color:var(--success)">已达最大规模！</p>';}
+  else{const next=CAMP_LEVELS[cl];h+=`<div class="wound-card"><strong>升级到 ${next.icon} ${next.name}</strong>（${next.size}×${next.size}）<br><span style="font-size:0.7em;color:var(--text-dim)">需要：${Object.entries(next.cost).map(([n,q])=>n+'×'+q).join('、')}</span><div class="treatment-row"><button class="treatment-btn" onclick="closeModal();expandCamp();">🔨 扩建</button></div></div>`;}
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;modal.innerHTML=h;ov.classList.add('active');
+}
+
+// ===== REPUTATION SYSTEM =====
+function modRep(amount,reason){
+  S.reputation=clamp(S.reputation+amount,0,100);
+  if(Math.abs(amount)>=5)addStory(`📊 声望${amount>0?'+'+amount:amount}：${reason}`,'system');
+}
+function repTitle(){
+  const r=S.reputation;
+  if(r>=90)return{icon:'👑',name:'传奇',d:'废土上无人不知你的名字'};
+  if(r>=70)return{icon:'⭐',name:'闻名',d:'各个营地都听说过你的事迹'};
+  if(r>=50)return{icon:'📢',name:'知名',d:'附近的幸存者都知道你的营地'};
+  if(r>=30)return{icon:'👍',name:'有声誉',d:'有些人听说过你'};
+  if(r>=15)return{icon:'🤝',name:'初识',d:'少数人知道你的存在'};
+  return{icon:'🌱',name:'无名',d:'废土上没人认识你'};
+}
+function repAttackMod(){const r=S.reputation;if(r>=80)return 0.2;if(r>=60)return 0.5;if(r>=40)return 0.75;if(r<15)return 1.5;return 1;}
+function checkAutoRecruit(){
+  const r=S.reputation;let chance=0;if(r>=80)chance=0.12;else if(r>=60)chance=0.06;else if(r>=40)chance=0.03;else return;
+  if(Math.random()>chance)return;
+  const t=pick(NPC_DB.filter(n=>!S.party.find(p=>p.name===n.name&&p.alive)));
+  if(!t)return;
+  const npc={id:'n'+Date.now()+rand(0,999),...t,health:100,hunger:70+rand(0,20),thirst:75+rand(0,15),fatigue:rand(10,30),morale:rand(50,80),loyalty:rand(50,80),alive:true,inventory:{},activity:'idle',activityTurns:0,wounds:[]};
+  addItemToNpc(npc,'罐头',rand(1,2));S.party.push(npc);
+  addStory(`👥 <strong>${npc.e} ${npc.name}慕名而来！</strong>"听说这里有个靠谱的营地，我想加入。" ${npc.gender}性 ${npc.age}岁 特长：${npc.sn}。`,'party');
+  addStory(`📋 状态：❤️${npc.health} 🍖${npc.hunger} 💧${npc.thirst} 😊${npc.morale} 🤝${npc.loyalty} | 点击左侧队友查看详情`,'system');
+  modRep(2,'新成员加入');
+  updateUI();
+}
+
+// ===== BIOME & TRAVEL =====
+function randomBiome(){return pickW(BIOMES.map(b=>({...b,w:b.danger<=4?2:b.danger<=7?3:1})));}
+function biomeDesc(){
+  const b=S.currentBiome;if(!b)return'';
+  return `${b.icon} <strong>${b.name}</strong>：${b.desc}（食物${'⭐'.repeat(b.food)} 水源${'⭐'.repeat(b.water)} 危险${'⚠️'.repeat(b.danger)}）`;
+}
+function travelToBiome(){
+  if(S.isDead||S.busy)return;const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  let h='<h3>🗺️ 前往新区域</h3><p style="font-size:0.78em;">选择目的地（需要2-5天路程）：</p>';
+  BIOMES.forEach(b=>{
+    if(b.id===S.currentBiome?.id){h+=`<div class="wound-card" style="border-left-color:var(--success)"><strong>${b.icon} ${b.name}</strong> <span style="color:var(--success)">（当前位置）</span><br><span style="font-size:0.7em;color:var(--text-dim)">${b.desc} | 食物${b.food} 水源${b.water} 危险${b.danger}</span></div>`;}
+    else h+=`<div class="wound-card"><strong>${b.icon} ${b.name}</strong><br><span style="font-size:0.7em;color:var(--text-dim)">${b.desc} | 食物${'⭐'.repeat(b.food)} 水源${'⭐'.repeat(b.water)} 危险${'⚠️'.repeat(b.danger)}</span><div class="treatment-row"><button class="treatment-btn" onclick="doTravelBiome('${b.id}')">🚶前往（2-5天）</button></div></div>`;
+  });
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;modal.innerHTML=h;ov.classList.add('active');
+}
+function doTravelBiome(biomeId){
+  closeModal();const b=BIOMES.find(x=>x.id===biomeId);if(!b||b.id===S.currentBiome?.id)return;
+  S.busy=true;btnDisabled(true);setStatus(`前往${b.name}...`);setChoices([]);
+  const days=rand(2,5);for(let d=0;d<days;d++){for(let h=0;h<24;h++)advanceHour(1);}
+  S.currentBiome=b;S.distance=0;S.fatigue=clamp(S.fatigue+days*10,0,100);
+  addStory(`🗺️ 经过${days}天的跋涉，你到达了<strong>${b.icon} ${b.name}</strong>。${b.desc}`,'system');
+  // Generate enemy camps in new biome
+  S.enemyCamps=[];const campCount=rand(1,3);
+  for(let i=0;i<campCount;i++)S.enemyCamps.push(generateEnemyCamp());
+  if(S.enemyCamps.length>0)addStory(`⚠️ 侦察发现附近有${S.enemyCamps.length}个敌对营地。点击「⚔️ 敌对营地」查看。`,'system');
+  progressWounds();teammateTurn();updateUI();S.busy=false;btnDisabled(false);setChoices(['探索新区域','建立营地','搜索物资']);
+}
+
+// ===== ENEMY CAMP SYSTEM =====
+function generateEnemyCamp(){
+  const name=pick(ENEMY_CAMP_NAMES);const leader=pick(ENEMY_LEADERS);
+  const traits=[];for(let i=0;i<rand(1,3);i++){const t=pick(ENEMY_TRAITS);if(!traits.includes(t))traits.push(t);}
+  return{id:'ec'+Date.now()+rand(0,999),name,leader,size:rand(5,25),defense:rand(20,80),supplies:rand(30,100),loyalty:rand(30,90),traits,
+    scouted:false, // has player gathered intel?
+    spy:null, // NPC id of spy, if any
+    sabotaged:false,poisoned:false,};
+}
+function showEnemyCamps(){
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  let h='<h3>⚔️ 敌对营地</h3>';
+  if(S.enemyCamps.length===0)h+='<p style="color:var(--text-dim)">附近没有发现敌对营地。</p>';
+  else S.enemyCamps.forEach(ec=>{
+    h+=`<div class="wound-card" style="border-left-color:var(--danger)"><strong>🏴 ${ec.name}</strong>`;
+    if(ec.scouted){h+=`<br><span style="font-size:0.7em;">👤首领：${ec.leader} | 👥规模：${ec.size}人 | 🛡️防御：${ec.defense} | 🎒物资：${ec.supplies} | 🤝忠诚：${ec.loyalty}`;if(ec.traits.length>0)h+=`<br>📋特征：${ec.traits.join('、')}`;}
+    else h+=`<br><span style="color:var(--text-dim);font-size:0.7em;">👥规模：??? | 🛡️防御：??? | 🎒物资：??? | 🤝忠诚：???`;
+    if(ec.spy)h+=`<br>🕵️ 卧底：<span style="color:var(--success)">${ec.spy}已潜入</span>`;
+    if(ec.sabotaged)h+=`<br>💥 已破坏防御`;if(ec.poisoned)h+=`<br>☠️ 已下毒`;
+    h+=`<div class="treatment-row">`;
+    if(!ec.scouted)h+=`<button class="treatment-btn" onclick="scoutCamp('${ec.id}')">🔍侦察</button>`;
+    h+=`<button class="treatment-btn" onclick="sendSpy('${ec.id}')">🕵️派卧底</button>`;
+    if(ec.scouted)h+=`<button class="treatment-btn" onclick="sabotageCamp('${ec.id}')">💥破坏</button><button class="treatment-btn" onclick="poisonCamp('${ec.id}')">☠️下毒</button><button class="treatment-btn" onclick="attackCamp('${ec.id}')" style="color:var(--danger);border-color:var(--danger)">⚔️进攻</button>`;
+    h+=`</div></div>`;
+  });
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;modal.innerHTML=h;ov.classList.add('active');
+}
+
+function scoutCamp(ecid){
+  const ec=S.enemyCamps.find(x=>x.id===ecid);if(!ec||ec.scouted)return;
+  S.busy=true;setStatus('侦察中...');closeModal();
+  advanceHour(rand(2,4));S.fatigue=clamp(S.fatigue+rand(5,10),0,100);
+  ec.scouted=true;
+  const acc=Math.random()>0.3; // 70% accuracy
+  if(!acc){ec.size+=rand(-5,5);ec.defense+=rand(-15,15);} // inaccurate intel
+  addStory(`🔍 对<strong>${ec.name}</strong>的侦察完成。${acc?'情报可靠。':'部分情报可能有误。'}首领${ec.leader}，约${ec.size}人，防御${ec.defense>=60?'坚固':ec.defense>=30?'一般':'薄弱'}。`,'party');
+  updateUI();S.busy=false;showEnemyCamps();
+}
+
+function sendSpy(ecid){
+  const ec=S.enemyCamps.find(x=>x.id===ecid);if(!ec||ec.spy)return;
+  const available=S.party.filter(p=>p.alive&&p.loyalty>50);if(available.length===0){setStatus('没有忠诚度>50的队友可派');return;}
+  const spy=pick(available);ec.spy=spy.name;spy.activity='spy';
+  closeModal();addStory(`🕵️ <strong>${spy.name}</strong>被派往<strong>${ec.name}</strong>卧底。${spy.name}将暗中搜集情报。`,'party');
+  // Spy gradually reveals info and may sabotage
+  ec.scouted=true; // spy reveals intel
+  updateUI();
+}
+
+function sabotageCamp(ecid){
+  const ec=S.enemyCamps.find(x=>x.id===ecid);if(!ec||ec.sabotaged)return;
+  closeModal();const success=ec.spy?Math.random()<0.7:Math.random()<0.3;
+  if(success){ec.sabotaged=true;ec.defense=Math.max(0,ec.defense-rand(20,40));addStory(`💥 <strong>${ec.name}</strong>的防御被成功破坏！防御力大降。`,'party');}
+  else{addStory(`💥 破坏<strong>${ec.name}</strong>的行动失败。对方加强了警戒。`,ec.spy?'party':'danger');if(ec.spy)ec.spy=null;}
+  updateUI();
+}
+
+function poisonCamp(ecid){
+  const ec=S.enemyCamps.find(x=>x.id===ecid);if(!ec||ec.poisoned)return;
+  closeModal();const success=ec.spy?Math.random()<0.6:Math.random()<0.2;
+  if(success){ec.poisoned=true;ec.loyalty=Math.max(0,ec.loyalty-rand(30,50));ec.size=Math.max(1,ec.size-rand(3,10));addStory(`☠️ 成功在<strong>${ec.name}</strong>的水源中下毒。敌方大量减员，士气崩溃。`,'party');}
+  else{addStory(`☠️ 下毒<strong>${ec.name}</strong>的行动败露！${ec.spy?'卧底身份暴露！':''}`,'danger');if(ec.spy)ec.spy=null;}
+  updateUI();
+}
+
+function attackCamp(ecid){
+  const ec=S.enemyCamps.find(x=>x.id===ecid);if(!ec||!ec.scouted)return;
+  closeModal();S.busy=true;btnDisabled(true);setStatus('⚔️ 战斗中...');setChoices([]);
+  advanceHour(rand(3,6));
+  // Calculate combat strength
+  const myPower=(1+S.party.filter(p=>p.alive).length)*2+(S.camp.defense/10);
+  let enemyPower=(ec.size/5)+(ec.defense/15);
+  if(ec.sabotaged)enemyPower*=0.5;if(ec.poisoned)enemyPower*=0.6;
+  if(ec.loyalty<30)enemyPower*=0.7; // low loyalty = easy to break
+  const winChance=myPower/(myPower+enemyPower);
+  const victory=Math.random()<winChance;
+
+  if(victory){
+    const lootCount=rand(3,8);const loots=[];
+    for(let i=0;i<lootCount;i++){const items=['罐头','净水','弹药','医疗包','武器零件','金属片','军用口粮'];const n=pick(items);const q=rand(1,4);addItem(n,q);loots.push(`${ITEMS[n]?.e||''}${n}×${q}`);}
+    addStory(`⚔️ <strong>胜利！</strong>你攻下了<strong>${ec.name}</strong>！${ec.leader}战败。战利品：${loots.join('、')}`,'party');modRep(15,'攻占敌营');
+    S.enemyCamps=S.enemyCamps.filter(x=>x.id!==ecid); // remove defeated camp
+    // Party injuries
+    for(const n of S.party){if(!n.alive)continue;if(Math.random()<0.4)partyInjure(n.id,rand(10,30));}
+    if(Math.random()<0.3){const pid=pick(BODY_PARTS);const sev=rand(1,3);const desc=`${['被','遭到','受到'][sev-1]}攻击受伤`;addWound(pid,sev,desc,sev>=2);S.blood=clamp(S.blood-sev*8,0,100);addStory(`🤕 <strong>${PL[pid]}在战斗中受伤！</strong>（-${sev*8}生命）`,'medical');}
+  }else{
+    addStory(`⚔️ <strong>战败！</strong>对<strong>${ec.name}</strong>的进攻被击退。${ec.leader}的防御比你预想的要强。`,'danger');modRep(-8,'战败');
+    for(const n of S.party){if(!n.alive)continue;if(Math.random()<0.6)partyInjure(n.id,rand(20,40));}
+    const rpid=pick(BODY_PARTS);addWound(rpid,rand(2,3),`撤退时${PL[rpid]}遭到重击`,true);S.blood=clamp(S.blood-rand(15,35),0,100);addStory(`🤕 <strong>${PL[rpid]}在撤退中受了重伤！</strong>`,'medical');
+    // Lose items
+    const myKeys=Object.keys(S.inventory);for(let i=0;i<Math.min(3,myKeys.length);i++){const k=myKeys[rand(0,myKeys.length-1)];removeItem(k,rand(1,2));}
+  }
+  progressWounds();teammateTurn();updateUI();checkDeath();
+  S.busy=false;btnDisabled(false);setChoices(['继续推进']);
+}
+
+// ===== QUICK CAMP UPGRADE =====
+function upgradeDefense(){
+  if(!atCamp()){setStatus('你不在营地！');return;}
+  if(!hasItem('木材',2)||!hasItem('金属片',1)){setStatus('需要木材×2 + 金属片×1 加固防御');return;}
+  removeItem('木材',2);removeItem('金属片',1);S.camp.defense=clamp(S.camp.defense+10,0,100);
+  addStory('🛡️ 使用木材和金属片加固了营地防御。','camp');updateUI();
+}
+
+// ===== STORAGE CHEST SYSTEM =====
+S.chestLevel=0;S.chestSlots=0; // 0=no chest, 1=small(10 slots), 2=medium(20), 3=large(35)
+const CHEST_LEVELS=[{level:0,slots:0,name:'无',cost:{}},{level:1,slots:10,name:'小木箱',cost:{'木材':3}},{level:2,slots:20,name:'储物柜',cost:{'木材':5,'金属片':2}},{level:3,slots:35,name:'军备箱',cost:{'木材':8,'金属片':4,'钉子':4}}];
+
+function upgradeChest(){
+  if(!atCamp()){setStatus('你不在营地！');return;}
+  const nl=(S.chestLevel||0)+1;if(nl>=CHEST_LEVELS.length){setStatus('储物箱已满级');return;}
+  const next=CHEST_LEVELS[nl];const can=Object.entries(next.cost).every(([n,q])=>hasItem(n,q));
+  if(!can){const missing=Object.entries(next.cost).filter(([n,q])=>!hasItem(n,q)).map(([n,q])=>n+'×'+q).join(',');setStatus('材料不足，还需要：'+missing);return;}
+  for(const [n,q]of Object.entries(next.cost))removeItem(n,q);
+  S.chestLevel=nl;S.chestSlots=next.slots;addStory(`📦 营地储物升级为<strong>${next.name}</strong>（${next.slots}格）`,'camp');updateUI();
+}
+
+function openStorageUI(){
+  if(!atCamp()){setStatus('你不在营地！');return;}
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  const ms=maxSlots();
+  let h=`<h3>📦 营地仓库管理</h3>`;
+  h+=`<p style="font-size:0.72em;color:var(--text-dim)">储物箱：${CHEST_LEVELS[S.chestLevel]?.name||'无'}（${campSCount()}件/${S.chestSlots||0}格）| 背包：${Object.keys(S.inventory).length}/${ms}格</p>`;
+
+  // Backpack items (with deposit button)
+  h+=`<div style="margin-bottom:8px;"><strong>🎒 背包物品：</strong>`;
+  const bpItems=Object.entries(S.inventory);
+  if(bpItems.length===0)h+=`<span style="color:var(--text-dim);font-size:0.72em;">空</span>`;
+  else bpItems.forEach(([n,d])=>{
+    h+=`<div class="wound-card" style="border-left-color:var(--accent);display:flex;justify-content:space-between;align-items:center;"><span>${d.e}${n}×${d.qty}</span><div class="treatment-row"><button class="treatment-btn" onclick="depositItem('${n}',1)">📥存1</button><button class="treatment-btn" onclick="depositItem('${n}',${d.qty})">📥全部</button></div></div>`;
+  });h+=`</div>`;
+
+  // Camp chest items (with withdraw button)
+  h+=`<div><strong>🏕️ 营地储物箱：</strong>`;
+  const cpItems=Object.entries(S.camp.supplies);
+  if(cpItems.length===0)h+=`<span style="color:var(--text-dim);font-size:0.72em;">空</span>`;
+  else cpItems.forEach(([n,d])=>{
+    h+=`<div class="wound-card" style="border-left-color:var(--success);display:flex;justify-content:space-between;align-items:center;"><span>${d.e||'📦'}${n}×${d.qty}</span><div class="treatment-row"><button class="treatment-btn" onclick="withdrawItem('${n}',1)">📤取1</button><button class="treatment-btn" onclick="withdrawItem('${n}',${d.qty})">📤全部</button></div></div>`;
+  });h+=`</div>`;
+
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;
+  modal.innerHTML=h;ov.classList.add('active');
+}
+
+function depositItem(name,qty){
+  if(!atCamp()||!hasItem(name,qty))return;
+  const campItems=Object.keys(S.camp.supplies);
+  if(campItems.length>=S.chestSlots&&!S.camp.supplies[name]){setStatus('储物箱已满！升级箱子。');return;}
+  qty=Math.min(qty,S.inventory[name].qty);removeItem(name,qty);addItem(name,qty,true);
+  addStory(`📥 存入<strong>${name}×${qty}</strong>`,'camp');updateUI();openStorageUI();
+}
+
+function withdrawItem(name,qty){
+  if(!atCamp()||!hasItem(name,qty,true))return;
+  const bpCount=Object.keys(S.inventory).length;
+  if(bpCount>=maxSlots()&&!S.inventory[name]){setStatus('背包已满！先清理背包。');return;}
+  qty=Math.min(qty,S.camp.supplies[name].qty);removeItem(name,qty,true);addItem(name,qty);
+  addStory(`📤 取出<strong>${name}×${qty}</strong>`,'camp');updateUI();openStorageUI();
+}
+
+// ===== AMMO SYSTEM =====
+function useGun(weaponName){
+  if(!hasItem(weaponName,1)){setStatus('你没有'+weaponName);return;}
+  if(!hasItem('弹药',1)){setStatus('没有弹药！需要弹药才能使用枪支。');return;}
+  removeItem('弹药',1);addStory(`🔫 使用${weaponName}发射了一发子弹。`,'action');
+  // Combat effect: +defense for one attack
+  S._gunBonus=(S._gunBonus||0)+5;setStatus(`${weaponName}已上膛，下次战斗+5战力`);updateUI();
+}
+
+// ===== ATTACK MINI-MAP =====
+function showAttackMinimap(){
+  if(!S._incomingAttack){setStatus('没有正在进行的攻击');return;}
+  const ia=S._incomingAttack;const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  const dist=ia.arriveHour;const maxDist=12;const enemyPos=Math.floor(dist/maxDist*10); // 0=at camp, 10=far
+  let h=`<h3>⚔️ 敌军动态</h3>`;
+  h+=`<div style="text-align:center;font-size:0.78em;margin-bottom:8px;"><strong>${ia.enemyCamp.name}</strong> 从<strong style="color:var(--danger)">${ia.dir}方</strong>进攻 | 预计<strong style="color:var(--danger)">${dist}</strong>小时后抵达</div>`;
+  // Visual progress bar
+  h+=`<div style="background:#111;border-radius:8px;padding:10px;text-align:center;">`;
+  h+=`<div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7em;">`;
+  h+=`<span>🏕️营地</span><span style="flex:1;margin:0 8px;height:8px;background:#222;border-radius:4px;overflow:hidden;position:relative;">`;
+  const pct=Math.max(5,100-(dist/maxDist*100));
+  h+=`<div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--danger),#ff4444);border-radius:4px;"></div></span><span>⚔️${ia.enemyCamp.name}</span></div>`;
+  h+=`<div style="font-size:0.65em;color:var(--text-dim);margin-top:4px;">${dist<=2?'⚠️ 即将交战！':dist<=5?'🔴 敌军逼近中':'🟡 还有时间准备'}</div>`;
+  // Time-based position
+  for(let i=10;i>=0;i--){
+    const marker=i===Math.floor(pct/10)?'🔴':i===0?'🏕️':i===10?'⚔️':'.';
+    if(i===Math.floor(pct/10))h+=`<span style="color:var(--danger);">⬆️敌军</span>`;
+  }
+  h+=`</div>`;
+  h+=`<div style="font-size:0.65em;color:var(--text-dim);margin-top:6px;">← 营地 ${'·'.repeat(Math.max(0,enemyPos))} 🔴 ${'·'.repeat(Math.max(0,10-enemyPos))} 敌军 →</div>`;
+  h+=`</div>`;
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;
+  modal.innerHTML=h;ov.classList.add('active');
+}
+
+// ===== CAMP DESTRUCTION & REBUILD =====
+function checkCampDestroyed(){
+  if(S.camp.condition<=0&&!S._campDestroyed){
+    S._campDestroyed=true;S.camp.condition=0;
+    addStory('💔 <strong>营地已被彻底摧毁。</strong>废墟中只剩下灰烬和残骸。你失去了在这里建立的一切。','danger');modRep(-20,'营地被毁');
+    // Clear camp grid
+    S.campGrid=null;S._campLevel=1;S._campDefMod=0;initCampGrid();
+    addStory('💡 你可以在当前地区花费材料重建营地，或迁徙到新的地区重新开始。','system');
+    setChoices(['在当前地区重建营地','远行寻找新家园']);
+  }
+}
+function rebuildCamp(){
+  const cost={'木材':10,'金属片':5,'钉子':3};const can=Object.entries(cost).every(([n,q])=>hasItem(n,q));
+  if(!can){const missing=Object.entries(cost).filter(([n,q])=>!hasItem(n,q)).map(([n,q])=>n+'×'+q).join(',');setStatus('重建材料不足，还需要：'+missing);return;}
+  for(const [n,q]of Object.entries(cost))removeItem(n,q);
+  S.camp.condition=80;S.camp.defense=0;S._campDestroyed=false;S._campLevel=1;S._campDefMod=0;S.campGrid=null;initCampGrid();
+  addStory('🏗️ <strong>营地重建完成！</strong>在废墟上，新的营地重新站了起来。这一次，你会更好地守护它。','camp');
+  updateUI();
+}
+
+// ===== CAMP GOVERNANCE =====
+function changeGovernance(){
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  const g=S.camp.governance;
+  let h=`<h3>🏛️ 营地治理</h3>`;
+  h+=`<p style="font-size:0.78em;">当前制度：<strong>${GOVERN_TYPES[g].icon} ${GOVERN_TYPES[g].name}</strong> — ${GOVERN_TYPES[g].desc}</p>`;
+  h+=`<p style="font-size:0.78em;">营地稳定度：<strong>${S.camp.stability}</strong>/100</p>`;
+  if(g==='dictatorship'){
+    h+=`<div class="wound-card"><strong>🗳️ 转为民主</strong><br><span style="font-size:0.7em;color:var(--text-dim)">队友参与决策，稳定度上升但你的权力受限。</span><div class="treatment-row"><button class="treatment-btn" onclick="doChangeGov('democracy')">🗳️ 推行民主</button></div></div>`;
+  }else{
+    h+=`<div class="wound-card"><strong>👑 转为独裁</strong><br><span style="font-size:0.7em;color:var(--text-dim)">你独揽大权，效率提升但可能引发不满。</span><div class="treatment-row"><button class="treatment-btn" onclick="doChangeGov('dictatorship')">👑 实行独裁</button></div></div>`;
+  }
+  // Rebellion risk
+  const rebRisk=Math.max(0,100-S.camp.stability);
+  h+=`<p style="font-size:0.7em;color:${rebRisk>50?'var(--danger)':'var(--text-dim)'}">⚠️ 叛乱风险：${rebRisk}%${rebRisk>50?' — 危险！':''}</p>`;
+  if(S.camp.stability<25&&S.party.length>0)h+=`<p style="font-size:0.7em;color:var(--danger)">⚠️ 营地不稳定！队友可能造反！</p>`;
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;modal.innerHTML=h;ov.classList.add('active');
+}
+function doChangeGov(type){
+  closeModal();S.camp.governance=type;S.camp.stability=clamp(S.camp.stability+(type==='democracy'?20:-20),0,100);
+  addStory(`🏛️ 营地制度变更为<strong>${GOVERN_TYPES[type].icon} ${GOVERN_TYPES[type].name}</strong>。`,'camp');updateUI();
+}
+function campStabilityCheck(){
+  const g=S.camp.governance;
+  // Decay under dictatorship
+  if(g==='dictatorship')S.camp.stability=clamp(S.camp.stability-1,0,100);
+  else S.camp.stability=clamp(S.camp.stability+0.5,0,100);
+  // Party loyalty affects stability
+  const avgLoyalty=S.party.filter(p=>p.alive).reduce((s,p)=>s+p.loyalty,0)/Math.max(1,S.party.filter(p=>p.alive).length);
+  S.camp.stability=clamp(S.camp.stability+(avgLoyalty-50)/10,0,100);
+  // Rebellion check
+  if(S.camp.stability<15&&S.party.filter(p=>p.alive).length>0&&Math.random()<0.1){
+    const rebel=pick(S.party.filter(p=>p.alive&&p.loyalty<50));
+    if(rebel){addStory(`⚔️ <strong>${rebel.name}发动了叛乱！</strong>"我们受够了你的统治！"`,'danger');
+      if(Math.random()<0.5){rebel.alive=false;addStory(`${rebel.name}在叛乱中被镇压。营地付出了惨重代价。`,'danger');S.camp.stability=clamp(S.camp.stability-20,0,100);}
+      else{const idx=S.party.indexOf(rebel);S.party.splice(idx,1);addStory(`${rebel.name}叛乱失败后逃离了营地。但带走了其他几个不满的人。`,'danger');S.camp.stability=clamp(S.camp.stability-30,0,100);}}}
+  // Disobedience
+  if(g==='democracy'&&S.camp.stability<30){const dis=pick(S.party.filter(p=>p.alive&&p.loyalty<40));if(dis)dis.activity='idle';}
+}
+
+// ===== CAMP BUILDING SYSTEM =====
+const BUILDINGS=[
+  {id:'wall',name:'围墙',icon:'🧱',cost:{'木材':2,'金属片':1},def:15,hp:3,size:[1,1],d:'阻挡敌人进攻，每段+15防御',trap:false},
+  {id:'watchtower',name:'瞭望塔',icon:'🗼',cost:{'木材':3,'金属片':2},def:10,hp:2,size:[1,1],d:'提前发现敌袭，+10防御',trap:false},
+  {id:'storage',name:'仓库',icon:'📦',cost:{'木材':2,'金属片':2},def:0,hp:4,size:[2,1],d:'增加营地物资容量',trap:false},
+  {id:'medtent',name:'医疗帐篷',icon:'⛺',cost:{'布料':2,'木材':2},def:0,hp:2,size:[2,1],d:'队友在营地恢复速度+5/回合',trap:false},
+  {id:'workshop',name:'工作间',icon:'🔧',cost:{'木材':3,'金属片':2,'电子零件':1},def:0,hp:3,size:[2,1],d:'解锁高级制作配方',trap:false},
+  // 生产建筑
+  {id:'greenhouse',name:'大棚',icon:'🌱',cost:{'木材':3,'布料':2,'种子':1},def:0,hp:2,size:[2,1],d:'种植蔬菜每3回合产出食物',trap:false,produces:{item:'罐头',qty:[1,3],interval:3}},
+  {id:'fish_pond',name:'鱼塘',icon:'🐟',cost:{'木材':3,'防水布':1},def:0,hp:2,size:[2,1],d:'养殖鱼类每4回合产出鱼干',trap:false,produces:{item:'鱼干',qty:[1,2],interval:4}},
+  {id:'farm',name:'农场',icon:'🌾',cost:{'木材':4,'种子':2,'工具':1},def:0,hp:3,size:[2,1],d:'大规模种植每5回合产出粮食',trap:false,produces:{item:'罐头',qty:[2,5],interval:5}},
+  {id:'well',name:'水井',icon:'🕳️',cost:{'木材':2,'金属片':1},def:0,hp:3,size:[1,1],d:'每2回合产出净水',trap:false,produces:{item:'净水',qty:[2,4],interval:2}},
+  {id:'chicken_coop',name:'鸡舍',icon:'🐔',cost:{'木材':3,'金属片':1},def:0,hp:2,size:[1,1],d:'养鸡每3回合产出食物和蛋',trap:false,produces:{item:'干粮',qty:[1,3],interval:3}},
+  {id:'kiln',name:'烧砖窑',icon:'🧱',cost:{'木材':4,'金属片':1},def:0,hp:3,size:[1,1],d:'烧制砖块每4回合产出建筑材料',trap:false,produces:{item:'金属片',qty:[1,3],interval:4}},
+];
+const TRAPS=[
+  {id:'spike',name:'尖刺陷阱',icon:'📌',cost:{'木材':1,'金属片':1},dmg:15,d:'对来袭敌人造成15伤害，触发后需重建',dur:1},
+  {id:'pitfall',name:'陷坑',icon:'🕳️',cost:{'木材':2},dmg:20,d:'对来袭敌人造成20伤害，触发后需重建',dur:1},
+  {id:'alarm',name:'警报线',icon:'🔔',cost:{'绳子':1},dmg:0,d:'提前预警来袭方向，触发后需重建',dur:1,alert:true},
+  {id:'bear_trap',name:'捕兽夹',icon:'🪤',cost:{'金属片':3},dmg:25,d:'对来袭敌人造成25伤害，触发后需重建',dur:1},
+];
+
+function initCampGrid(){
+  const size=(S._campLevel||1)===1?5:(S._campLevel||1)===2?7:9;
+  if(!S.campGrid||S.campGrid.length!==size){S.campGrid=[];for(let y=0;y<size;y++){S.campGrid[y]=[];for(let x=0;x<size;x++)S.campGrid[y][x]={type:'empty',id:null};}}
+  const mid=Math.floor(size/2);S.campGrid[mid][mid]={type:'campfire',id:'center',icon:'🔥',name:'营地中心'};
+}
+
+function showCampView(attackDir){
+  initCampGrid();const gs=S.campGrid.length;
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  let h=`<h3>🏕️ 营地布局（${gs}×${gs}）</h3>`;
+  // Grid
+  h+=`<div style="display:grid;grid-template-columns:repeat(${gs},1fr);gap:2px;background:#111;padding:6px;border-radius:8px;max-width:${gs*50}px;margin:0 auto;position:relative;">`;
+  for(let y=0;y<gs;y++){
+    for(let x=0;x<gs;x++){
+      const cell=S.campGrid[y][x];let bg='#1a1a1a',content='';
+      if(cell.type==='campfire'){bg='#3a2a0a';content='🔥';}
+      else if(cell.type==='building'){const b=BUILDINGS.find(b=>b.id===cell.id);bg='#2a3a2a';content=b?b.icon:'🏗️';}
+      else if(cell.type==='trap'){const t=TRAPS.find(t=>t.id===cell.id);bg='#3a1a1a';content=t?t.icon:'⚠️';}
+      else if(cell.type==='ruin'){bg='#2a2a2a';content='💥';}
+      // Attack arrows
+      let border='1px solid #333';
+      if(attackDir){
+        if((attackDir==='N'&&y===0&&x===2)||(attackDir==='S'&&y===4&&x===2)||(attackDir==='E'&&y===2&&x===4)||(attackDir==='W'&&y===2&&x===0)||(attackDir==='NE'&&y===0&&x===4)||(attackDir==='NW'&&y===0&&x===0)||(attackDir==='SE'&&y===4&&x===4)||(attackDir==='SW'&&y===4&&x===0)){border='2px solid #ff0000';content='🔴';}
+      }
+      h+=`<div style="aspect-ratio:1;background:${bg};border:${border};border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:1.2em;cursor:pointer;" onclick="buildOnCell(${x},${y})" title="(${x},${y})">${content}</div>`;
+    }
+  }
+  h+=`</div>`;
+
+  // Legend
+  h+=`<div style="font-size:0.65em;color:var(--text-dim);margin-top:6px;text-align:center;">🔥营地中心 | 🟢建筑 | 🔴陷阱 | 💥废墟 | 点击空格建造</div>`;
+
+  // Build menu
+  h+=`<div style="margin-top:8px;"><strong>🔨 建造建筑：</strong><div class="treatment-row">`;
+  BUILDINGS.forEach(b=>{const can=Object.entries(b.cost).every(([n,q])=>hasItem(n,q));h+=`<button class="treatment-btn" style="${can?'':'opacity:0.4'}" ${can?`onclick="selectBuild('${b.id}')"`:'disabled'}>${b.icon}${b.name}(${Object.entries(b.cost).map(([n,q])=>n+'×'+q).join(',')})${can?'':'❌'}</button>`;});h+=`</div></div>`;
+
+  h+=`<div style="margin-top:6px;"><strong>🪤 布置陷阱：</strong><div class="treatment-row">`;
+  TRAPS.forEach(t=>{const can=Object.entries(t.cost).every(([n,q])=>hasItem(n,q));h+=`<button class="treatment-btn" style="${can?'':'opacity:0.4'}" ${can?`onclick="selectTrap('${t.id}')"`:'disabled'}>${t.icon}${t.name}(${Object.entries(t.cost).map(([n,q])=>n+'×'+q).join(',')})${can?'':'❌'}</button>`;});h+=`</div></div>`;
+
+  // Stats
+  const totalDef=calcTotalDefense();const trapCount=countTraps();
+  h+=`<div style="font-size:0.7em;margin-top:6px;color:var(--text-dim);">🛡️总防御：${totalDef} | 陷阱：${trapCount}个 | 建筑：${countBuildings()}个 | 等级：${(S._campLevel||1)}级(${initCampGrid()||S.campGrid.length}×${S.campGrid.length})</div>`;
+  // Expand button
+  if((S._campLevel||1)<CAMP_LEVELS.length)h+=`<div class="treatment-row" style="margin-top:4px;"><button class="treatment-btn" onclick="closeModal();showExpandInfo();">🏗️ 扩建营地</button></div>`;
+
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;
+  modal.innerHTML=h;ov.classList.add('active');
+}
+
+let _selectedBuild=null,_selectedTrap=null;
+function selectBuild(id){_selectedBuild=id;_selectedTrap=null;setStatus('点击营地空格放置建筑');closeModal();showCampView();}
+function selectTrap(id){_selectedTrap=id;_selectedBuild=null;setStatus('点击营地空格布置陷阱');closeModal();showCampView();}
+
+function buildOnCell(x,y){
+  if(!atCamp()){setStatus('你不在营地，无法建造！');return;}
+  const cell=S.campGrid[y][x];if(!cell||cell.type!=='empty'){setStatus('此处无法建造');return;}
+  if(_selectedBuild){
+    const b=BUILDINGS.find(b=>b.id===_selectedBuild);if(!b)return;
+    if(!Object.entries(b.cost).every(([n,q])=>hasItem(n,q))){setStatus('材料不足');return;}
+    for(const [n,q]of Object.entries(b.cost))removeItem(n,q);
+    cell.type='building';cell.id=b.id;S._campDefMod=(S._campDefMod||0)+b.def;
+    addStory(`🔨 建造了<strong>${b.icon} ${b.name}</strong>（+${b.def}防御）`,'camp');modRep(3,'营地建设');
+    _selectedBuild=null;updateUI();showCampView();
+  }else if(_selectedTrap){
+    const t=TRAPS.find(t=>t.id===_selectedTrap);if(!t)return;
+    if(!Object.entries(t.cost).every(([n,q])=>hasItem(n,q))){setStatus('材料不足');return;}
+    for(const [n,q]of Object.entries(t.cost))removeItem(n,q);
+    cell.type='trap';cell.id=t.id;cell.charges=1;
+    addStory(`🪤 布置了<strong>${t.icon} ${t.name}</strong>`,'camp');
+    _selectedTrap=null;updateUI();showCampView();
+  }
+}
+
+function calcTotalDefense(){
+  let def=S.camp.defense+(S._campDefMod||0);
+  for(let y=0;y<5;y++)for(let x=0;x<5;x++){const c=S.campGrid[y][x];if(c.type==='building'){const b=BUILDINGS.find(b=>b.id===c.id);if(b)def+=b.def;}}
+  return def;
+}
+function countTraps(){let n=0;for(let y=0;y<5;y++)for(let x=0;x<5;x++)if(S.campGrid[y][x].type==='trap')n++;return n;}
+function countBuildings(){let n=0;for(let y=0;y<5;y++)for(let x=0;x<5;x++)if(S.campGrid[y][x].type==='building')n++;return n;}
+
+// ===== ENEMY ATTACK (OVERHAULED) =====
+function enemyAttackPlayer(){
+  if(S.enemyCamps.length===0)return;
+  // If incoming attack already exists, check arrival
+  if(S._incomingAttack){
+    S._incomingAttack.arriveHour--;
+    if(S._incomingAttack.arriveHour<=0){executeBattle(S._incomingAttack);S._incomingAttack=null;return;}
+    return; // Don't spawn new attacks while one is incoming
+  }
+  // Can only detect attack if someone is at camp (player or teammate)
+  const someoneAtCamp=atCamp()||S.party.some(p=>p.alive&&p.activity==='guard');
+  if(!someoneAtCamp)return; // attack still happens but you won't know!
+  if(Math.random()>0.08*repAttackMod())return; // 8% base, modified by reputation
+  const ec=pick(S.enemyCamps.filter(c=>c.alive!==false));if(!ec)return;
+  const dirs=['N','S','E','W','NE','NW','SE','SW'];const dir=pick(dirs);
+  const hours=rand(4,12);
+  S._incomingAttack={enemyCamp:ec,arriveHour:hours,dir,alerted:false};
+  addStory(`⚔️ <strong>侦察预警！${ec.name}来袭！</strong>预计<strong style="color:var(--danger)">${hours}小时</strong>后从<strong style="color:var(--danger)">${dir}方</strong>抵达营地！`,'danger');
+  setChoices(['紧急返回营地防守','派队友回防自己在外面','不理会继续当前行动']);
+  S._currentEvent={ev:{id:'attack_warning'},choices:[
+    {text:'紧急返回营地防守',ch:{dist:-S.distance,outcome:'你全速赶回营地，准备迎战。'}},
+    {text:'派队友回防自己在外面',ch:{outcome:'你让队友回去防守，自己留在外面。希望他们能守住。'}},
+    {text:'不理会继续当前行动',ch:{outcome:'你选择相信营地的防御。如果营地失守，后果自负。'}},
+  ]};
+}
+
+function executeBattle(attack){
+  const{enemyCamp:ec,dir}=attack;let enemyPower=ec.size*2+ec.defense*0.5;
+  const playerPresent=atCamp();addStory(`⚔️ <strong>${ec.name}抵达！战斗开始！</strong>${playerPresent?'你亲自指挥防御。':'你不在营地，队友独自应战！'}`,'danger');
+  // Battle rounds
+  let battleLog='';let myLosses=0,enemyLosses=0;
+  for(let round=1;round<=rand(3,6);round++){
+    // Traps trigger first round
+    if(round===1){
+      const trapCells=getTrapCellsInDir(dir);let trapDmg=0;
+      for(const tc of trapCells){const cell=S.campGrid[tc.y][tc.x];if(cell.type!=='trap')continue;const t=TRAPS.find(t=>t.id===cell.id);if(!t)continue;if(t.alert)attack.alerted=true;trapDmg+=t.dmg||0;cell.type='ruin';cell.id=null;battleLog+=`💥 ${t.icon}${t.name}触发！(-${t.dmg}) `;}
+      enemyPower=Math.max(0,enemyPower-trapDmg*3);if(trapDmg>0)battleLog+=`陷阱造成${trapDmg}伤害！\n`;
+    }
+    // Combat exchange
+    const myPwr=calcTotalDefense()/10+(playerPresent?3:1)+S.party.filter(p=>p.alive).length*(playerPresent?2:1);
+    const enPwr=enemyPower/5;const myRoll=rand(0,Math.floor(myPwr));const enRoll=rand(0,Math.floor(enPwr));
+    if(myRoll>enRoll){enemyLosses+=rand(1,4);enemyPower-=rand(3,10);battleLog+=`🔫 第${round}轮：你方占优！敌方-${enemyLosses}人。\n`;}
+    else{myLosses+=rand(0,2);battleLog+=`💢 第${round}轮：敌方猛攻！我方损伤。\n`;}
+    // Teammate casualties
+    if(Math.random()<0.25){const n=S.party.find(p=>p.alive&&Math.random()<0.5);if(n){partyInjure(n.id,rand(10,35));battleLog+=`🤕 ${n.name}在战斗中受伤！\n`;}}
+    if(Math.random()<0.08){const n=S.party.find(p=>p.alive);if(n){n.alive=false;n.health=0;battleLog+=`💀 <strong>${n.name}战死了！</strong>\n`;}}
+    // Player injury risk (body part specific)
+    if(playerPresent&&Math.random()<0.2){const pid=pick(BODY_PARTS);const sev=rand(1,3);const injuries={head:['头部被弹片擦伤','一颗子弹擦过太阳穴','碎石击中了额头'],chest:['胸口被子弹击中——防弹衣救了你一命','弹片嵌入了肋骨','被冲击波震伤了内脏'],leftArm:['左臂被流弹击中，鲜血顺着袖子流下','左肩被碎片划开一道深口','左前臂中弹'],rightArm:['右臂被弹片击中','右手被流弹贯穿','右肩遭到重击'],leftLeg:['左腿中弹，钻心的疼痛','左膝被碎片击中','左大腿被划开'],rightLeg:['右腿被弹片击中，跌倒在地','右脚踝遭到重击','右小腿中弹']};const desc=pick(injuries[pid]||[`${PL[pid]}受伤`]);const sevDesc=sev===3?'严重':sev===2?'中度':'轻微';addWound(pid,sev,desc,sev>=2);S.blood=clamp(S.blood-sev*8,0,100);battleLog+=`🩸 <strong>${PL[pid]}受伤！</strong>${desc}（${sevDesc}伤，-${sev*8}生命）\n`;if(S.blood<=0){battleLog+=`💀 <strong>你倒在了战场上...</strong>\n`;die();return;}}
+    if(enemyPower<=0){battleLog+='🎉 敌军溃散！\n';break;}
+  }
+  addStory(battleLog.replace(/\n/g,'<br>'),'medical');
+  // Result
+  const victory=enemyPower<=0||myLosses<enemyLosses*2;
+  if(victory){
+    addStory(`🛡️ <strong>防守成功！</strong>${ec.name}损失惨重撤退了。我方损失${myLosses}人。`,'camp');modRep(8,'成功防御营地');
+    const totalLoot=ec.supplies;ec.supplies=0;const lootCount=rand(3,8);
+    for(let i=0;i<lootCount;i++){const n=pick(['弹药','罐头','金属片','武器零件','医疗包','净水']);addItem(n,rand(1,4));}
+    addStory(`🎁 缴获战利品！从敌方营地缴获了大量物资（原库存${totalLoot}）。`,'action');
+    S.enemyCamps=S.enemyCamps.filter(x=>x.id!==ec.id);
+  }else{
+    addStory(`💔 <strong>营地失守！</strong>${ec.name}占领了营地。`,playerPresent?'danger':'danger');modRep(-12,'营地失守');
+    S.camp.condition=clamp(S.camp.condition-rand(30,50),0,100);
+    // Destroy buildings
+    for(let y=0;y<S.campGrid.length;y++)for(let x=0;x<S.campGrid.length;x++){const c=S.campGrid[y][x];if(c.type==='building'&&Math.random()<0.5){c.type='ruin';c.id=null;}}
+    // Lose camp supplies
+    const campKeys=Object.keys(S.camp.supplies);const lostCount=Math.min(campKeys.length,rand(3,8));
+    for(let i=0;i<lostCount;i++){const k=campKeys[rand(0,campKeys.length-1)];if(S.camp.supplies[k]){const q=Math.min(rand(1,5),S.camp.supplies[k].qty);removeItem(k,q,true);addStory(`📤 损失营地物资：${k}×${q}`,'danger');}}
+    // Teammates captured
+    if(!playerPresent&&S.party.filter(p=>p.alive).length>0){
+      const captured=S.party.filter(p=>p.alive);addStory(`🔗 ${captured.map(p=>p.name).join('、')}被敌人俘虏！`,'danger');
+      if(Math.random()<0.5){addStory('几天后，被俘的队友趁机逃回了营地。','party');}else{addStory('你试图交涉赎回队友...但废土上没有仁慈。','danger');S.party=S.party.filter(p=>!p.alive||Math.random()<0.3);}
+    }
+    const fpid=pick(BODY_PARTS);addWound(fpid,rand(1,3),`营地攻防战中${PL[fpid]}受伤`,true);S.blood=clamp(S.blood-rand(10,25),0,100);
+  }
+  updateUI();checkDeath();
+}
+
+function getTrapCellsInDir(dir){
+  const cells=[];const gs=S.campGrid?S.campGrid.length:5;const m=gs-1;
+  // Dynamic perimeter based on grid size
+  const checks={};
+  checks.N=[];for(let i=0;i<gs;i++)checks.N.push([i,0]);
+  checks.S=[];for(let i=0;i<gs;i++)checks.S.push([i,m]);
+  checks.E=[];for(let i=0;i<gs;i++)checks.E.push([m,i]);
+  checks.W=[];for(let i=0;i<gs;i++)checks.W.push([0,i]);
+  checks.NE=[[m,0],[m-1,0],[m,1]];checks.NW=[[0,0],[1,0],[0,1]];
+  checks.SE=[[m,m-1],[m,m],[m-1,m]];checks.SW=[[0,m-1],[0,m],[1,m]];
+  const positions=checks[dir]||[];
+  for(const [x,y]of positions){if(S.campGrid&&S.campGrid[y]&&S.campGrid[y][x]&&S.campGrid[y][x].type==='trap')cells.push({x,y});}
+  return cells;
+}
+
+// ===== EVENT ENGINE =====
+function selectEvent(){
+  const ctx={minDist:S.distance,maxDist:S.distance,night:isNight(),day:isDaytime(),seasons:[S.season?.id],weather:[S.weather.precipType],atCamp:atCamp(),injured:S.blood<50||BODY_PARTS.some(p=>getPartStatus(p)!=='healthy'),hasParty:S.party.filter(p=>p.alive).length>0,pain:S.pain>30,tired:S.fatigue>55,hungry:S.nutrition<30,thirsty:S.hydration<30};
+  let candidates=EVENTS.filter(ev=>{
+    const c=ev.ctx;if(c.atCamp!==undefined&&c.atCamp!==ctx.atCamp)return false;if(c.night&&!ctx.night)return false;if(c.day&&!ctx.day)return false;
+    if(c.seasons&&!c.seasons.some(s=>ctx.seasons.includes(s)))return false;if(c.weather&&!c.weather.some(w=>ctx.weather.includes(w)))return false;
+    if(c.injured&&!ctx.injured)return false;if(c.hasParty&&!ctx.hasParty)return false;if(c.pain&&ctx.pain<c.pain)return false;
+    if(c.tired&&!ctx.tired)return false;if(c.hungry&&!ctx.hungry)return false;if(c.thirsty&&!ctx.thirsty)return false;
+    if(c.minDist!==undefined&&ctx.maxDist<c.minDist)return false;if(c.maxDist!==undefined&&ctx.minDist>c.maxDist)return false;
+    return true;
+  });
+  // Filter out recently used events (keep memory of last 12)
+  let fresh=candidates.filter(ev=>!S.recentEvents.includes(ev.id));
+  if(fresh.length>0)candidates=fresh;
+  // Prefer categories not recently used
+  let diffCat=candidates.filter(ev=>!S.recentCats.includes(ev.cat));
+  if(diffCat.length>0)candidates=diffCat;
+  if(candidates.length===0){candidates=EVENTS.filter(ev=>!S.recentEvents.includes(ev.id));}
+  if(candidates.length===0){candidates=EVENTS;}
+  if(candidates.length===0)return EVENTS[0];
+  const ev=pick(candidates);
+  S.recentEvents.push(ev.id);if(S.recentEvents.length>12)S.recentEvents.shift();
+  S.recentCats.push(ev.cat);if(S.recentCats.length>4)S.recentCats.shift();
+  return ev;
+}
+
+function processEvent(ev){
+  addStory(ev.narr,'ai');
+  const choices=ev.choices.map((ch,i)=>{
+    let disabled='';if(ch.need&&!hasItem(ch.need,1))disabled='disabled';
+    return{text:ch.text,disabled:!!(ch.need&&!hasItem(ch.need,1)),idx:i,ch:ch};
+  });
+  // Always add "return to camp" option (hidden when already at camp)
+  if(!atCamp())choices.push({text:'🏕️ 返回营地',disabled:false,idx:choices.length,ch:{outcome:'你决定先回营地再说。',dist:-S.distance,eff:{fatigue:S.distance*2}}});
+  S._currentEvent={ev,choices};
+  setChoices(choices.map(c=>c.disabled?`${c.text}（需要${c.ch.need}）`:c.text));
+}
+
+function applyEffects(eff,result){
+  if(!eff)return;
+  if(eff.health){S.blood=clamp(S.blood+(eff.health||0),0,100);result.effects.push({k:'health',v:eff.health});}
+  if(eff.nutrition){S.nutrition=clamp(S.nutrition+(eff.nutrition||0),0,100);result.effects.push({k:'nutrition',v:eff.nutrition});}
+  if(eff.hydration){S.hydration=clamp(S.hydration+(eff.hydration||0),0,100);result.effects.push({k:'hydration',v:eff.hydration});}
+  if(eff.fatigue){S.fatigue=clamp(S.fatigue+(eff.fatigue||0),0,100);result.effects.push({k:'fatigue',v:eff.fatigue});}
+  if(eff.infection){S.infectionLevel=clamp(S.infectionLevel+(eff.infection||0),0,100);}
+  if(eff.pain){S.pain=clamp(S.pain+(eff.pain||0),0,100);}
+  if(eff.bodyWet){S.bodyWetness=clamp(S.bodyWetness+(eff.bodyWet||0),0,100);}
+}
+function applyItems(items,result){
+  if(!items)return false;
+  for(const it of items){let n=it.n;let q=Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1);
+    if(q<0&&!hasItem(n,Math.abs(q)))return false;} // cost check failed
+  for(const it of items){let n=it.n;let q=Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1);
+    if(q<0){removeItem(n,Math.abs(q));result.itemsLost.push({n,q:Math.abs(q)});}}
+  for(const it of items){let n=it.n;let q=Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1);
+    if(q>0){addItem(n,q);result.itemsGained.push({n,q});}}
+  return true;
+}
+
+function resolveChoice(idx){
+  const data=S._currentEvent;if(!data||!data.choices||!data.choices[idx])return null;
+  const ch=data.choices[idx].ch;if(!ch||ch.disabled)return null;
+  const result={itemsGained:[],itemsLost:[],effects:[],distChange:0};
+  let selectedOutcome=null;
+
+  // NEW: Multi-outcome system (randomized results)
+  if(ch.outcomes&&Array.isArray(ch.outcomes)&&ch.outcomes.length>0){
+    selectedOutcome=pickW(ch.outcomes);
+    applyEffects(selectedOutcome.eff,result);
+    if(selectedOutcome.items&&!applyItems(selectedOutcome.items,result)){
+      addStory(`❌ <strong>运气不佳！</strong>事情没有按预期发展——物资不足无法完成。`,'danger');return null;}
+    if(selectedOutcome.lose){const names=Object.keys(S.inventory);for(let i=0;i<selectedOutcome.lose&&names.length>0;i++){const ln=names[rand(0,names.length-1)];removeItem(ln,1);result.itemsLost.push({n:ln,q:1});}}
+    if(selectedOutcome.dist)S.distance=clamp(S.distance+(selectedOutcome.dist||0),0,20);
+    if(selectedOutcome.need&&hasItem(selectedOutcome.need,1)){removeItem(selectedOutcome.need,1);result.itemsLost.push({n:selectedOutcome.need,q:1});}
+    // Add randomness: sometimes lose a random item when searching/scavenging
+    if(Math.random()<0.15&&Object.keys(S.inventory).length>0&&!selectedOutcome.lose){
+      const rk=Object.keys(S.inventory)[rand(0,Object.keys(S.inventory).length-1)];
+      if(Math.random()<0.5){removeItem(rk,1);result.itemsLost.push({n:rk,q:1});}
+    }
+    return selectedOutcome.desc||ch.outcome||buildOutcomeText(result);
+  }
+
+  // OLD: Deterministic format (backward compatible)
+  applyEffects(ch.eff,result);
+  if(ch.items&&!applyItems(ch.items,result)){
+    addStory(`❌ <strong>交易失败！</strong>背包中没有足够的物资。`,'danger');return null;}
+  if(ch.lose){const names=Object.keys(S.inventory);for(let i=0;i<ch.lose&&names.length>0;i++){const ln=names[rand(0,names.length-1)];removeItem(ln,1);result.itemsLost.push({n:ln,q:1});}}
+  if(ch.dist){S.distance=clamp(S.distance+(ch.dist||0),0,20);result.distChange=ch.dist;}
+  if(ch.need&&hasItem(ch.need,1)){removeItem(ch.need,1);result.itemsLost.push({n:ch.need,q:1});}
+  // Random mishap chance
+  if(Math.random()<0.12&&Object.keys(S.inventory).length>0&&!ch.lose){
+    const rk=Object.keys(S.inventory)[rand(0,Object.keys(S.inventory).length-1)];
+    if(Math.random()<0.4){removeItem(rk,1);result.itemsLost.push({n:rk,q:1});}
+  }
+
+  return ch.outcome||buildOutcomeText(result);
+}
+
+function buildOutcomeText(result){
+  let o='';
+  if(result.itemsGained.length>0){const names=result.itemsGained.map(i=>`${ITEMS[i.n]?.e||''}${i.n}×${i.q}`).join('、');o+=`你找到了${names}。`;}
+  if(result.itemsLost.length>0){const names=result.itemsLost.map(i=>`${i.n}×${i.q}`).join('、');o+=`你失去了${names}。`;}
+  if(result.distChange>0)o+=`你向废土深处推进了${result.distChange.toFixed(1)}km。`;
+  else if(result.distChange<0)o+=`你往营地返回了${Math.abs(result.distChange).toFixed(1)}km。`;
+  const he=result.effects.find(e=>e.k==='health');if(he&&he.v<0)o+=`行动中受了些伤。`;
+  const fe=result.effects.find(e=>e.k==='fatigue');if(fe&&fe.v>8)o+=`你感到相当疲惫。`;
+  if(!o)o='你环顾四周，废土依旧沉默。';
+  return o;
+}
+
+// ===== STORY =====
+function addStory(t,c='ai'){const b=document.getElementById('story-box');const d=document.createElement('div');d.className='msg '+c;d.innerHTML=t;b.appendChild(d);b.scrollTop=b.scrollHeight;}
+function setChoices(cs){const a=document.getElementById('choices-area');if(!cs||cs.length===0){a.innerHTML='';return;}a.innerHTML=cs.map((c,i)=>`<button class="choice-btn" onclick="pickChoice(${i})">${i+1}. ${c}</button>`).join('');}
+function setStatus(m){document.getElementById('status-line').textContent=m;}
+function btnDisabled(v){document.querySelectorAll('#bottom .btn,.choice-btn').forEach(b=>b.disabled=v);}
+
+// ===== VITAL RATES =====
+function getVitalRates(){
+  let bloodRate=0,bleedCount=0;for(const pid of BODY_PARTS)for(const w of S.body[pid].wounds){if(w.bleeding&&!w.bandaged){bloodRate-=w.severity*3;bleedCount++;}}
+  let hydRate=-3;if(S.weather.temperature>30)hydRate-=2;if(S.weather.temperature>38)hydRate-=2;if(S.weather.windSpeed>20)hydRate-=1;
+  let nutRate=-2;if(S.weather.temperature<5)nutRate-=1;if(S.weather.temperature<-10)nutRate-=1;
+  let fatRate=3;if(S.weather.temperature<5)fatRate+=2;if(S.pain>40)fatRate+=1;if(isNight())fatRate+=1;
+  const feels=getFeelsLike();const tempDrift=(feels+2-S.coreTemp)*0.3;
+  let wetRate=0;const p=S.weather.precipType;if(p==='drizzle')wetRate=5;else if(p==='rain')wetRate=15;else if(p==='heavy_rain')wetRate=30;else if(S.weather.isSnow)wetRate=8;else wetRate=-10;if(S.hasCampfire)wetRate-=15;
+  let infRate=0;const hi=BODY_PARTS.some(p=>S.body[p].wounds.some(w=>w.infected));if(hi)infRate=2;if(!hi&&S.infectionLevel>0)infRate=-3;
+  return{bloodRate,bleedCount,hydRate,nutRate,fatRate,tempRate:tempDrift,wetRate,infRate};
+}
+function vLabel(k,v){if(k==='blood')return v>80?'充足':v>60?'正常':v>40?'偏低':v>20?'不足':'危险';if(k==='nutrition')return v>80?'饱足':v>55?'正常':v>30?'偏低':v>15?'饥饿':'极度饥饿';if(k==='hydration')return v>80?'充足':v>55?'正常':v>30?'偏低':v>15?'口渴':'脱水';if(k==='fatigue')return v<20?'充沛':v<35?'正常':v<50?'略累':v<70?'疲惫':'极度疲惫';if(k==='pain')return v<10?'无':v<25?'轻微':v<45?'中度':v<65?'较重':v<85?'剧烈':'无法忍受';if(k==='infectionLevel')return v<5?'无':v<20?'轻微':v<45?'中度':v<70?'严重':'危急';return'';}
+function vColor(k,v){if(k==='blood')return v>60?'v-good':v>30?'v-warn':'v-danger';if(k==='nutrition')return v>55?'v-good':v>25?'v-warn':'v-danger';if(k==='hydration')return v>55?'v-good':v>25?'v-warn':'v-danger';if(k==='fatigue')return v<50?'v-good':v<70?'v-warn':'v-danger';if(k==='coreTemp')return v>35.5&&v<38?'v-good':(v>33&&v<40)?'v-warn':'v-danger';if(k==='pain')return v<25?'v-good':v<50?'v-warn':'v-danger';if(k==='infectionLevel')return v<20?'v-good':v<45?'v-warn':'v-danger';return'v-info';}
+function fmtRate(rate,unit=''){if(Math.abs(rate)<0.05)return'→稳定';const arrow=rate<0?'↓':'↑';const abs=Math.abs(rate);if(abs>=1)return`${arrow}${abs.toFixed(0)}${unit}/h`;return`${arrow}${abs.toFixed(1)}${unit}/h`;}
+function timeToCritical(key,val,rate){if(rate>=0)return null;let th;if(key==='blood')th=20;if(key==='nutrition')th=15;if(key==='hydration')th=15;if(!th)return null;const h=Math.abs((val-th)/rate);if(h>48)return null;if(h<1)return'⚠️即将危急';return`≈${h.toFixed(0)}h后危急`;}
+
+// ===== UI =====
+function updateUI(){
+  BODY_PARTS.forEach(pid=>{const el=document.getElementById('bp-'+pid);if(!el)return;el.classList.remove('bp-healthy','bp-minor','bp-wound','bp-severe','bp-infected','bp-bandaged');el.classList.add(getPartCSS(pid));const dr=document.getElementById('drip-'+pid);if(dr)dr.style.display=S.body[pid].wounds.some(w=>w.bleeding&&!w.bandaged)?'block':'none';});
+  const rates=getVitalRates();const feels=getFeelsLike();
+  const vv=[{l:'🩸 血液',v:S.blood,lb:vLabel('blood',S.blood),c:vColor('blood',S.blood),rate:rates.bloodRate,rt:fmtRate(rates.bloodRate),ex:rates.bleedCount>0?`(${rates.bleedCount}处流血)`:''},
+    {l:'🍖 营养',v:S.nutrition,lb:vLabel('nutrition',S.nutrition),c:vColor('nutrition',S.nutrition),rate:rates.nutRate,rt:fmtRate(rates.nutRate)},
+    {l:'💧 水分',v:S.hydration,lb:vLabel('hydration',S.hydration),c:vColor('hydration',S.hydration),rate:rates.hydRate,rt:fmtRate(rates.hydRate),cr:timeToCritical('hydration',S.hydration,rates.hydRate)},
+    {l:'⚡ 体力',v:S.fatigue,lb:vLabel('fatigue',S.fatigue),c:vColor('fatigue',S.fatigue),rate:rates.fatRate,rt:fmtRate(rates.fatRate,'%')},
+    {l:'🌡️ 体温',v:S.coreTemp.toFixed(1)+'°C',lb:'',c:vColor('coreTemp',S.coreTemp),rate:rates.tempRate,rt:fmtRate(rates.tempRate,'°C')},
+    {l:'💢 疼痛',v:S.pain,lb:vLabel('pain',S.pain),c:vColor('pain',S.pain)},
+    {l:'🦠 感染',v:S.infectionLevel,lb:vLabel('infectionLevel',S.infectionLevel),c:vColor('infectionLevel',S.infectionLevel),rate:rates.infRate,rt:fmtRate(rates.infRate,'%')},
+    {l:'💦 湿度',v:S.bodyWetness+'%',lb:S.bodyWetness<20?'干燥':S.bodyWetness<45?'微湿':S.bodyWetness<70?'潮湿':'湿透',c:S.bodyWetness<45?'v-info':S.bodyWetness<70?'v-warn':'v-danger',rate:rates.wetRate,rt:fmtRate(rates.wetRate,'%')}];
+  document.getElementById('vitals-list').innerHTML=vv.map(v=>{const rh=(v.rate!==undefined&&v.rt)?` <span style="font-size:0.65em;color:${v.rate<0?'var(--danger)':v.rate>0?'var(--warning)':'var(--text-dim)'}">${v.rt}${v.ex||''}</span>`:'';const crh=v.cr?` <span style="font-size:0.6em;color:var(--danger)">${v.cr}</span>`:'';return`<div class="sp-row"><span class="sp-label">${v.l}</span><span class="sp-val ${v.c}">${v.lb||v.v}</span>${rh}${crh}</div>`;}).join('');
+  // Info bar
+  document.getElementById('ib-biome-icon').textContent=S.currentBiome?.icon||'🏘️';document.getElementById('ib-biome').textContent=S.currentBiome?.name||'郊区';
+  document.getElementById('ib-se-icon').textContent=S.season?.icon||'🌸';document.getElementById('ib-season').textContent=S.season?.name||'春';
+  document.getElementById('ib-day').textContent=S.day;document.getElementById('ib-time').textContent=timeString();
+  document.getElementById('ib-temp').textContent=S.weather.temperature;document.getElementById('ib-hum').textContent=S.weather.humidity;
+  const pc=document.getElementById('ib-precip-chip');document.getElementById('ib-precip-icon').textContent=S.weather.icon;document.getElementById('ib-precip').textContent=S.weather.desc;pc.className=S.weather.precipType!=='none'?'info-chip warn':'info-chip';
+  document.getElementById('ib-wind').textContent=S.weather.wind==='calm'?'微风':S.weather.wind==='breeze'?'和风':S.weather.wind==='strong'?'大风':'狂风';
+  document.getElementById('ib-dist').textContent=S.distance.toFixed(1);
+  const cc=document.getElementById('ib-camp-chip');const cs=document.getElementById('ib-camp-status');if(atCamp()){cc.className='info-chip';cs.textContent='在营地';cs.style.color='var(--success)';}else{cc.className='info-chip warn';cs.textContent='外出中';cs.style.color='var(--warning)';}
+  document.getElementById('ib-party').textContent=(1+S.party.filter(p=>p.alive).length);
+  const rt=repTitle();document.getElementById('ib-rep-icon').textContent=rt.icon;document.getElementById('ib-rep').textContent=rt.name;document.getElementById('ib-fire-chip').style.display=S.hasCampfire?'flex':'none';
+  if(S._incomingAttack){const ia=S._incomingAttack;setStatus(`⚔️ ${ia.enemyCamp.name}预计${ia.arriveHour}小时后抵达！${ia.arriveHour<=2?'⚠️即将交战！':''}`);}
+  // Rebuild button
+  const rb=document.getElementById('btn-rebuild');if(rb)rb.style.display=S._campDestroyed?'inline-block':'none';
+  // Map-dependent buttons
+  const hasM=hasMap();['btn-map','btn-travel','btn-enemy'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=hasM?'1':'0.4';});
+  // Clothing
+  const sl=['head','upper','lower','feet'],slL={head:'🧢头部',upper:'👔上衣',lower:'👖裤子',feet:'👢鞋子'};
+  document.getElementById('clothing-list').innerHTML=sl.map(s=>{const c=S.clothing[s];return`<div class="cloth-slot ${c.wet?'wet':''}"><span class="cs-part">${slL[s]}</span><span class="cs-name">${c.name}</span><span class="cs-stat">🔥+${c.warmth}</span><span class="cs-stat">💧${c.wp}%</span></div>`;}).join('');
+  document.getElementById('cloth-warmth').textContent='(总计🔥+'+totalWarmth()+')';document.getElementById('body-wetness').textContent=S.bodyWetness+'%';document.getElementById('feels-like').textContent=getFeelsLike()+'°C';
+  // Camp
+  document.getElementById('cp-condition').textContent=S.camp.condition>80?'完好':S.camp.condition>50?'轻微损坏':'严重损坏';document.getElementById('cp-condition').className=S.camp.condition>80?'v-good':S.camp.condition>50?'v-warn':'v-danger';
+  document.getElementById('cp-defense').textContent=(S.camp.defense>=60?'坚固':S.camp.defense>=30?'一般':S.camp.defense>0?'薄弱':'无')+(S.chestSlots>0?' | 📦Lv'+(S.chestLevel||0):'');
+let supText=campSCount()+'件'+(S.chestSlots>0?`/${S.chestSlots}格`:'');
+// Production timers
+if(S.campGrid){const prods=[];for(let y=0;y<S.campGrid.length;y++)for(let x=0;x<S.campGrid.length;x++){const cell=S.campGrid[y][x];if(cell.type==='building'){const b=BUILDINGS.find(b=>b.id===cell.id);if(b&&b.produces){const c=cell._prodCounter||0;prods.push(`${b.icon}${b.produces.interval-c}t`);}}}if(prods.length>0)supText+=' | '+prods.join(' ');}
+document.getElementById('cp-supplies').textContent=supText;
+  const govLabel=document.getElementById('cp-condition');if(govLabel)govLabel.textContent=(GOVERN_TYPES[S.camp.governance]?.icon||'')+(GOVERN_TYPES[S.camp.governance]?.name||'')+' | 稳定'+S.camp.stability;
+  if(document.getElementById('cp-condition'))document.getElementById('cp-condition').className=S.camp.stability>50?'v-good':S.camp.stability>25?'v-warn':'v-danger';
+  const pl=document.getElementById('party-list');if(S.party.length===0)pl.innerHTML='<span style="color:var(--text-dim);font-size:0.75em;">独自一人</span>';
+  else pl.innerHTML=S.party.map(p=>{const st=getNpcStatus(p);const acts={scout:'👀',gather:'🔍',guard:'🛡️',spy:'🕵️',idle:''};const rel=p.id===S.spouse?'💍':'';return`<div class="party-member" onclick="showTeammateDetail('${p.id}')" style="cursor:pointer;" title="点击查看详情"><span><span class="pm-name">${rel}${p.e}${p.name}</span><span class="pm-skill"> ${p.gender||''}${p.age||''}岁 -${p.sn} ${acts[p.activity]||''}</span></span><span style="font-size:0.65em;"><span style="color:${p.health>50?'var(--success)':p.health>20?'var(--warning)':'var(--danger)'}">${p.alive?'❤️'+p.health:'💀'}</span> ${st.icon}</span></div>`;}).join('');
+  // Children
+  const aliveChildren=S.children.filter(c=>c.alive);
+  if(aliveChildren.length>0)pl.innerHTML+=`<div style="font-size:0.7em;color:var(--text-dim);margin-top:4px;">👶 孩子：${aliveChildren.map(c=>`${c.gender=='男'?'👦':'👧'}${c.name}(${c.age.toFixed(0)}岁)`).join('、')}</div>`;
+  // Inventory
+  const inv=document.getElementById('inv-row'),items=Object.entries(S.inventory);const ms=maxSlots();let ih=`🎒<span style="color:var(--text-dim)">随身(${items.length}/${ms}):</span> `;if(items.length===0)ih+='<span style="color:var(--text-dim)">空</span>';
+  else ih+=items.map(([n,d])=>{const cls=(d.clothing||d.med||d.usable)?'usable':'';return`<span class="inv-chip ${cls}" onclick="quickUse('${n}')" title="${d.d||''}">${d.e}${n}×${d.qty}</span>`;}).join('');if(items.length>=ms)ih+='<span style="color:var(--danger);font-size:0.65em;">⚠️满</span>';inv.innerHTML=ih;
+  // Warnings
+  const bl=BODY_PARTS.filter(p=>S.body[p].wounds.some(w=>w.bleeding&&!w.bandaged)),infs=BODY_PARTS.filter(p=>S.body[p].wounds.some(w=>w.infected));
+  let warns=[];if(bl.length>0)warns.push(`🩸${bl.map(p=>PL[p]).join('、')}流血(${Math.abs(rates.bloodRate)}/h)`);if(infs.length>0)warns.push(`🦠${infs.map(p=>PL[p]).join('、')}感染(+${rates.infRate.toFixed(0)}/h)`);
+  // Injury debuff warnings
+  const idb=getInjuryDebuffs();if(idb.cantLeave)warns.push(`🚫${idb.cantLeaveReason}`);if(idb.slotPenalty>0)warns.push(`🎒手臂伤-${idb.slotPenalty}格`);if(idb.needSurgery)warns.push('🏥需要手术');if(idb.needSplint.length>0)warns.push(`🪵${idb.needSplint.map(p=>PL[p]).join('、')}需夹板`);if(idb.needBrace.length>0)warns.push(`🔩${idb.needBrace.map(p=>PL[p]).join('、')}需支架`);
+  if(S.coreTemp<35)warns.push(`❄️低体温(${S.coreTemp.toFixed(1)}°C)`);if(S.coreTemp>39)warns.push(`🔥高烧(${S.coreTemp.toFixed(1)}°C)`);
+  if(S.bodyWetness>40){const wr=rates.wetRate;warns.push(`💦湿度${S.bodyWetness}%(${wr>0?'↑+'+wr:wr<0?'↓'+wr:'→'}%/h)`);}
+  if(S.hydration<40){const hc=timeToCritical('hydration',S.hydration,rates.hydRate);warns.push(`💧水分偏低${hc?' — '+hc:''}`);}
+  if(S.blood<40)warns.push(`🩸血液不足(${S.blood})`);if(isNight()&&!atCamp()&&!S.hasCampfire)warns.push('🌙夜间无篝火！');if(S.hasCampfire&&S.distance>0)warns.push('🔥篝火燃烧中');
+  setStatus(warns.join(' | '));
+}
+
+// ===== BODY PART UI =====
+function showBodyDetail(pid){
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');let h=`<h3>${PL[pid]}</h3>`;const ws=S.body[pid].wounds;
+  if(ws.length===0)h+='<p style="color:var(--success)">✅ 完好无损</p>';
+  else ws.forEach(w=>{let cls=w.infected?' infected':w.bandaged?' bandaged':'';const b=[];if(w.bleeding&&!w.bandaged)b.push('🩸出血');if(w.infected)b.push('🦠感染');if(w.bandaged)b.push('🩹已包扎');if(w.cleaned)b.push('✨已清洁');
+    h+=`<div class="wound-card${cls}"><strong>${['','轻微','中度','严重'][w.severity]}伤</strong> — ${w.desc}<br><span style="font-size:0.65em;color:var(--text-dim)">${w.turns_old}回合 ${b.join('|')}</span><div class="treatment-row">`;
+    if(w.bleeding&&!w.bandaged&&(hasItem('绷带',1)||hasItem('止血带',1)||hasItem('止血粉',1)))h+=`<button class="treatment-btn" onclick="doTreat('${pid}','${w.id}','bandage')">🩹包扎</button>`;
+    if(!w.cleaned&&(hasItem('净水',1)||hasItem('消毒酒精',1)||hasItem('碘伏',1)||hasItem('草药',1)))h+=`<button class="treatment-btn" onclick="doTreat('${pid}','${w.id}','clean')">💧清洗</button>`;
+    if(w.severity>=2&&(hasItem('医疗包',1)||hasItem('缝合针线',1)||hasItem('手术刀',1)||hasItem('烧伤膏',1)))h+=`<button class="treatment-btn" onclick="doTreat('${pid}','${w.id}','treat')">💊治疗</button>`;
+    if(w.infected&&(hasItem('抗生素',1)||hasItem('退烧药',1)||hasItem('抗病毒药',1)||hasItem('青霉素',1)))h+=`<button class="treatment-btn" onclick="doTreat('${pid}','${w.id}','antibiotic')">💉抗生素</button>`;
+    if((pid==='leftLeg'||pid==='rightLeg')&&w.severity>=2&&hasItem('夹板',1))h+=`<button class="treatment-btn" onclick="doTreat('${pid}','${w.id}','splint')">🪵上夹板</button>`;
+    if((pid==='leftArm'||pid==='rightArm')&&w.severity>=2&&hasItem('支架',1))h+=`<button class="treatment-btn" onclick="doTreat('${pid}','${w.id}','brace')">🔩上支架</button>`;
+    if(pid==='chest'&&w.severity>=3&&hasItem('手术包',1))h+=`<button class="treatment-btn" onclick="doTreat('${pid}','${w.id}','treat')">🏥紧急手术</button>`;
+    if(!w.bandaged&&w.bleeding&&!hasItem('绷带',1)&&!hasItem('止血带',1)&&!hasItem('止血粉',1))h+='<span style="font-size:0.6em;color:var(--danger)">需要绷带类物品！</span>';
+    h+='</div></div>';});
+  if(S.pain>25&&(hasItem('止痛药',1)||hasItem('吗啡',1)))h+=`<div class="treatment-row" style="margin-top:5px"><button class="treatment-btn" onclick="doTreat(null,null,'painkiller')">💊止痛药</button></div>`;
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;modal.innerHTML=h;ov.classList.add('active');
+}
+function doTreat(pid,wid,act){if(treatWound(pid,wid,act)){updateUI();if(pid)showBodyDetail(pid);}}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('active');}
+BODY_PARTS.forEach(pid=>{const el=document.getElementById('bp-'+pid);if(el)el.addEventListener('click',()=>showBodyDetail(pid));});
+const tooltip=document.getElementById('bp-tooltip');
+BODY_PARTS.forEach(pid=>{const el=document.getElementById('bp-'+pid);if(!el)return;
+  el.addEventListener('mouseenter',()=>{const ws=S.body[pid].wounds;let t=PL[pid];if(ws.length===0)t+=' ✅';else ws.forEach(w=>{if(w.bleeding&&!w.bandaged)t+=' 🩸';else if(w.infected)t+=' 🦠';else if(w.bandaged)t+=' 🩹';else t+=' ⚠️';});tooltip.textContent=t;tooltip.style.display='block';});
+  el.addEventListener('mousemove',e=>{tooltip.style.left=(e.clientX+10)+'px';tooltip.style.top=(e.clientY-26)+'px';});el.addEventListener('mouseleave',()=>{tooltip.style.display='none';});});
+
+// ===== QUICK USE =====
+function quickUse(name){
+  if(S.isDead||S.busy)return;const info=ITEMS[name];if(!info)return;
+  // Guns need ammo
+  if(name==='手枪'||name==='步枪'){useGun(name);return;}
+  // Map items
+  if(info.use&&info.use.map){useMap(name);return;}
+  // Assembled radio - view broadcasts
+  if(name==='收音机'){checkRadio();setStatus('收音机在工作——推进时可能收到广播');return;}
+  // Clothing
+  if(info.slot){const old=S.clothing[info.slot];if(old.name!=='无'){addItem(old.name,1);old.wet=false;}removeItem(name,1);S.clothing[info.slot]={name,warmth:info.warmth,wp:info.wp,wet:false};addStory(`🧥 穿上了<strong>${name}</strong>（🔥+${info.warmth} 💧${info.wp}%）`,'action');updateUI();return;}
+  if(info.med){
+    // 净水/酒等可饮用也可医疗的物品：优先饮用
+    if(name==='净水'){if(!removeItem(name,1))return;S.hydration=clamp(S.hydration+18,0,100);addStory('💧 喝了一瓶净水，补充了水分。','action');updateUI();checkDeath();return;}
+    if(name==='酒'){if(!removeItem(name,1))return;S.fatigue=clamp(S.fatigue-5,0,100);addStory('🍺 喝了一口酒，身体暖和了些。','action');updateUI();checkDeath();return;}
+    // Pure medical items: open wound treatment
+    const wp=BODY_PARTS.filter(p=>S.body[p].wounds.length>0);if(wp.length>0)showBodyDetail(wp[0]);else setStatus('没有需要治疗的伤口');return;
+  }
+  if(info.use){if(!removeItem(name,1))return;const eff=info.use;if(eff.nutrition)S.nutrition=clamp(S.nutrition+eff.nutrition,0,100);if(eff.fatigue)S.fatigue=clamp(S.fatigue+(eff.fatigue||0),0,100);if(eff.hydration)S.hydration=clamp(S.hydration+(eff.hydration||0),0,100);if(eff.morale){}addStory(`🎒 使用了<strong>${name}</strong>`,'action');if(name==='变异兽肉'&&Math.random()<0.3){S.infectionLevel=clamp(S.infectionLevel+15,0,100);addStory('🤢 变异兽肉带来副作用…','medical');}updateUI();checkDeath();return;}
+  setStatus(name+' 无法直接使用');
+}
+
+// ===== RETURN TO CAMP =====
+async function returnToCamp(){
+  if(S.isDead||S.busy||atCamp())return;
+  const db=getInjuryDebuffs();if(db.cantLeave&&!atCamp()){setStatus(db.cantLeaveReason+'，无法移动！先治疗或休息。');return;}
+  S.busy=true;btnDisabled(true);setStatus('🏃 返回营地...');setChoices([]);
+  const dist=S.distance;const hours=Math.ceil(dist/3);for(let i=0;i<hours;i++)advanceHour(1);
+  S.distance=0;S.hasCampfire=false;
+  teammateTurn(); // teammates also traveled
+  addStory(`🏕️ 经过${hours}小时跋涉，在<strong>${timeString()}</strong>回到了营地。熟悉的围栏和篝火痕迹让你稍微安心。`,'camp');
+  // Auto-rest on return
+  S.fatigue=clamp(S.fatigue-20,0,100);S.coreTemp=clamp(S.coreTemp+(S.coreTemp<37?1.5:-0.5),30,43);
+  S.bodyWetness=clamp(S.bodyWetness-30,0,100);
+  for(const s of['head','upper','lower','feet'])S.clothing[s].wet=false;
+  addStory('😴 回到营地让你放松了不少。你脱下湿衣服烤火，身体渐渐暖和起来。','camp');
+  progressWounds();checkDeath();if(S.isDead){S.busy=false;btnDisabled(false);return;}
+  // Camp rest event
+  if(S.fatigue>30||S.blood<70||S.coreTemp<36||S.coreTemp>38){
+    addStory('营地的安全让你有机会好好休整一下。你生起篝火，坐下来检查装备和伤口。','camp');
+    S.fatigue=clamp(S.fatigue-15,0,100);
+    if(S.blood<80)S.blood=clamp(S.blood+8,0,100);
+    S.coreTemp=clamp(S.coreTemp+(S.coreTemp<37?2:-1),30,43);
+    if(S.pain>0)S.pain=clamp(S.pain-10,0,100);
+  }
+  updateUI();S.busy=false;btnDisabled(false);
+  // Camp menu - player chooses next action, no auto-event
+  S._currentEvent=null;
+  setChoices(['😴 休息恢复体力','🔧 整备营地(建造/储物/升级)','🌍 外出探索废土','⚔️ 查看敌对营地']);
+}
+
+// ===== REST AT CAMP =====
+async function restAtCamp(){
+  if(S.isDead||S.busy||!atCamp())return;S.busy=true;btnDisabled(true);setStatus('😴 休息中...');setChoices([]);
+  advanceHour(rand(2,4));teammateTurn();
+  S.fatigue=clamp(S.fatigue-30,0,100);
+  S.blood=clamp(S.blood+10,0,100);
+  S.coreTemp=clamp(S.coreTemp+(S.coreTemp<37?2.5:-1),30,43);
+  S.bodyWetness=clamp(S.bodyWetness-40,0,100);
+  S.pain=clamp(S.pain-15,0,100);
+  for(const s of['head','upper','lower','feet'])S.clothing[s].wet=false;
+  if(S.infectionLevel>0)S.infectionLevel=clamp(S.infectionLevel-5,0,100);
+  addStory('😴 你在营地安心休息了几个小时。篝火噼啪作响，驱散了废土的寒意。身体的疲惫在慢慢消退。','camp');
+  const feels=getFeelsLike();
+  if(feels<10)addStory('🔥 你往篝火里添了几根木柴，火焰跳得更高了。','camp');
+  if(S.nutrition<30)addStory('🍖 休息让你的饥饿感更加明显——该找点吃的了。','system');
+  progressWounds();updateUI();checkDeath();
+  if(S.isDead){S.busy=false;btnDisabled(false);return;}
+  S.busy=false;btnDisabled(false);setStatus('休息完毕');
+  S._currentEvent=null;
+  setChoices(['🔧 整备营地(建造/储物/升级)','🛡️ 加固营地防御','🌍 外出探索废土','⚔️ 查看敌对营地']);
+}
+
+// ===== WEATHER WARNING =====
+function checkWeatherWarning(){
+  const w=S.weather;
+  if(w.precipType==='heavy_rain'&&!S._weatherWarned){
+    S._weatherWarned=true;
+    addStory('⛈️ <strong>天空突然暗了下来。</strong>远处的云层翻滚着雷光——暴雨即将来袭。你需要尽快做出决定。','weather');
+    setChoices(['寻找掩体躲避','赶紧返回营地','继续前进不管它']);
+    S._currentEvent={ev:{id:'weather_warning'},choices:[
+      {text:'寻找掩体躲避',ch:{outcomes:[
+        {w:6,eff:{bodyWet:5,fatigue:8},dist:-1,desc:'你冲进最近的一栋建筑躲避暴雨。外面雷声轰鸣，但你在室内暂时安全。在墙角还发现了一些前人遗留的物资。',items:[{n:'罐头',q:[1,1]}]},
+        {w:4,eff:{bodyWet:10,fatigue:8},dist:-1,desc:'你找到的掩体屋顶也在漏水，但总比站在外面强。暴雨持续了几个小时才停。'},
+      ]}},
+      {text:'赶紧返回营地',ch:{outcomes:[
+        {w:5,eff:{bodyWet:25,fatigue:15},dist:-S.distance,desc:'你在暴雨中拼命往回跑，浑身湿透。终于回到营地，你瘫坐在篝火旁大口喘气。至少营地还是安全的。'},
+        {w:3,eff:{bodyWet:35,fatigue:18,health:-5},dist:-S.distance,desc:'跑回营地的路上你滑倒了——膝盖磕在石头上鲜血直流。你跛着脚回到营地时已经精疲力竭。'},
+        {w:2,eff:{bodyWet:40,fatigue:12,health:-3},dist:-3,desc:'暴雨太大你迷失了方向！跑了一段才发现走错了路。你不得不重新找路——距离只缩短了一部分。'},
+      ]}},
+      {text:'继续前进不管它',ch:{outcomes:[
+        {w:3,eff:{bodyWet:60,health:-8,fatigue:12},desc:'暴雨如瀑布般倾泻而下。你浑身湿透，寒冷刺骨。和废土的大自然作对从没有好结果。'},
+        {w:4,eff:{bodyWet:50,health:-5,fatigue:8},desc:'你咬牙在雨中前行。虽然浑身湿透，但你在暴雨掩盖下偷偷穿过了一个掠夺者活动区——他们都在躲雨。'},
+        {w:3,eff:{bodyWet:40,fatigue:8},desc:'走了没多久，雨势突然变小了。你的决定赌对了——暴雨来得快去得也快。'},
+      ]}},
+    ]};
+    return true;
+  }
+  if(w.precipType!=='heavy_rain')S._weatherWarned=false;
+  if(w.wind==='gale'&&!S._galeWarned){
+    S._galeWarned=true;
+    addStory('💨 <strong>狂风呼啸！</strong>沙石被卷起打在脸上生疼。能见度急速下降，行走变得困难而危险。','weather');
+    setChoices(['寻找低洼处躲避','用衣物护住面部前行','冒险继续']);
+    S._currentEvent={ev:{id:'gale_warning'},choices:[
+      {text:'寻找低洼处躲避',ch:{outcomes:[
+        {w:6,eff:{fatigue:6},desc:'你趴在一个土坑里等待狂风过去。风在头顶咆哮，但你在低处还算安全。风停后你发现坑里有些被吹来的杂物。',items:[{n:'布料',q:[1,2]}]},
+        {w:4,eff:{fatigue:6,bodyWet:10},desc:'低洼处虽然避开了大部分风力，但吹起的沙尘还是让你灰头土脸。风停后你继续上路。'},
+      ]}},
+      {text:'用衣物护住面部前行',ch:{outcomes:[
+        {w:5,eff:{fatigue:12,bodyWet:15},desc:'你裹紧衣物迎着风沙艰难前行。每一步都像在和看不见的拳头对抗。但你没有浪费时间等待。'},
+        {w:5,eff:{fatigue:15,bodyWet:25,health:-3},desc:'风力比你预想的更强。一块飞来的碎木板砸中了你的肩膀，淤青了一大片。'},
+      ]}},
+      {text:'冒险继续',ch:{outcomes:[
+        {w:2,eff:{health:-10,fatigue:18,bodyWet:30},desc:'狂风卷起的碎片划破了你的皮肤。你为自己的执拗付出了血的代价。'},
+        {w:5,eff:{health:-5,fatigue:10,bodyWet:20},desc:'你迎着风硬走，虽然艰难但运气不错——风暴中心似乎偏离了你的路线，影响比预期小。'},
+        {w:3,eff:{health:-15,fatigue:20,bodyWet:35},desc:'你在狂风中失去平衡，摔进了废墟的钢筋堆里。伤口很深——你不得不停下来止血。'},
+      ]}},
+    ]};
+    return true;
+  }
+  if(w.wind!=='gale')S._galeWarned=false;
+  if(w.temperature<-5&&S.coreTemp<35&&!S._coldWarned){
+    S._coldWarned=true;
+    addStory('❄️ <strong>刺骨的寒冷让你停下了脚步。</strong>手指几乎失去了知觉，呼吸在空中凝成白雾。再这样下去你会冻死的。','weather');
+    setChoices(['赶紧生火取暖','加快脚步回营地','继续硬撑']);
+    S._currentEvent={ev:{id:'cold_warning'},choices:[
+      {text:'赶紧生火取暖',ch:{eff:{fatigue:5},outcome:'你手忙脚乱地收集了一些可燃物，篝火燃起的瞬间，暖意重新回到身体。',need:'木材'}},
+      {text:'加快脚步回营地',ch:{eff:{fatigue:15},dist:-3,outcome:'你小跑着往营地赶，运动让身体产生了一些热量。回到营地时你已经精疲力竭。'}},
+      {text:'继续硬撑',ch:{eff:{health:-12,fatigue:10},outcome:'寒冷像刀子一样切割着你的皮肤。你开始剧烈发抖——失温的前兆。'}},
+    ]};
+    return true;
+  }
+  if(S.coreTemp>=36)S._coldWarned=false;
+  return false;
+}
+
+// ===== TIME =====
+function advanceHour(hours){
+  for(let h=0;h<hours;h++){S.hour++;if(S.hour>=24){S.hour=0;S.day++;S.seasonDay++;
+    if(S.seasonDay>15){S.seasonDay=1;const si=SEASONS.findIndex(s=>s.id===S.season?.id);S.season=SEASONS[(si+1)%4];addStory(`🌸🍂 <strong>季节更替：${S.season.icon} ${S.season.name}季</strong>`,'weather');}
+    S.nutrition=clamp(S.nutrition+rand(-10,-3),0,100);S.hydration=clamp(S.hydration+rand(-8,-3),0,100);S.fatigue=clamp(S.fatigue+rand(2,8),0,100);
+    if(!atCamp()&&campUnderAttack())resolveCampAttack();S.hasCampfire=false;}S.minute=0;}
+  generateWeather();applyWetness();updateCoreTemp();checkDeath();
+}
+
+// ===== CRAFTING SYSTEM =====
+function openCrafting(){
+  if(S.isDead||S.busy)return;
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  let h='<h3>🔧 工作台</h3>';
+  // Check which recipes are available
+  let anyAvailable=false;
+  for(const r of RECIPES){
+    const canCraft=Object.entries(r.need).every(([n,q])=>hasItem(n,q));
+    if(canCraft)anyAvailable=true;
+    const needText=Object.entries(r.need).map(([n,q])=>{const info=ITEMS[n];return`${info?.e||''}${n}×${q} ${hasItem(n,q)?'✅':'❌'}`;}).join(' ');
+    const btnCls=canCraft?'treatment-btn':'treatment-btn';
+    const btnStyle=canCraft?'':'opacity:0.4;cursor:not-allowed;';
+    h+=`<div class="wound-card" style="border-left-color:${canCraft?'var(--success)':'#555'}"><strong>${r.desc}</strong><br><span style="font-size:0.65em;color:var(--text-dim)">需要：${needText}</span><div class="treatment-row"><button class="${btnCls}" style="${btnStyle}" onclick="${canCraft?`doCraft('${r.id}')`:'return'}" ${canCraft?'':'disabled'}>🔨 制作</button></div></div>`;
+  }
+  if(!anyAvailable)h+='<p style="color:var(--text-dim);font-size:0.75em;">暂无足够材料制作任何物品。<br>收集更多物资后再来吧。</p>';
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;
+  modal.innerHTML=h;ov.classList.add('active');
+}
+
+function doCraft(recipeId){
+  const r=RECIPES.find(x=>x.id===recipeId);if(!r)return;
+  if(!Object.entries(r.need).every(([n,q])=>hasItem(n,q))){setStatus('材料不足！');return;}
+  // Consume materials
+  for(const [n,q]of Object.entries(r.need))removeItem(n,q);
+  // Grant results
+  for(const [n,q]of Object.entries(r.result))addItem(n,q);
+  // Special effects
+  if(r.campDef){S.camp.defense=clamp(S.camp.defense+r.campDef,0,100);addStory('🔨 加固了营地围栏！防御力提升。','camp');}
+  if(r.fire){addStory('🔨 制作了一支火把，夜间行动更方便了。','action');}
+  addStory(`🔨 制作完成：<strong>${r.desc}</strong>`,'action');
+  updateUI();openCrafting(); // refresh modal
+}
+
+// ===== MAP SYSTEM =====
+S.discoveredLocations=[];S.locationVisits={};
+function hasMap(){return hasItem('区域地图',1)||hasItem('军事地图',1)||hasItem('完整地图',1);}
+function getMapTags(){const tags=[];if(hasItem('区域地图',1))tags.push('local');if(hasItem('军事地图',1))tags.push('military');if(hasItem('完整地图',1))tags.push('local','civilian','military','special');return[...new Set(tags)];}
+
+function useMap(mapItemName){
+  if(S.isDead||S.busy)return;
+  if(!hasItem(mapItemName,1)){setStatus('你没有这种地图');return;}
+  removeItem(mapItemName,1);
+  const mt=MAP_TYPES[mapItemName];if(!mt)return;
+  const tags=getMapTags();
+  const eligible=MAP_LOCATIONS.filter(l=>!S.discoveredLocations.includes(l.id)&&l.tags.some(t=>tags.includes(t)));
+  if(eligible.length===0){addStory('🗺️ 这种地图上没有新地点了。','system');updateUI();return;}
+  const count=Math.min(rand(2,4),eligible.length);const discovered=[];
+  for(let i=0;i<count;i++){const loc=eligible.splice(rand(0,eligible.length-1),1)[0];S.discoveredLocations.push(loc.id);S.locationVisits[loc.id]=0;discovered.push(loc);}
+  addStory(`🗺️ 你打开<strong>${mapItemName}</strong>仔细研究。发现了${discovered.length}个新地点：`,'system');
+  discovered.forEach(l=>{addStory(`${l.icon} <strong>${l.name}</strong> — ${l.dir}方${l.dist}km，${l.desc}`,'system');});
+  updateUI();showMapView();
+}
+
+function showMapView(){
+  const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
+  let h='<h3>🗺️ 废土地图</h3>';
+  h+=`<div style="text-align:center;font-size:0.8em;line-height:1.6;background:#111;border-radius:6px;padding:10px;">`;
+  h+=`<div>🏕️ <strong>营地</strong>（你在这里）</div>`;
+  const discovered=MAP_LOCATIONS.filter(l=>S.discoveredLocations.includes(l.id));
+  if(discovered.length===0){
+    h+=`<div style="color:var(--text-dim);margin-top:6px;">地图还是一片空白。<br>找到「地图」物品来发现附近地点。</div>`;
+  }else{
+    discovered.forEach(l=>{const visits=S.locationVisits[l.id]||0;const depleted=visits>=l.maxVisits;
+      h+=`<div style="margin-top:4px;display:flex;justify-content:space-between;align-items:center;gap:6px;"><span>${l.icon} <strong>${l.name}</strong> — ${l.dir} ${l.dist}km <span style="color:var(--text-dim);font-size:0.8em;">${l.desc}</span> <span style="font-size:0.65em;color:${depleted?'var(--danger)':'var(--text-dim)'}">${depleted?'[已搜刮空]':`[${visits}/${l.maxVisits}]`}</span></span>${depleted?'':`<button class="treatment-btn" onclick="travelToLocation('${l.id}')" style="font-size:0.6em;white-space:nowrap;">🚶前往</button>`}</div>`;});
+  }
+  h+=`</div>`;
+  if(discovered.length>0)h+=`<p style="font-size:0.7em;color:var(--text-dim);margin-top:6px;">💡 点击「前往」可消耗时间前往该地点获取物资。</p>`;
+  h+=`<div class="btn-row"><button class="btn small" onclick="closeModal()">关闭</button></div>`;
+  modal.innerHTML=h;ov.classList.add('active');
+}
+
+function travelToLocation(locId){
+  if(S.isDead||S.busy)return;
+  const loc=MAP_LOCATIONS.find(l=>l.id===locId);if(!loc)return;
+  const visits=S.locationVisits[loc.id]||0;if(visits>=loc.maxVisits){setStatus('此地已被搜刮一空');return;}
+  S.busy=true;btnDisabled(true);setStatus(`前往${loc.name}...`);setChoices([]);closeModal();
+  const travelHours=Math.ceil(loc.dist/2);for(let i=0;i<travelHours;i++)advanceHour(1);
+  S.distance=clamp(S.distance+loc.dist,0,20);S.fatigue=clamp(S.fatigue+loc.dist*2,0,100);
+  S.locationVisits[loc.id]=(S.locationVisits[loc.id]||0)+1;
+  addStory(`📍 经过${travelHours}小时跋涉，你到达了<strong>${loc.icon} ${loc.name}</strong>。（第${S.locationVisits[loc.id]}次探索）`,'system');
+  // Grant items (diminishing after each visit)
+  const factor=Math.max(0.2,1-(visits*0.3));let found=[];
+  for(const it of loc.items){const q=Math.max(1,Math.floor((Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1))*factor));if(q>0){addItem(it.n,q);found.push(`${ITEMS[it.n]?.e||''}${it.n}×${q}`);}}
+  if(found.length>0)addStory(`🎁 搜索收获：${found.join('、')}`,'action');else addStory('📭 这个地方已经被搜刮得差不多了...','system');
+  if(S.locationVisits[loc.id]>=loc.maxVisits)addStory(`📭 <strong>${loc.name}已被彻底搜刮一空。</strong>没有再来探索的必要了。`,'system');
+  progressWounds();updateUI();S.busy=false;btnDisabled(false);
+  if(S.isDead)return;
+  const ev=selectEvent();processEvent(ev);
+}
+
+// ===== RADIO SYSTEM =====
+function checkRadio(){
+  if(!hasItem('收音机',1))return;
+  // 30% chance per "continue" to receive a broadcast
+  if(Math.random()>0.3)return;
+  const msg=pick(RADIO_MSGS);
+  const cls=msg.type==='distress'?'danger':msg.type==='static'?'system':'party';
+  addStory(`📻 <strong>收音机广播：</strong>${msg.msg}`,cls);
+  if(msg.type==='news'){
+    // News sometimes reveals a map location
+    if(Math.random()<0.3){
+      const unknown=MAP_LOCATIONS.filter(l=>!S.discoveredLocations.includes(l.id));
+      if(unknown.length>0){
+        const loc=pick(unknown);S.discoveredLocations.push(loc.id);
+        addStory(`🗺️ 广播中提到了一个地点：${loc.icon} <strong>${loc.name}</strong>（${loc.dir}方${loc.dist}km）`,'system');
+      }
+    }
+  }
+  if(msg.type==='distress'&&Math.random()<0.5){
+    addStory('💭 广播中的求救信号让你感到不安。也许你应该去看看？','system');
+    setChoices(['前往求救信号源','忽略继续当前路线']);
+    S._currentEvent={ev:{id:'radio_distress'},choices:[
+      {text:'前往求救信号源',ch:{eff:{fatigue:10,morale:5},dist:rand(3,8),outcome:'你循着信号源的方向前进。废土上每个求救信号都可能意味着危险——或者机遇。'}},
+      {text:'忽略继续当前路线',ch:{eff:{},outcome:'你关掉了收音机。在废土上，自保永远是第一位的。'}},
+    ]};
+  }
+}
+
+// ===== TRANSITION NARRATION =====
+function generateTransition(){
+  const parts=[];
+  // Time awareness
+  const h=S.hour;
+  if(h>=5&&h<8)parts.push(pick(['天刚蒙蒙亮，晨光穿透废墟的缝隙','黎明降临废土，空气清冷','东边的天际泛起鱼肚白']));
+  else if(h>=8&&h<12)parts.push(pick(['太阳逐渐升高，废土在阳光下暴露出狰狞的面目','上午的废土稍微平静了些','阳光驱散了夜晚的寒意']));
+  else if(h>=12&&h<15)parts.push(pick(['日头爬到头顶，是一天中最热的时候','正午的废土像一座烤箱','影子缩到脚下，热浪扭曲着远方的地平线']));
+  else if(h>=15&&h<18)parts.push(pick(['太阳开始西斜，影子被拉得很长','午后的风吹过废墟发出呜咽','天色还早，但你知道白天不多了']));
+  else if(h>=18&&h<20)parts.push(pick(['夕阳给废土镀上一层血色','黄昏降临，阴影吞噬着废墟','天色渐暗，是时候考虑今晚的安排']));
+  else if(h>=20||h<5)parts.push(pick(['夜幕完全笼罩了废土','黑暗中只有风声和远处偶尔的嚎叫','月光冷冷地洒在废墟上']));
+
+  // Body state
+  const bodyParts=[];
+  if(S.blood<45)bodyParts.push(pick(['失血让你有些头晕','伤口还在隐隐作痛','你感到虚弱，需要处理伤口']));
+  if(S.nutrition<35)bodyParts.push(pick(['肚子饿得咕咕叫','胃里空空的，需要找点吃的','饥饿让你的手微微发抖']));
+  if(S.hydration<35)bodyParts.push(pick(['嘴唇干裂，喉咙发紧','口干舌燥，急需找到水源','脱水的感觉越来越强烈']));
+  if(S.fatigue>65)bodyParts.push(pick(['疲惫像铅块一样压在身上','每一步都变得沉重','眼皮打架，你需要休息']));
+  if(S.coreTemp<35)bodyParts.push(pick(['寒冷深入骨髓','你裹紧衣服，但依然瑟瑟发抖','手指冻得有些不听使唤']));
+  if(S.coreTemp>39)bodyParts.push(pick(['额头滚烫，浑身发冷','高烧让你视线模糊','身体像被火烧一样']));
+  if(S.bodyWetness>50)bodyParts.push(pick(['湿透的衣服贴在身上，冰冷刺骨','你拧了拧衣角，水珠滴落','潮湿让寒意加倍']));
+  if(S.pain>45)bodyParts.push(pick(['疼痛让你咬紧牙关','每动一下都伴随着刺痛','伤口的疼痛分散了你的注意力']));
+  if(bodyParts.length===0)bodyParts.push(pick(['身体状态还行','目前还算撑得住','暂时还扛得住']));
+  parts.push(pick(bodyParts));
+
+  // Position awareness
+  if(atCamp())parts.push(pick(['你站在营地的围栏边，望向废土','营地的篝火为你提供了一小片安全区','从营地向外望去，废墟在阳光下沉默']));
+  else if(S.distance<3)parts.push(pick(['营地就在身后不远处','回头还能隐约看到营地的轮廓','离营地不远，空气中还有篝火的味道']));
+  else if(S.distance<8)parts.push(pick(['营地已经在好几公里外了','废土在脚下延伸，营地变得遥不可及','走了不短的距离，四周的废墟越来越密集']));
+  else parts.push(pick(['营地远在后方，这里完全是未知区域','你已经深入到很少有人踏足的区域','远处的营地几乎成了记忆']));
+  if(isNight()&&!atCamp()&&!S.hasCampfire)parts.push('黑暗中危机四伏，你在考虑要不要生一堆篝火。');
+  if(S.hasCampfire)parts.push('篝火噼啪作响，驱散了些许黑暗。');
+
+  // Reflection
+  if(S.history.length>0){
+    const last=S.history[S.history.length-1];
+    if(last)parts.push(pick(['刚才的经历还在脑海中回放','你回想了一下之前发生的事','废土上的每一刻都不会白费']));
+  }
+
+  // Party mention
+  const alive=S.party.filter(p=>p.alive);
+  if(alive.length>0){
+    parts.push(pick([`${alive.map(p=>p.name).join('和')}在你身边`,'队友的存在让你感到些许安心','有同伴在，废土没那么孤独']));
+  }else if(S.party.length===0&&S.history.length>2){
+    parts.push('独自一人走在废土上，寂静是最忠实的伴侣。');
+  }
+
+  return parts.filter(Boolean).join('。')+'。';
+}
+
+// ===== MAIN LOOP =====
+async function continueStory(){
+  if(S.isDead||S.busy)return;S.busy=true;btnDisabled(true);setStatus('⏳ 时间流逝...');setChoices([]);
+  // Auto-increase distance when exploring (not at camp and not first turn)
+  if(!atCamp()&&S.day>1||(S.day===1&&S.history.length>0)){S.distance=clamp(S.distance+randF(0.5,2),0,20);}
+  if(S.day===1&&S.hour===8&&S.distance===0&&S.history.length===0){
+    generateWeather();addStory(`<strong>━━━ 📅 第1天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
+    addStory(`核战第7年。你——一个${S.playerAge}岁的${S.playerGender=='男'?'男人':'女人'}——在营地中醒来。你的营地位于<strong>${S.currentBiome?.icon} ${S.currentBiome?.name}</strong>。${S.currentBiome?.desc||''}。物资匮乏，危险四伏——但希望还在。`,'system');
+    addStory(`外面<strong>${S.weather.temperature}°C</strong>，体感<strong>${getFeelsLike()}°C</strong>。${S.enemyCamps.length>0?`附近有${S.enemyCamps.length}个敌对营地——小心行事。`:''}你背起背包，走向围栏边。`,'system');
+  }else{
+    advanceHour(rand(1,3));addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
+    if(isNight()&&!atCamp()&&!S.hasCampfire)addStory('🌙 <strong>夜色笼罩。</strong>没有篝火的夜晚，危险潜伏在每个阴影中。','system');
+    if(S.bodyWetness>50)addStory('💦 衣服湿透了，寒意渗透骨髓。','weather');
+    // Transition narration
+    const trans=generateTransition();
+    if(trans)addStory(trans,'system');
+  }
+  progressWounds();teammateTurn();campStabilityCheck();tryHaveChild();growChildren();tickProduction();simulateCampEcology();checkCampDestroyed();checkAutoRecruit();updateUI();if(S.isDead){S.busy=false;btnDisabled(false);return;}
+  // Injury movement check
+  const db=getInjuryDebuffs();if(db.cantLeave&&!atCamp()){addStory(`🚫 <strong>${db.cantLeaveReason}</strong>——必须先治疗才能继续。`,'medical');S.busy=false;btnDisabled(false);setChoices(['尝试休息恢复','使用医疗物品治疗']);return;}
+  if(db.needSurgery&&atCamp())addStory('🏥 <strong>胸部重伤！</strong>需要手术包或医疗包紧急手术。','medical');
+  // Enemy attack on player camp
+  // Stealth attack: if no one at camp, attacks happen silently (damage found on return)
+  if(!atCamp()&&!S.party.some(p=>p.alive&&p.activity==='guard')){
+    if(S._incomingAttack){S._incomingAttack.arriveHour--;if(S._incomingAttack.arriveHour<=0){executeBattle(S._incomingAttack);S._incomingAttack=null;}}
+    else if(S.enemyCamps.length>0&&Math.random()<0.08){const ec=pick(S.enemyCamps.filter(c=>c.alive!==false));if(ec&&!S._silentAttack){S._silentAttack=ec;}}
+  }
+  if(atCamp())enemyAttackPlayer();
+  // Silent attack result when returning to camp
+  if(atCamp()&&S._silentAttack){addStory(`💔 回到营地你发现<strong>${S._silentAttack.name}</strong>趁你不在时袭击了营地！物资被盗，建筑受损...`,'danger');S.camp.condition=clamp(S.camp.condition-rand(10,25),0,100);const ck=Object.keys(S.camp.supplies);for(let i=0;i<Math.min(3,ck.length);i++){const k=ck[rand(0,ck.length-1)];removeItem(k,rand(1,3),true);}S._silentAttack=null;}
+  // Check radio broadcasts
+  checkRadio();
+  // Check weather warnings first
+  if(!checkWeatherWarning()){
+    // Select & process event
+    const ev=selectEvent();processEvent(ev);
+    S.history.push({day:S.day,summary:ev.id});
+  }
+  updateUI();S.busy=false;btnDisabled(false);checkDeath();
+}
+
+async function pickChoice(idx){
+  if(S.isDead||S.busy)return;
+  const data=S._currentEvent;
+  // Handle camp menu choices (no active event)
+  if(!data||!data.choices||!data.choices[idx]){
+    const btns=document.querySelectorAll('.choice-btn');const ct=btns[idx]?.textContent?.replace(/^\d+\.\s*/,'')||'';
+    if(ct.includes('休息恢复')){S.busy=false;btnDisabled(false);setStatus('');await restAtCamp();return;}
+    if(ct.includes('整备营地')){S.busy=false;btnDisabled(false);setStatus('');setChoices(['🏕️ 查看营地布局','📦 管理仓库','🔨 工作台制作','📦 升级储物箱']);return;}
+    if(ct.includes('外出探索')){S.busy=false;btnDisabled(false);setStatus('');await continueStory();return;}
+    if(ct.includes('查看敌对')){S.busy=false;btnDisabled(false);setStatus('');showEnemyCamps();return;}
+    if(ct.includes('加固营地')){S.busy=false;btnDisabled(false);setStatus('');upgradeDefense();return;}
+    if(ct.includes('查看营地布局')){S.busy=false;btnDisabled(false);setStatus('');showCampView();return;}
+    if(ct.includes('管理仓库')){S.busy=false;btnDisabled(false);setStatus('');openStorageUI();return;}
+    if(ct.includes('工作台制作')){S.busy=false;btnDisabled(false);setStatus('');openCrafting();return;}
+    if(ct.includes('升级储物箱')){S.busy=false;btnDisabled(false);setStatus('');upgradeChest();return;}
+    S.busy=false;setStatus('');btnDisabled(false);
+    await continueStory();
+    return;
+  }
+  S.busy=true;btnDisabled(true);setStatus('⏳ 命运展开中...');
+  const ct=data.choices[idx].text;setChoices([]);addStory(`<strong>👉 ${ct}</strong>`,'action');
+
+  const outcome=resolveChoice(idx);
+  advanceHour(rand(1,3));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
+
+  if(outcome)addStory(outcome,'ai');
+  if(S.isDead){S.busy=false;btnDisabled(false);setStatus('');return;}
+
+  // Don't auto-chain — show "continue" button so narrative stays coherent
+  S._currentEvent=null;
+  setChoices(['▶ 继续推进']);
+  S.busy=false;btnDisabled(false);setStatus('');updateUI();checkDeath();
+}
+
+// ===== DEATH =====
+function checkDeath(){if(S.blood<=0){S.causeOfDeath='失血过多';die();}if(S.infectionLevel>=95){S.causeOfDeath='败血症';die();}if(S.coreTemp<30){S.causeOfDeath='失温症（冻死）';die();}if(S.coreTemp>43){S.causeOfDeath='高热致死';die();}if(S.nutrition<=0){S.causeOfDeath='饥饿';die();}if(S.hydration<=0){S.causeOfDeath='脱水';die();}}
+function die(){
+  S.isDead=true;updateUI();btnDisabled(true);setChoices([]);
+  const ov=document.getElementById('death-overlay');ov.querySelector('.death-days').textContent=`☠️ 存活 ${S.day} 天 | ${S.season?.name||''}季 | 死因：${S.causeOfDeath} | 小队${S.party.filter(p=>p.alive).length}人`;
+  ov.querySelector('.death-info').textContent=`废土吞噬了又一个灵魂。${S.party.filter(p=>p.alive).map(p=>p.name).join('、')||'没有人'}记得你最后的样子。`;ov.classList.add('active');
+}
+
+// ===== RESET =====
+function resetGame(){
+  S.day=1;S.hour=8;S.minute=0;S.season=SEASONS[0];S.seasonDay=1;S.distance=0;S.hasCampfire=false;
+  S.blood=100;S.nutrition=80;S.hydration=85;S.fatigue=15;S.pain=0;S.infectionLevel=0;S.coreTemp=37;S.bodyWetness=0;
+  S.clothing={head:{name:'无',warmth:0,wp:0,wet:false},upper:{name:'破旧夹克',warmth:5,wp:20,wet:false},lower:{name:'破旧裤子',warmth:3,wp:15,wet:false},feet:{name:'旧靴子',warmth:4,wp:30,wet:false}};
+  S.inventory={};S.camp={supplies:{},defense:0,condition:100,governance:'dictatorship',stability:60};S.party=[];S.history=[];S.recentEvents=[];S.recentCats=[];S.discoveredLocations=[];S.locationVisits={};S.enemyCamps=[];S.currentBiome=randomBiome();for(let i=0;i<rand(1,3);i++)S.enemyCamps.push(generateEnemyCamp());S.campGrid=null;S._campDefMod=0;S._campLevel=1;initCampGrid();S.spouse=null;S.children=[];S.backpackSlots=4;S._incomingAttack=null;S._silentAttack=null;S._campDestroyed=false;S.locationVisits={};S.chestLevel=1;S.chestSlots=10;S._gunBonus=0;S.reputation=10;S.isDead=false;S.causeOfDeath='';S.busy=false;S._currentEvent=null;
+  BODY_PARTS.forEach(p=>{S.body[p].wounds=[];});
+  generateWeather();addItem('绷带',2);addItem('净水',2);addItem('罐头',2);addItem('木材',3);
+  document.getElementById('death-overlay').classList.remove('active');document.getElementById('story-box').innerHTML='';document.getElementById('choices-area').innerHTML='';
+  addStory('<strong>🗺️ 核战第7年。春天。你在营地中醒来。</strong>','system');addStory('关注天气变化，寒冷时添衣，雨天注意防水。天黑后可以生篝火过夜。探索、搜刮、招募队友、加固营地——活下来。','system');
+  btnDisabled(false);updateUI();setStatus('🔄 点击「继续推进」开始...');
+}
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown',e=>{
+  if(e.key===' '||e.key==='n'){e.preventDefault();continueStory();}
+  if(e.key==='1'){const b=document.querySelectorAll('.choice-btn');if(b[0])pickChoice(0);}
+  if(e.key==='2'){const b=document.querySelectorAll('.choice-btn');if(b[1])pickChoice(1);}
+  if(e.key==='3'){const b=document.querySelectorAll('.choice-btn');if(b[2])pickChoice(2);}
+  if(e.key==='Escape')closeModal();
+});
+
+// ===== INIT =====
+function init(){S.season=SEASONS[0];S.seasonDay=1;resetGame();}
+init();
+</script>
+</body>
+</html>
