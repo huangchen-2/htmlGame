@@ -573,7 +573,7 @@ const EVENTS=[
     choices:[{text:'紧急寻找掩体',eff:{fatigue:10}},{text:'用衣物护住头面部继续走',eff:{fatigue:8,health:-5}},{text:'趴下等待沙尘暴过去',eff:{fatigue:5,health:-3}}]},
   {id:'friendly_encounter',cat:'npc',ctx:{minDist:2,maxDist:14},narr:'一个年轻的幸存者从废墟中探出头。"嘿！你也是单独行动的吗？废土上独自生存太难了。也许我们可以结伴？"他眼中充满了渴望。',
     choices:[{text:'欢迎他加入小队',outcomes:[
-      {w:5,eff:{},desc:'他欣喜若狂地跟上了你。多一个人多一份力——废土上，同伴比黄金更珍贵。'}, // recruit handled by processEvent
+      {w:5,eff:{},desc:'他欣喜若狂地跟上了你。多一个人多一份力——废土上，同伴比黄金更珍贵。',recruit:true},
       {w:3,eff:{},desc:'就在他准备跟上来时，远处传来枪声。他脸色一变，说了声抱歉就仓皇逃走了——看来有人在追他。'},
       {w:2,eff:{},lose:2,desc:'你转身带路，却发现他偷偷伸手摸向你的背包。"嘿！"你猛回头，他拔腿就跑——手里攥着你的物资。'},
     ]},{text:'给他一些物资然后告别',outcomes:[
@@ -632,7 +632,7 @@ const EVENTS=[
     choices:[{text:'友好协商共享区域',eff:{fatigue:2},items:[{n:'罐头',q:[1,1]}],outcome:'你举起双手表示没有敌意。"废土够大，没必要自相残杀。"他犹豫了一下，最终放下枪。你们各自分头搜索，他还给你指了一个有物资的方向。'},{text:'展示武力不退让',eff:{fatigue:8,health:-3},outcome:'你也握紧了武器。两人对峙了几秒，他啐了一口转身走了——但你知道这种人不会善罢甘休。'},{text:'换个方向避开冲突',eff:{fatigue:3},outcome:'多一事不如少一事。你默默退出了这片区域，绕道继续前进。在废土上，活下来比面子重要。'}]},
   {id:'lost_child',cat:'npc',ctx:{minDist:1,maxDist:8},narr:'废墟中传来小孩的哭声。一个七八岁的男孩蜷缩在角落里，身上脏兮兮的，脚上只有一只鞋。他看到你时本能地缩了缩身子。"我...我找不到我妈妈了..."',
     choices:[{text:'安抚他带他回营地',outcomes:[
-      {w:5,eff:{},desc:'你蹲下来轻声安慰他。孩子犹豫了一下，最终握住了你的手。在废土上挽救一个孩子——无论结果如何，这都让你觉得自己还是个人。营地现在多了一个小成员。'},
+      {w:5,eff:{},desc:'你蹲下来轻声安慰他。孩子犹豫了一下，最终握住了你的手。在废土上挽救一个孩子——无论结果如何，这都让你觉得自己还是个人。营地现在多了一个小成员。',adoptChild:true},
       {w:3,eff:{},desc:'就在你准备带他走时，一个女人从废墟中冲了出来——是他的母亲！她紧紧抱住孩子，泣不成声。"谢谢你照顾他...这些给你。"她塞给你一些物资。',items:[{n:'罐头',q:[1,2]},{n:'净水',q:[1,1]}]},
       {w:2,eff:{health:-5},desc:'孩子突然狠狠咬了你一口，挣脱后拔腿就跑。远处传来几个成年人的笑声——这是个诱饵！你被引到了掠夺者的埋伏圈边缘。赶紧撤离。'},
     ]},{text:'给他一些食物和水',outcomes:[
@@ -640,7 +640,7 @@ const EVENTS=[
       {w:3,eff:{nutrition:-3},desc:'他吃完后沉默了一会儿，然后从口袋里掏出一个小东西递给你——是一枚战前的徽章。虽然没什么用，但这是他最珍贵的东西了。'},
       {w:2,eff:{nutrition:-3},desc:'食物刚递过去，几个成年人突然从拐角冲出来——又是个陷阱！他们抢走了你身上的一些物资后带着孩子跑了。',lose:1},
     ]},{text:'帮他寻找母亲',outcomes:[
-      {w:4,eff:{fatigue:10},items:[{n:'罐头',q:[1,2]}],desc:'你带着孩子在废墟中找了几个小时。没有找到他的母亲，但在一栋废弃公寓里发现了一些物资。你把孩子带回了营地——至少这里有篝火和食物。'},
+      {w:4,eff:{fatigue:10},items:[{n:'罐头',q:[1,2]}],desc:'你带着孩子在废墟中找了几个小时。没有找到他的母亲，但在一栋废弃公寓里发现了一些物资。你把孩子带回了营地——至少这里有篝火和食物。',adoptChild:true},
       {w:3,eff:{fatigue:8},desc:'搜索无果。孩子累了，靠在你肩上睡着了。你在黄昏前返回了营地。也许明天可以继续找。'},
       {w:3,eff:{fatigue:12,health:-5},desc:'搜寻时你踩到了一块松动的楼板，从二楼摔了下去。孩子吓坏了但没受伤。你的腿需要处理一下。'},
     ]}]},
@@ -1772,6 +1772,8 @@ function resolveChoice(idx){
   if(ch.outcomes&&Array.isArray(ch.outcomes)&&ch.outcomes.length>0){
     selectedOutcome=pickW(ch.outcomes);
     applyEffects(selectedOutcome.eff,result);
+    if(selectedOutcome.adoptChild){const cgender=pick(['男','女']);const cnames=cgender==='男'?['小光','石头','阿勇','小杰','晨晨']:['小花','小草','阿美','小雪','星星'];S.children.push({name:pick(cnames),gender:cgender,age:rand(5,10),alive:true});modRep(3,'收养孤儿');}
+    if(selectedOutcome.recruit){recruitNPC();}
     if(selectedOutcome.items&&!applyItems(selectedOutcome.items,result)){
       addStory(`❌ <strong>运气不佳！</strong>事情没有按预期发展——物资不足无法完成。`,'danger');return null;}
     if(selectedOutcome.lose){const names=Object.keys(S.inventory);for(let i=0;i<selectedOutcome.lose&&names.length>0;i++){const ln=names[rand(0,names.length-1)];removeItem(ln,1);result.itemsLost.push({n:ln,q:1});}}
@@ -1998,6 +2000,7 @@ async function restAtCamp(){
 
 // ===== WEATHER WARNING =====
 function checkWeatherWarning(){
+  if(atCamp())return false; // No weather danger when safely at camp
   const w=S.weather;
   if(w.precipType==='heavy_rain'&&!S._weatherWarned){
     S._weatherWarned=true;
@@ -2239,9 +2242,16 @@ function generateTransition(){
 
 // ===== MAIN LOOP =====
 async function continueStory(){
-  if(S.isDead||S.busy)return;S.busy=true;btnDisabled(true);setStatus('⏳ 时间流逝...');setChoices([]);
+  if(S.isDead||S.busy)return;
+  // At camp with no active event: show camp menu instead of generating random events
+  if(atCamp()&&!S._currentEvent&&S.history.length>0){
+    S.busy=true;setChoices([]);setStatus('');
+    setChoices(['😴 休息恢复体力','🔧 整备营地(建造/储物/升级)','🌍 外出探索废土','⚔️ 查看敌对营地']);
+    S._currentEvent=null;S.busy=false;return;
+  }
+  S.busy=true;btnDisabled(true);setStatus('⏳ 时间流逝...');setChoices([]);
   // Auto-increase distance when exploring (not at camp and not first turn)
-  if(!atCamp()&&S.day>1||(S.day===1&&S.history.length>0)){S.distance=clamp(S.distance+randF(0.5,2),0,20);}
+  if(!atCamp()&&(S.day>1||S.history.length>0)){S.distance=clamp(S.distance+randF(0.5,2),0,20);}
   if(S.day===1&&S.hour===8&&S.distance===0&&S.history.length===0){
     generateWeather();addStory(`<strong>━━━ 📅 第1天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
     addStory(`核战第7年。你——一个${S.playerAge}岁的${S.playerGender=='男'?'男人':'女人'}——在营地中醒来。你的营地位于<strong>${S.currentBiome?.icon} ${S.currentBiome?.name}</strong>。${S.currentBiome?.desc||''}。物资匮乏，危险四伏——但希望还在。`,'system');
