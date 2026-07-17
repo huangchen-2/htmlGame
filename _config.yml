@@ -4,11 +4,11 @@ title: htmlGame
 # 网站简介
 description: 网页对话小游戏展示主页
 # 你的GitHub用户名
-github_username: huangchen-2
+github_username: hSorryMcDonald
 # 仓库地址
-repository: huangchen-2/huangchen-2.github.io
+repository: SorryMcDonald/SorryMcDonald.github.io
 # 是否显示右上角下载ZIP按钮
-show_downloads: true
+show_downloads: false
 # 侧边栏导航页面（可自行增减）
 header_pages:
   - index.md
