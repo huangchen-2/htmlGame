@@ -9,7 +9,7 @@ permalink: /game/
 # <i class="fas fa-gamepad"></i> 小游戏
 
 <div class="post-grid">
-  <a class="post-card" href="{{ '/apocalypse_survival.html' | relative_url }}">
+  <a class="post-card" href="/apocalypse_survival.html">
     <div class="post-meta">
       <i class="fas fa-skull"></i> 对话冒险
     </div>

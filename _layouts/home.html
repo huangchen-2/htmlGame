@@ -6,7 +6,7 @@ layout: default
   <div class="stars"></div>
   <div class="shooting-star"></div>
   <div class="cover-card">
-    <img class="avatar" src="{{ '/assets/img/avatar.jpg' | relative_url }}" alt="avatar" onerror="this.style.display='none'">
+    <img class="avatar" src="/assets/img/avatar.jpg" alt="avatar" onerror="this.style.display='none'">
     <h1 class="name">{{ site.author.name | default: "SorryMcDonald" }}</h1>
     <p class="bio">{{ site.author.bio | default: "全栈开发者 / 游戏爱好者" }}</p>
 
@@ -34,10 +34,10 @@ layout: default
     </div>
 
     <div class="nav-links">
-      <a class="nav-btn" href="{{ '/blog/' | relative_url }}">
+      <a class="nav-btn" href="/blog/">
         <i class="fas fa-blog"></i> 博客
       </a>
-      <a class="nav-btn" href="{{ '/game/' | relative_url }}">
+      <a class="nav-btn" href="/game/">
         <i class="fas fa-gamepad"></i> 游戏
       </a>
       <a class="nav-btn" href="https://github.com/{{ site.github_username }}" target="_blank">

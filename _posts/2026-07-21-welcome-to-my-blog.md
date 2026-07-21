@@ -21,7 +21,7 @@ description: 博客第一篇，介绍一下这个网站。
 
 现在你可以玩的第一款游戏：
 
-👉 [末日生存对话游戏]({{ '/apocalypse_survival.html' | relative_url }})
+👉 [末日生存对话游戏](/apocalypse_survival.html)
 
 ---
 
