@@ -4,6 +4,13 @@ title: 博客
 permalink: /blog/
 ---
 
+<nav class="top-nav">
+  <span>
+    <a href="/"><i class="fas fa-home"></i> 首页</a>
+  </span>
+  <span class="live-clock" id="live-clock"></span>
+</nav>
+
 <div class="blog-page">
 
 <header class="blog-hero">
@@ -32,3 +39,18 @@ permalink: /blog/
 </div>
 
 </div>
+
+<script>
+(function updateClock(){
+  var now=new Date();
+  var s=now.getFullYear()+'-'+
+    String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+' '+
+    String(now.getHours()).padStart(2,'0')+':'+
+    String(now.getMinutes()).padStart(2,'0')+':'+
+    String(now.getSeconds()).padStart(2,'0');
+  var el=document.getElementById('live-clock');
+  if(el)el.textContent='🕐 '+s;
+  setTimeout(updateClock,1000);
+})();
+</script>
