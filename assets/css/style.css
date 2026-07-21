@@ -90,7 +90,18 @@ body {
      800px 480px #fff,   120px 600px #fff,   300px 620px #fff,
      460px 580px #fff,   620px 610px #fff,   780px 580px #fff,
       30px 700px #fff,   180px 720px #fff,   340px 690px #fff,
-     520px 720px #fff,   680px 700px #fff,   840px 710px #fff;
+     520px 720px #fff,   680px 700px #fff,   840px 710px #fff,
+     920px  60px #fff,  1050px 110px #fff,  1180px  45px #fff,
+    1300px 140px #fff,  1420px  80px #fff,  1550px 170px #fff,
+    1680px 100px #fff,  1800px 200px #fff,  1920px  55px #fff,
+     960px 300px #fff,  1100px 350px #fff,  1250px 280px #fff,
+    1400px 400px #fff,  1500px 320px #fff,  1650px 380px #fff,
+    1780px 450px #fff,  1900px 290px #fff,   940px 500px #fff,
+    1080px 520px #fff,  1220px 480px #fff,  1360px 550px #fff,
+    1520px 510px #fff,  1660px 560px #fff,  1820px 490px #fff,
+     980px 650px #fff,  1140px 620px #fff,  1280px 680px #fff,
+    1440px 640px #fff,  1580px 660px #fff,  1720px 610px #fff,
+    1860px 700px #fff;
   animation: twinkle1 4s ease-in-out infinite alternate;
 }
 
@@ -106,7 +117,17 @@ body {
       90px 500px #fff,   250px 540px #fff,   400px 520px #fff,
      550px 560px #fff,   710px 510px #fff,   860px 550px #fff,
       10px 640px #fff,   150px 670px #fff,   310px 650px #fff,
-     480px 680px #fff,   630px 640px #fff,   800px 660px #fff;
+     480px 680px #fff,   630px 640px #fff,   800px 660px #fff,
+     930px  90px #fff,  1070px 160px #fff,  1210px  70px #fff,
+    1350px 130px #fff,  1490px  65px #fff,  1630px 150px #fff,
+    1770px  85px #fff,  1910px 180px #fff,   970px 270px #fff,
+    1130px 310px #fff,  1270px 240px #fff,  1410px 360px #fff,
+    1570px 290px #fff,  1710px 340px #fff,  1850px 260px #fff,
+     950px 460px #fff,  1110px 530px #fff,  1250px 470px #fff,
+    1390px 580px #fff,  1530px 500px #fff,  1670px 550px #fff,
+    1810px 440px #fff,   990px 630px #fff,  1150px 590px #fff,
+    1310px 660px #fff,  1450px 610px #fff,  1590px 670px #fff,
+    1730px 600px #fff,  1870px 640px #fff;
   animation: twinkle2 3s ease-in-out infinite alternate;
 }
 
