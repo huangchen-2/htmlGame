@@ -1,7 +1,7 @@
 ---
 layout: post
 title: C++ Qt 开发者的职业方向指南
-date: 2026-07-22
+date: 2026-07-21
 description: 聊聊 Qt 开发的主要方向、行业前景和技能路线。
 tags: [Qt, C++, 职业规划]
 ---
