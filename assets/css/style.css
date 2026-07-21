@@ -167,6 +167,32 @@ body {
     0 0 30px 12px rgba(140, 180, 255, 0.4);
 }
 
+/* ====== 左下角半个地球 ====== */
+.earth {
+  position: absolute;
+  bottom: -220px;
+  left: -180px;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 40% 35%, #1a6b8a 0%, #0d3b4f 30%, #07202e 60%, #020c14 100%),
+    radial-gradient(ellipse at 55% 50%, rgba(40, 160, 120, 0.5) 0%, transparent 40%),
+    radial-gradient(ellipse at 30% 25%, rgba(60, 180, 200, 0.3) 0%, transparent 30%),
+    radial-gradient(ellipse at 60% 60%, rgba(30, 100, 80, 0.4) 0%, transparent 35%);
+  box-shadow:
+    0 0 80px 30px rgba(30, 140, 200, 0.15),
+    0 0 200px 60px rgba(20, 80, 160, 0.1),
+    inset 0 0 60px rgba(0, 0, 0, 0.4);
+  animation: earthGlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes earthGlow {
+  0%   { box-shadow: 0 0 80px 30px rgba(30, 140, 200, 0.12), 0 0 200px 60px rgba(20, 80, 160, 0.08); }
+  100% { box-shadow: 0 0 100px 40px rgba(30, 160, 220, 0.18), 0 0 220px 70px rgba(20, 100, 180, 0.12); }
+}
+
 /* ====== 毛玻璃卡片本体 ====== */
 .cover-card {
   position: relative;
