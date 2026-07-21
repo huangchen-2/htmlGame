@@ -2821,7 +2821,7 @@ function resolveChoice(idx){
       const rk=Object.keys(S.inventory)[rand(0,Object.keys(S.inventory).length-1)];
       if(Math.random()<0.5){removeItem(rk,1);result.itemsLost.push({n:rk,q:1});}
     }
-    return selectedOutcome.desc||ch.outcome||buildOutcomeText(result);
+    return selectedOutcome.desc||selectedOutcome.outcome||ch.outcome||buildOutcomeText(result);
   }
 
   // OLD: Deterministic format (backward compatible)
@@ -2839,7 +2839,7 @@ function resolveChoice(idx){
     if(Math.random()<0.4){removeItem(rk,1);result.itemsLost.push({n:rk,q:1});}
   }
 
-  return ch.outcome||buildOutcomeText(result);
+  return ch.outcome||ch.desc||buildOutcomeText(result);
 }
 
 function buildOutcomeText(result){
@@ -3736,7 +3736,7 @@ async function continueStory(){
   // Check weather warnings first
   if(!checkWeatherWarning()){
     // Select & process event
-    const ev=selectEvent();processEvent(ev);
+    try{const ev=selectEvent();processEvent(ev);}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况，继续前进...','system');S.busy=false;btnDisabled(false);setChoices(['▶ 继续推进']);return;}
     S.history.push({day:S.day,summary:ev.id});
   }
   updateUI();S.busy=false;btnDisabled(false);checkDeath();
@@ -3757,7 +3757,7 @@ async function pickChoice(idx){
     if(ct.includes('管理仓库')){S.busy=false;btnDisabled(false);setStatus('');openStorageUI();return;}
     if(ct.includes('工作台制作')){S.busy=false;btnDisabled(false);setStatus('');openCrafting();return;}
     if(ct.includes('升级储物箱')){S.busy=false;btnDisabled(false);setStatus('');upgradeChest();return;}
-    if(ct.includes('继续推进')){S.distance=0.5;S.busy=false;btnDisabled(false);setStatus('');await continueStory();return;}
+    if(ct.includes('继续推进')){S.distance=0.5;S.busy=false;btnDisabled(false);setStatus('');try{await continueStory();}catch(e){console.error(e);setStatus('⚠️ 出错了，请刷新页面');S.busy=false;btnDisabled(false);}return;}
     if(ct.includes('呼叫队医')){S.busy=false;btnDisabled(false);setStatus('');doFieldMedicCall();return;}
     if(ct.includes('使用医疗物品')){S.busy=false;btnDisabled(false);setStatus('');showBodyDetail(BODY_PARTS.find(p=>S.body[p].wounds.length>0)||'head');return;}
     S.busy=false;setStatus('');btnDisabled(false);
