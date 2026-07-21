@@ -5,7 +5,14 @@ layout: default
 <div class="cover-container">
   <div class="stars"></div>
   <div class="earth"></div>
-  <div id="meteor-sky"></div>
+  <div class="shooting-star-wrapper">
+    <div class="meteor m1"><div class="m-head"></div><div class="m-tail"></div></div>
+    <div class="meteor m2"><div class="m-head"></div><div class="m-tail"></div></div>
+    <div class="meteor m3"><div class="m-head"></div><div class="m-tail"></div></div>
+    <div class="meteor m4"><div class="m-head"></div><div class="m-tail"></div></div>
+    <div class="meteor m5"><div class="m-head"></div><div class="m-tail"></div></div>
+    <div class="meteor m6"><div class="m-head"></div><div class="m-tail"></div></div>
+  </div>
   <div class="cover-card">
     <img class="avatar" src="/assets/img/avatar.jpg" alt="avatar" onerror="this.style.display='none'">
     <h1 class="name">{{ site.author.name | default: "SorryMcDonald" }}</h1>
@@ -47,73 +54,3 @@ layout: default
     </div>
   </div>
 </div>
-
-<script>
-(function() {
-  var sky = document.getElementById('meteor-sky');
-  if (!sky) return;
-
-  function rand(min, max) { return Math.random() * (max - min) + min; }
-
-  function createMeteor() {
-    var el = document.createElement('div');
-    el.className = 'meteor';
-
-    // 起始位置散布在屏幕中上到右上方
-    var startX = rand(30, 95);
-    var startY = rand(2, 40);
-    el.style.left = startX + 'vw';
-    el.style.top = startY + 'vh';
-
-    // 随机大小
-    var s = rand(0.35, 0.8);
-    el.style.transform = 'scale(' + s + ')';
-
-    sky.appendChild(el);
-
-    // 从左上方往左下方向飞
-    var duration = rand(800, 1800);
-    var startTime = null;
-    var endX = startX - rand(40, 70);
-    var endY = startY + rand(25, 50);
-
-    function animate(ts) {
-      if (!startTime) startTime = ts;
-      var progress = (ts - startTime) / duration;
-      if (progress > 1) progress = 1;
-
-      var ease = progress < 0.3
-        ? (progress / 0.3) * (progress / 0.3)
-        : 1 - Math.pow((1 - progress) / 0.7, 2);
-
-      var x = startX + (endX - startX) * ease;
-      var y = startY + (endY - startY) * ease;
-
-      var opacity;
-      if (progress < 0.05) opacity = progress / 0.05 * 0.8;
-      else if (progress < 0.80) opacity = 0.8;
-      else opacity = (1 - progress) / 0.20 * 0.8;
-
-      el.style.left = x + 'vw';
-      el.style.top = y + 'vh';
-      el.style.opacity = opacity;
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        el.remove();
-      }
-    }
-
-    requestAnimationFrame(animate);
-  }
-
-  // 每 2~3.5 秒生成 1 颗，不密集
-  function spawn() {
-    createMeteor();
-    setTimeout(spawn, rand(2000, 3500));
-  }
-
-  spawn();
-})();
-</script>

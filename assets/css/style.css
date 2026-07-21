@@ -123,8 +123,8 @@ body {
   100% { opacity: 0.3; }
 }
 
-/* ====== 流星（border 渐细三角 + JS 动态生成） ====== */
-#meteor-sky {
+/* ====== 流星 ====== */
+.shooting-star-wrapper {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 0;
@@ -132,65 +132,108 @@ body {
   overflow: hidden;
 }
 
+/* 外层：旋转 + 显隐动画 */
 .meteor {
   position: absolute;
-  opacity: 0;
-  z-index: 10000;
+  top: 0;
+  left: 0;
+  animation: meteorFade linear infinite;
+  pointer-events: none;
 }
 
-/* border 渐细三角形尾迹：从头部(宽)到尾端(细) */
-.meteor::after {
-  content: "";
-  display: block;
-  border: solid;
-  border-width: 2px 0 2px 80px;
-  border-color: transparent transparent transparent #fff;
-  border-radius: 2px 0 0 2px;
-  transform: rotate(-45deg);
-  transform-origin: 0 0 0;
-  box-shadow: 0 0 20px rgba(180, 210, 255, 0.4), 0 0 8px rgba(255, 255, 255, 0.5);
+/* 全部从右上→左下，rotate(135°左右) = 指向左下 */
+.m1 { animation-duration: 2.2s; animation-delay: 0s;    left: 75%; top: 40px;  transform: rotate(140deg); }
+.m2 { animation-duration: 2.6s; animation-delay: 0.8s;  left: 85%; top: 100px; transform: rotate(130deg); }
+.m3 { animation-duration: 1.8s; animation-delay: 1.6s;  left: 70%; top: 200px; transform: rotate(145deg); }
+.m4 { animation-duration: 2.4s; animation-delay: 2.4s;  left: 90%; top: 300px; transform: rotate(135deg); }
+.m5 { animation-duration: 1.6s; animation-delay: 0.4s;  left: 80%; top: 150px; transform: rotate(138deg); }
+.m6 { animation-duration: 2.0s; animation-delay: 1.2s;  left: 65%; top: 280px; transform: rotate(142deg); }
+
+/* 尾迹：渐变光线 */
+.m-tail {
+  position: absolute;
+  top: 0; left: 0;
+  width: 180px;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(180,200,255,0.2) 30%,
+    rgba(220,230,255,0.6) 65%,
+    rgba(255,255,255,0.95) 90%,
+    #fff 100%);
+  border-radius: 100%;
+  animation: tailSlide 1s linear infinite;
 }
+
+.m5 .m-tail, .m1 .m-tail { width: 250px; height: 2px; }
+.m6 .m-tail { width: 130px; height: 1.5px; }
 
 /* 头部光球 */
-.meteor::before {
-  content: "";
+.m-head {
   position: absolute;
-  left: 78px;
-  top: 1px;
-  width: 5px;
-  height: 5px;
+  top: -3px;
+  left: 180px;
+  width: 8px;
+  height: 8px;
   background: #fff;
   border-radius: 50%;
+  animation: headSlide 1s linear infinite;
   box-shadow:
-    0 0 6px 3px rgba(255, 255, 255, 0.95),
-    0 0 14px 6px rgba(200, 220, 255, 0.7),
-    0 0 30px 12px rgba(140, 180, 255, 0.4);
+    0 0 5px 2px rgba(255,255,255,0.95),
+    0 0 10px 4px rgba(200,220,255,0.7),
+    0 0 20px 8px rgba(150,190,255,0.45),
+    0 0 35px 14px rgba(110,160,255,0.25);
+}
+
+.m5 .m-head, .m1 .m-head { left: 250px; top: -4px; width: 10px; height: 10px; }
+.m6 .m-head { left: 130px; top: -2px; width: 5px; height: 5px; }
+
+/* 尾迹滑动 */
+@keyframes tailSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(1000px); }
+}
+
+/* 头部跟随 */
+@keyframes headSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(1000px); }
+}
+
+/* 流星显隐 */
+@keyframes meteorFade {
+  0%   { opacity: 0; }
+  2%   { opacity: 0; }
+  4%   { opacity: 1; }
+  16%  { opacity: 1; }
+  19%  { opacity: 0; }
+  100% { opacity: 0; }
 }
 
 /* ====== 左下角半个地球 ====== */
 .earth {
   position: absolute;
-  bottom: -220px;
-  left: -180px;
-  width: 500px;
-  height: 500px;
+  bottom: -350px;
+  left: -250px;
+  width: 700px;
+  height: 700px;
   border-radius: 50%;
   z-index: 0;
   background:
-    radial-gradient(ellipse at 40% 35%, #1a6b8a 0%, #0d3b4f 30%, #07202e 60%, #020c14 100%),
-    radial-gradient(ellipse at 55% 50%, rgba(40, 160, 120, 0.5) 0%, transparent 40%),
-    radial-gradient(ellipse at 30% 25%, rgba(60, 180, 200, 0.3) 0%, transparent 30%),
-    radial-gradient(ellipse at 60% 60%, rgba(30, 100, 80, 0.4) 0%, transparent 35%);
+    radial-gradient(ellipse at 40% 30%, #1e8db5 0%, #0e5e7a 20%, #093d52 45%, #041a26 70%, #020a10 100%),
+    radial-gradient(ellipse at 50% 45%, rgba(50, 180, 130, 0.55) 0%, transparent 35%),
+    radial-gradient(ellipse at 25% 20%, rgba(80, 200, 220, 0.35) 0%, transparent 25%),
+    radial-gradient(ellipse at 55% 55%, rgba(35, 120, 90, 0.45) 0%, transparent 30%);
   box-shadow:
-    0 0 80px 30px rgba(30, 140, 200, 0.15),
-    0 0 200px 60px rgba(20, 80, 160, 0.1),
-    inset 0 0 60px rgba(0, 0, 0, 0.4);
+    0 0 100px 40px rgba(30, 160, 220, 0.2),
+    0 0 250px 80px rgba(20, 80, 160, 0.12),
+    inset 0 0 80px rgba(0, 0, 0, 0.5);
   animation: earthGlow 8s ease-in-out infinite alternate;
 }
 
 @keyframes earthGlow {
-  0%   { box-shadow: 0 0 80px 30px rgba(30, 140, 200, 0.12), 0 0 200px 60px rgba(20, 80, 160, 0.08); }
-  100% { box-shadow: 0 0 100px 40px rgba(30, 160, 220, 0.18), 0 0 220px 70px rgba(20, 100, 180, 0.12); }
+  0%   { box-shadow: 0 0 100px 40px rgba(30, 160, 220, 0.15), 0 0 250px 80px rgba(20, 80, 160, 0.08); }
+  100% { box-shadow: 0 0 140px 50px rgba(40, 180, 240, 0.22), 0 0 280px 90px rgba(30, 100, 180, 0.14); }
 }
 
 /* ====== 毛玻璃卡片本体 ====== */
@@ -203,7 +246,6 @@ body {
   text-align: center;
   max-width: 420px;
   width: 90%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 /* 头像浮在卡片顶部边缘 */
