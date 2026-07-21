@@ -1208,7 +1208,7 @@ function generateWeather(){
 function totalArmor(){let a=0;for(const s of['head','upper','lower','feet','body','hands','mask']){const c=S.clothing[s];if(c)a+=c.armor||0;}return a;}
 function totalRadResist(){let r=0;for(const s of['head','upper','lower','feet','body','hands','mask']){const c=S.clothing[s];if(c)r+=c.rad||0;}return r;}
 function totalWarmth(){let w=0;for(const s of['head','upper','lower','feet','body','hands','mask']){const c=S.clothing[s];if(c){w+=c.warmth;if(c.wet)w=Math.floor(w*0.4);}}return w;}
-function getFeelsLike(){let t=S.weather.temperature;if(S.weather.windSpeed>15)t-=Math.floor(S.weather.windSpeed/8);if(S.bodyWetness>0)t-=Math.floor(S.bodyWetness/10);t+=Math.floor(totalWarmth()/3);if(S.hasCampfire)t+=5;return Math.round(t);}
+function getFeelsLike(){let t=S.weather.temperature+getEffectSum('tempMod');if(S.weather.windSpeed>15)t-=Math.floor(S.weather.windSpeed/8);if(S.bodyWetness>0)t-=Math.floor(S.bodyWetness/10);t+=Math.floor(totalWarmth()/3);if(S.hasCampfire)t+=5;return Math.round(t);}
 function applyWetness(){
   const p=S.weather.precipType;if(p==='none'&&!S.hasCampfire){S.bodyWetness=clamp(S.bodyWetness-8,0,100);return;}
   let wg=0;if(p==='drizzle')wg=5;else if(p==='rain')wg=15;else if(p==='heavy_rain')wg=30;else if(S.weather.isSnow)wg=8;
@@ -1312,7 +1312,7 @@ function medicTreatWound(pid,wid,medicId){
 
 // ===== CAMP =====
 function buildCampfire(){if(!hasItem('木材',2)&&!hasItem('打火机',1)){setStatus('需要木材×2 或 打火机来生篝火');return;}if(hasItem('打火机',1)&&!hasItem('木材',1)&&!hasItem('书籍',1)){setStatus('需要燃料（木材或书籍）');return;}const fuel=hasItem('木材',1)?'木材':hasItem('书籍',1)?'书籍':null;if(fuel)removeItem(fuel,1);if(hasItem('打火机',1)){/*keep lighter*/}else if(hasItem('木材',2))removeItem('木材',2);S.hasCampfire=true;addStory('🔥 篝火燃起来了。火焰驱散了黑暗和寒冷。','camp');updateUI();}
-function campUnderAttack(){if(atCamp())return false;const base=5+S.distance*2+(isNight()?10:0);return Math.random()*100<base;}
+function campUnderAttack(){if(atCamp())return false;var base=5+S.distance*2+(isNight()?10:0);base*=(1+getEffectSum('wildAttackMod'));return Math.random()*100<base;}
 function resolveCampAttack(){
   if(Math.random()*100<S.camp.defense){addStory('🏕️ <strong>营地遭袭！</strong>但防御工事挡住了掠夺者。','camp');return;}
   const names=Object.keys(S.camp.supplies);if(names.length>0){const lost=[];for(let i=0;i<Math.min(3,names.length);i++){const n=names[rand(0,names.length-1)];const lq=Math.min(rand(1,3),S.camp.supplies[n]?.qty||0);if(lq>0){removeItem(n,lq,true);lost.push(n+'×'+lq);}}addStory(`🏕️ <strong>⚠️ 营地被洗劫！</strong>丢失：${lost.join('、')}`,'camp');}
@@ -2532,7 +2532,7 @@ function enemyAttackPlayer(){
   // Can only detect attack if someone is at camp (player or teammate)
   const someoneAtCamp=atCamp()||S.party.some(p=>p.alive&&p.activity==='guard');
   if(!someoneAtCamp)return; // attack still happens but you won't know!
-  if(Math.random()>0.08*repAttackMod())return; // 8% base, modified by reputation
+  var campAttackBase=0.08*(1+getEffectSum('campAttackMod'));if(Math.random()>campAttackBase*repAttackMod())return; // modified by effects & reputation
   const ec=pick(S.enemyCamps.filter(c=>c.alive!==false));if(!ec)return;
   const dirs=['N','S','E','W','NE','NW','SE','SW'];const dir=pick(dirs);
   const hours=rand(4,12);
@@ -2795,9 +2795,9 @@ function btnDisabled(v){document.querySelectorAll('#bottom .btn,.choice-btn').fo
 // ===== VITAL RATES =====
 function getVitalRates(){
   let bloodRate=0,bleedCount=0;for(const pid of BODY_PARTS)for(const w of S.body[pid].wounds){if(w.bleeding&&!w.bandaged){bloodRate-=w.severity*3;bleedCount++;}}
-  let hydRate=-3;if(S.weather.temperature>30)hydRate-=2;if(S.weather.temperature>38)hydRate-=2;if(S.weather.windSpeed>20)hydRate-=1;
-  let nutRate=-2;if(S.weather.temperature<5)nutRate-=1;if(S.weather.temperature<-10)nutRate-=1;
-  let fatRate=3;if(S.weather.temperature<5)fatRate+=2;if(S.pain>40)fatRate+=1;if(isNight())fatRate+=1;
+  let hydRate=-3*(1+getEffectSum('waterConsumeMod'));if(S.weather.temperature>30)hydRate-=2;if(S.weather.temperature>38)hydRate-=2;if(S.weather.windSpeed>20)hydRate-=1;
+  let nutRate=-2*(1+getEffectSum('foodConsumeMod'));if(S.weather.temperature<5)nutRate-=1;if(S.weather.temperature<-10)nutRate-=1;
+  let fatRate=3;if(S.weather.temperature<5)fatRate+=2;if(S.pain>40)fatRate+=1;if(isNight())fatRate+=1;if(hasEffect('plague'))fatRate+=2;
   const feels=getFeelsLike();const tempDrift=(feels+2-S.coreTemp)*0.3;
   let wetRate=0;const p=S.weather.precipType;if(p==='drizzle')wetRate=5;else if(p==='rain')wetRate=15;else if(p==='heavy_rain')wetRate=30;else if(S.weather.isSnow)wetRate=8;else wetRate=-10;if(S.hasCampfire)wetRate-=15;
   let infRate=0;const hi=BODY_PARTS.some(p=>S.body[p].wounds.some(w=>w.infected));if(hi)infRate=2;if(!hi&&S.infectionLevel>0)infRate=-3;
