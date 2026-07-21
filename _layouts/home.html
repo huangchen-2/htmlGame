@@ -19,14 +19,14 @@ layout: default
         <i class="fab fa-qq"></i>
       </a>
       {% endif %}
-      {% if site.author.twitter %}
-      <a href="https://twitter.com/{{ site.author.twitter }}" target="_blank" title="Twitter">
-        <i class="fab fa-twitter"></i>
-      </a>
-      {% endif %}
       {% if site.author.email %}
       <a href="mailto:{{ site.author.email }}" title="Email">
         <i class="fas fa-envelope"></i>
+      </a>
+      {% endif %}
+      {% if site.author.csdn %}
+      <a href="{{ site.author.csdn }}" target="_blank" title="CSDN">
+        <i class="fas fa-blog"></i>
       </a>
       {% endif %}
     </div>
