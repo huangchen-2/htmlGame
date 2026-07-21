@@ -132,60 +132,80 @@ body {
   overflow: hidden;
 }
 
+/* 外层：旋转 + 显隐动画 */
 .meteor {
   position: absolute;
-  opacity: 0;
-}
-
-/* 每个流星的位置和角度 */
-.meteor-1 { top: 60px;  left: 10%; transform: rotate(-35deg); animation: meteorFade 1.8s linear infinite; }
-.meteor-2 { top: 30px;  left: 55%; transform: rotate(-25deg); animation: meteorFade 1.8s linear 0.6s infinite; }
-.meteor-3 { top: 140px; left: 30%; transform: rotate(-40deg); animation: meteorFade 1.8s linear 1.2s infinite; }
-.meteor-4 { top: 200px; left: 72%; transform: rotate(-30deg); animation: meteorFade 2.0s linear 1.8s infinite; }
-.meteor-5 { top: 80px;  left: 45%; transform: rotate(-38deg); animation: meteorFade 1.5s linear 0.3s infinite; }
-.meteor-6 { top: 260px; left: 20%; transform: rotate(-45deg); animation: meteorFade 2.0s linear 1.0s infinite; }
-
-.meteor span {
-  display: block;
-  width: 200px;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.6) 30%, rgba(180,220,255,0.2) 60%, transparent 100%);
-  border-radius: 2px;
-  position: relative;
-  animation: meteorSlide 1.8s linear infinite;
-  box-shadow: 0 0 6px 1px rgba(180, 210, 255, 0.5);
-}
-
-.meteor-5 span {
-  width: 260px;
-  animation-duration: 1.5s;
-}
-
-.meteor span::before {
-  content: "";
-  position: absolute;
-  top: -2px;
+  top: 0;
   left: 0;
-  width: 6px;
-  height: 6px;
+  animation: meteorFade linear infinite;
+  pointer-events: none;
+}
+
+.m1 { animation-duration: 2.2s; animation-delay: 0s;    left: 5%;  top: 80px;  transform: rotate(-30deg); }
+.m2 { animation-duration: 2.6s; animation-delay: 0.8s;  left: 50%; top: 20px;  transform: rotate(-20deg); }
+.m3 { animation-duration: 1.8s; animation-delay: 1.6s;  left: 25%; top: 160px; transform: rotate(-35deg); }
+.m4 { animation-duration: 2.4s; animation-delay: 2.4s;  left: 68%; top: 220px; transform: rotate(-28deg); }
+.m5 { animation-duration: 1.6s; animation-delay: 0.4s;  left: 40%; top: 50px;  transform: rotate(-40deg); }
+.m6 { animation-duration: 2.0s; animation-delay: 1.2s;  left: 15%; top: 300px; transform: rotate(-45deg); }
+
+/* 尾迹：渐变光线，水平滑动 */
+.m-tail {
+  position: absolute;
+  top: 0; left: 0;
+  width: 180px;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(180,200,255,0.2) 30%,
+    rgba(220,230,255,0.6) 65%,
+    rgba(255,255,255,0.95) 90%,
+    #fff 100%);
+  border-radius: 100%;
+  animation: tailSlide 1s linear infinite;
+}
+
+.m5 .m-tail, .m1 .m-tail { width: 250px; height: 2px; }
+.m6 .m-tail { width: 130px; height: 1.5px; }
+
+/* 头部光球 */
+.m-head {
+  position: absolute;
+  top: -3px;
+  left: 180px;
+  width: 8px;
+  height: 8px;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 0 16px 6px rgba(180, 210, 255, 0.95), 0 0 40px 12px rgba(120, 160, 255, 0.5), 0 0 60px 20px rgba(100, 140, 255, 0.25);
+  animation: headSlide 1s linear infinite;
+  box-shadow:
+    0 0 5px 2px rgba(255,255,255,0.95),
+    0 0 10px 4px rgba(200,220,255,0.7),
+    0 0 20px 8px rgba(150,190,255,0.45),
+    0 0 35px 14px rgba(110,160,255,0.25);
 }
 
-/* 流星飞过 */
-@keyframes meteorSlide {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(700px); }
+.m5 .m-head, .m1 .m-head { left: 250px; top: -4px; width: 10px; height: 10px; }
+.m6 .m-head { left: 130px; top: -2px; width: 5px; height: 5px; }
+
+/* 尾迹滑动 */
+@keyframes tailSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(1000px); }
+}
+
+/* 头部跟随 */
+@keyframes headSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(1000px); }
 }
 
 /* 流星显隐 */
 @keyframes meteorFade {
   0%   { opacity: 0; }
-  5%   { opacity: 0; }
-  8%   { opacity: 1; }
-  25%  { opacity: 1; }
-  30%  { opacity: 0; }
+  3%   { opacity: 0; }
+  6%   { opacity: 1; }
+  18%  { opacity: 1; }
+  22%  { opacity: 0; }
   100% { opacity: 0; }
 }
 
@@ -193,16 +213,13 @@ body {
 .cover-card {
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
   border-radius: 20px;
   padding: 50px 48px 44px;
   text-align: center;
   max-width: 420px;
   width: 90%;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 /* 头像浮在卡片顶部边缘 */
