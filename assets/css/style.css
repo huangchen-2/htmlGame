@@ -124,55 +124,85 @@ body {
 }
 
 /* ====== 流星 ====== */
-.shooting-star {
+.shooting-star-wrapper {
   position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.shooting-star::before,
-.shooting-star::after {
-  content: "";
+.meteor {
   position: absolute;
-  width: 120px;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0) 80%);
-  border-radius: 1px;
-  transform: rotate(-35deg);
-  animation: shoot 3s linear infinite;
   opacity: 0;
 }
 
-.shooting-star::before {
-  top: 100px;
-  left: 100px;
-  animation-delay: 0s;
+/* 每个流星的位置和角度 */
+.meteor-1 { top: 60px;  left: 10%; transform: rotate(-35deg); animation: meteorFade 1.8s linear infinite; }
+.meteor-2 { top: 30px;  left: 55%; transform: rotate(-25deg); animation: meteorFade 1.8s linear 0.6s infinite; }
+.meteor-3 { top: 140px; left: 30%; transform: rotate(-40deg); animation: meteorFade 1.8s linear 1.2s infinite; }
+.meteor-4 { top: 200px; left: 72%; transform: rotate(-30deg); animation: meteorFade 2.0s linear 1.8s infinite; }
+.meteor-5 { top: 80px;  left: 45%; transform: rotate(-38deg); animation: meteorFade 1.5s linear 0.3s infinite; }
+.meteor-6 { top: 260px; left: 20%; transform: rotate(-45deg); animation: meteorFade 2.0s linear 1.0s infinite; }
+
+.meteor span {
+  display: block;
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.6) 30%, rgba(180,220,255,0.2) 60%, transparent 100%);
+  border-radius: 2px;
+  position: relative;
+  animation: meteorSlide 1.8s linear infinite;
+  box-shadow: 0 0 6px 1px rgba(180, 210, 255, 0.5);
 }
 
-.shooting-star::after {
-  top: 200px;
-  left: 500px;
-  animation-delay: 1.5s;
+.meteor-5 span {
+  width: 260px;
+  animation-duration: 1.5s;
 }
 
-@keyframes shoot {
-  0%   { transform: translate(0, 0) rotate(-35deg); opacity: 0; }
-  5%   { opacity: 1; }
-  15%  { transform: translate(500px, 250px) rotate(-35deg); opacity: 0; }
-  100% { transform: translate(500px, 250px) rotate(-35deg); opacity: 0; }
+.meteor span::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 16px 6px rgba(180, 210, 255, 0.95), 0 0 40px 12px rgba(120, 160, 255, 0.5), 0 0 60px 20px rgba(100, 140, 255, 0.25);
 }
 
-/* ====== 白色卡片本体 ====== */
+/* 流星飞过 */
+@keyframes meteorSlide {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(700px); }
+}
+
+/* 流星显隐 */
+@keyframes meteorFade {
+  0%   { opacity: 0; }
+  5%   { opacity: 0; }
+  8%   { opacity: 1; }
+  25%  { opacity: 1; }
+  30%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ====== 毛玻璃卡片本体 ====== */
 .cover-card {
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 50px 48px 44px;
   text-align: center;
   max-width: 420px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* 头像浮在卡片顶部边缘 */
@@ -180,26 +210,27 @@ body {
   width: 110px;
   height: 110px;
   border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border: 4px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   margin-top: -95px;
   margin-bottom: 20px;
   object-fit: cover;
-  background: #eee;
+  background: rgba(255,255,255,0.15);
 }
 
 /* 名字 */
 .name {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #fff;
   margin-bottom: 6px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 /* 简介 */
 .bio {
   font-size: 0.95rem;
-  color: #888;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 24px;
 }
 
@@ -207,9 +238,10 @@ body {
 .divider {
   width: 50px;
   height: 3px;
-  background: linear-gradient(90deg, #e94560, #0f3460);
+  background: linear-gradient(90deg, #e94560, #7c3aed);
   border-radius: 2px;
   margin: 0 auto 28px;
+  opacity: 0.8;
 }
 
 /* 社交图标 */
@@ -218,7 +250,7 @@ body {
 }
 
 .social-links a {
-  color: #999;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 1.3rem;
   margin: 0 14px;
   transition: color 0.3s, transform 0.3s;
@@ -243,9 +275,9 @@ body {
   align-items: center;
   gap: 6px;
   padding: 10px 22px;
-  border: 2px solid #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 50px;
-  color: #555;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -253,9 +285,9 @@ body {
 }
 
 .nav-btn:hover {
-  border-color: #e94560;
-  color: #e94560;
-  background: rgba(233, 69, 96, 0.04);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
 }
 
