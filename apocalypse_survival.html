@@ -100,6 +100,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-seri
   <div class="info-chip"><span class="ic-emoji">👥</span><span>小队</span><span class="ic-val" id="ib-party">1</span><span>人</span></div>
   <div class="info-chip"><span class="ic-emoji" id="ib-rep-icon">🌱</span><span id="ib-rep">无名</span></div>
   <div class="info-chip" id="ib-fire-chip" style="display:none"><span class="ic-emoji">🔥</span><span>篝火</span></div>
+  <div class="info-chip" style="cursor:pointer;border:1px solid rgba(255,255,255,0.2)" onclick="saveGame()" title="手动存档"><span class="ic-emoji">💾</span><span>存档</span></div>
+  <div class="info-chip" style="cursor:pointer;border:1px solid rgba(255,255,255,0.2)" onclick="if(hasSave()){deleteSave();setStatus('存档已删除');}" title="删除存档"><span class="ic-emoji">🗑️</span><span>删档</span></div>
 </div>
 
 <div id="main">
@@ -3205,6 +3207,7 @@ function advanceHour(hours){
     S.nutrition=clamp(S.nutrition+rand(-10,-3),0,100);S.hydration=clamp(S.hydration+rand(-8,-3),0,100);S.fatigue=clamp(S.fatigue+rand(2,8),0,100);
     if(!atCamp()&&campUnderAttack())resolveCampAttack();S.hasCampfire=false;}S.minute=0;}
   generateWeather();applyWetness();updateCoreTemp();checkDeath();
+  if(!S.isDead&&(S.day%3===0))saveGame();
 }
 
 // ===== CRAFTING SYSTEM =====
@@ -3533,6 +3536,27 @@ const IDENTITIES=[
 ];
 
 // ===== INIT =====
+// ===== 存档系统 =====
+const SAVE_KEY='wasteland_save_v1';
+function saveGame(){
+  try{
+    var save=S.season?S.season.icon:'';
+    localStorage.setItem(SAVE_KEY,JSON.stringify(S));
+    setStatus('💾 已存档 — 第'+S.day+'天 '+timeString());
+  }catch(e){setStatus('⚠️ 存档失败');}
+}
+function loadGame(){
+  try{
+    var raw=localStorage.getItem(SAVE_KEY);
+    if(!raw)return false;
+    var data=JSON.parse(raw);
+    Object.assign(S,data);
+    return true;
+  }catch(e){return false;}
+}
+function hasSave(){try{return !!localStorage.getItem(SAVE_KEY);}catch(e){return false;}}
+function deleteSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+
 function init(){
   S.season=SEASONS[0];S.seasonDay=1;
   document.getElementById('death-overlay').classList.remove('active');
@@ -3540,12 +3564,26 @@ function init(){
   document.getElementById('choices-area').innerHTML='';
   document.getElementById('inv-row').innerHTML='';
   document.getElementById('status-line').textContent='选择初始身份';
-  // Show identity choices as regular buttons
   let btns='';
+  // 如果有存档，显示继续游戏按钮
+  if(hasSave()){
+    btns+=`<button class="choice-btn" onclick="continueGame()" style="border-left-color:#ffd700;">💾 <strong>继续游戏</strong> — 从上次存档恢复<br><span style="font-size:0.7em;color:var(--text-dim)">读取本地存档继续冒险</span></button>`;
+  }
   IDENTITIES.forEach((id,i)=>{
     btns+=`<button class="choice-btn" onclick="pickIdentity('${id.id}')">${i+1}. ${id.icon} <strong>${id.name}</strong> — ${id.desc}<br><span style="font-size:0.7em;color:var(--text-dim)">初始：${id.items.map(x=>x.n+'×'+x.q).join('、')}</span></button>`;
   });
   document.getElementById('choices-area').innerHTML=btns;
+}
+function continueGame(){
+  if(loadGame()){
+    S.isDead=false;S.busy=false;S._currentEvent=null;
+    document.getElementById('death-overlay').classList.remove('active');
+    document.getElementById('story-box').innerHTML='';
+    document.getElementById('choices-area').innerHTML='';
+    addStory(`<strong>━━━ 💾 继续第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
+    addStory(`你从上次的冒险中醒来，世界依旧残酷。`,'system');
+    btnDisabled(false);updateUI();setStatus('💾 已载入存档');
+  }else{setStatus('⚠️ 存档损坏，请重新开始');}
 }
 
 function pickIdentity(id){
