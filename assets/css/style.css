@@ -33,7 +33,6 @@ body {
   height: 3px;
   border-radius: 50%;
   background: transparent;
-  transform-origin: 0 0;
   animation: bgTwinkle1 4s ease-in-out infinite alternate;
 }
 
@@ -42,16 +41,16 @@ body {
 }
 
 @keyframes bgTwinkle1 {
-  0%   { opacity: 0.3; transform: scale(0.6); }
-  50%  { opacity: 1.0; transform: scale(1.2); }
-  100% { opacity: 0.4; transform: scale(0.7); }
+  0%   { opacity: 0.3; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.4; }
 }
 
 @keyframes bgTwinkle2 {
-  0%   { opacity: 0.8; transform: scale(1.0); }
-  30%  { opacity: 0.2; transform: scale(0.5); }
-  70%  { opacity: 1.0; transform: scale(1.3); }
-  100% { opacity: 0.3; transform: scale(0.6); }
+  0%   { opacity: 0.8; }
+  30%  { opacity: 0.2; }
+  70%  { opacity: 1.0; }
+  100% { opacity: 0.3; }
 }
 
 /* ====== 背景星点 ====== */
@@ -141,7 +140,6 @@ body {
   height: 3px;
   border-radius: 50%;
   background: transparent;
-  transform-origin: 0 0;
 }
 
 /* 慢闪星星 */
@@ -198,16 +196,16 @@ body {
 }
 
 @keyframes twinkle1 {
-  0%   { opacity: 0.3; transform: scale(0.6); }
-  50%  { opacity: 1.0; transform: scale(1.2); }
-  100% { opacity: 0.4; transform: scale(0.7); }
+  0%   { opacity: 0.3; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.4; }
 }
 
 @keyframes twinkle2 {
-  0%   { opacity: 0.8; transform: scale(1.0); }
-  30%  { opacity: 0.2; transform: scale(0.5); }
-  70%  { opacity: 1.0; transform: scale(1.3); }
-  100% { opacity: 0.3; transform: scale(0.6); }
+  0%   { opacity: 0.8; }
+  30%  { opacity: 0.2; }
+  70%  { opacity: 1.0; }
+  100% { opacity: 0.3; }
 }
 
 /* ====== 毛玻璃卡片本体 ====== */
