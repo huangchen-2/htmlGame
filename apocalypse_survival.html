@@ -144,6 +144,12 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-seri
 
 <div id="modal-overlay"><div id="modal"></div></div>
 <div id="death-overlay"><h2>💀 你死了</h2><div class="death-days"></div><div class="death-info"></div><button class="btn primary" onclick="resetGame()">🔄 重新开始</button></div>
+<div id="companion-death-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,0.95);z-index:200;justify-content:center;align-items:center;flex-direction:column;color:#fff;text-align:center;padding:20px;">
+  <h2 style="font-size:1.8em;margin-bottom:0;letter-spacing:4px;">💔 队友阵亡</h2>
+  <div id="cd-name" style="font-size:2em;font-weight:700;margin:8px 0;color:#e94560;"></div>
+  <div id="cd-story" style="max-width:500px;line-height:1.8;font-size:0.9em;color:#ccc;margin:16px 20px;"></div>
+  <button class="btn primary" onclick="document.getElementById('companion-death-overlay').style.display='none';setChoices(['▶ 继续推进']);updateUI();">😔 继续前行</button>
+</div>
 
 <script>
 // ============================================================
@@ -916,7 +922,7 @@ const EVENTS=[
       ]},
       {text:'躲进营地等暴风雪过去',eff:{fatigue:3},desc:'最好的策略有时候就是等待。你钻进睡袋把自己裹紧——希望营地的储备能撑过这几天。'},
     ],
-    applyEffect:{id:'ice_storm',name:'极地冰风暴',icon:'❄️',desc:'全球极寒，温度-15°C，作物和食物产出-40%，体温下降更快',effects:{tempMod:-15,foodGatherMod:-0.4,foodConsumeMod:0.3,coreTempDrop:3},days:rand(3,6)},
+    applyEffect:{id:'ice_storm',name:'极地冰风暴',icon:'❄️',desc:'全球极寒，温度-15°C，作物和食物产出-40%，体温下降更快',effects:{tempMod:-15,foodGatherMod:-0.4,foodConsumeMod:0.3,coreTempDrop:3},days:[3,6]},
   },
   {id:'global_heatwave',cat:'world',ctx:{seasons:['spring','summer'],minDist:0,maxDist:99},narr:'🚨 <strong>全球事件：极端热浪！</strong>\n\n太阳像火炉一样炙烤着大地。气温飙升至令人窒息的程度，水坑在几小时内蒸发殆尽。收音机警告说这是一场前所未有的热浪——预计持续数日。水源将变得极度稀缺。',
     choices:[
@@ -930,7 +936,7 @@ const EVENTS=[
       ]},
       {text:'尽量减少活动保存体力',eff:{fatigue:2},desc:'最好的办法就是不动。躺在营地的阴凉处等待热浪过去——少动就少出汗，少出汗就少喝水。'},
     ],
-    applyEffect:{id:'heatwave',name:'极端热浪',icon:'🔥',desc:'全球高温，温度+15°C，水源获取-40%，水分消耗加快',effects:{tempMod:15,waterGatherMod:-0.4,waterConsumeMod:0.3,coreTempRise:3},days:rand(3,6)},
+    applyEffect:{id:'heatwave',name:'极端热浪',icon:'🔥',desc:'全球高温，温度+15°C，水源获取-40%，水分消耗加快',effects:{tempMod:15,waterGatherMod:-0.4,waterConsumeMod:0.3,coreTempRise:3},days:[3,6]},
   },
   {id:'mutant_horde',cat:'world',ctx:{minDist:0,maxDist:99},narr:'🚨 <strong>全球事件：变异体迁徙潮！</strong>\n\n大量变异生物从辐射区涌出，像潮水一样在废土上蔓延。远处传来此起彼伏的嘶吼声——比平时多得多。无论你在营地还是野外，遭遇袭击的概率都将大幅上升。',
     choices:[
@@ -942,7 +948,7 @@ const EVENTS=[
       {text:'召集小队准备战斗',eff:{morale:5},desc:'你把小队成员召集到一起分配了武器和弹药。"不管来多少，我们守住。"团结是最好的防御。'},
       {text:'计划多待在营地减少外出',eff:{},desc:'最安全的做法就是待在营地里减少移动。变异体潮总会过去的——前提是你能活到那时候。'},
     ],
-    applyEffect:{id:'mutant_horde',name:'变异体迁徙潮',icon:'🧟',desc:'变异体泛滥，野外遇袭概率+50%，营地遇袭概率+30%，防御-10',effects:{wildAttackMod:0.5,campAttackMod:0.3,defPenalty:10},days:rand(3,5)},
+    applyEffect:{id:'mutant_horde',name:'变异体迁徙潮',icon:'🧟',desc:'变异体泛滥，野外遇袭概率+50%，营地遇袭概率+30%，防御-10',effects:{wildAttackMod:0.5,campAttackMod:0.3,defPenalty:10},days:[3,5]},
   },
   {id:'raider_raid_event',cat:'world',ctx:{minDist:0,maxDist:99},narr:'🚨 <strong>全球事件：掠夺者联盟扫荡！</strong>\n\n几股掠夺者帮派结成了松散的联盟，正在对周边地区进行大规模扫荡。他们的侦察兵已经出现在附近。你的营地可能会成为他们的下一个目标——或者你在野外碰到他们。',
     choices:[
@@ -957,7 +963,7 @@ const EVENTS=[
       ]},
       {text:'尽可能隐藏营地踪迹',eff:{fatigue:6},desc:'你花了一整天时间清理营地周围的活动痕迹并伪装入口。掠夺者们也许不会发现这里。'},
     ],
-    applyEffect:{id:'raider_raid',name:'掠夺者扫荡',icon:'💀',desc:'掠夺者活跃，野外敌袭概率+40%，营地被袭概率+40%，交易时容易被抢劫',effects:{wildAttackMod:0.4,campAttackMod:0.4,tradeDangerMod:0.5},days:rand(2,5)},
+    applyEffect:{id:'raider_raid',name:'掠夺者扫荡',icon:'💀',desc:'掠夺者活跃，野外敌袭概率+40%，营地被袭概率+40%，交易时容易被抢劫',effects:{wildAttackMod:0.4,campAttackMod:0.4,tradeDangerMod:0.5},days:[2,5]},
   },
   {id:'radiation_storm',cat:'world',ctx:{minDist:0,maxDist:99},narr:'🚨 <strong>全球事件：辐射风暴！</strong>\n\n一场携带高剂量辐射尘的风暴正在逼近。天空呈现出诡异的暗红色，盖革计数器疯狂作响。在户外活动意味着暴露在致命的辐射中。防辐射药物变得比任何时候都珍贵。',
     choices:[
@@ -968,7 +974,7 @@ const EVENTS=[
       ]},
       {text:'赶紧躲进地下空间',eff:{fatigue:5},desc:'你找到了一处地下避难所紧急躲了进去。厚厚的土层是最好的辐射隔离层。待在这里直到警报解除。'},
     ],
-    applyEffect:{id:'radiation_storm',name:'辐射风暴',icon:'☢️',desc:'辐射水平升高，户外活动健康-5/天，需要防护或躲藏',effects:{radDamage:5,campDefBonus:5},days:rand(2,4)},
+    applyEffect:{id:'radiation_storm',name:'辐射风暴',icon:'☢️',desc:'辐射水平升高，户外活动健康-5/天，需要防护或躲藏',effects:{radDamage:5,campDefBonus:5},days:[2,4]},
   },
   {id:'clear_skies',cat:'world',ctx:{minDist:0,maxDist:99},narr:'✨ <strong>全球事件：晴朗天气！</strong>\n\n连日的阴霾突然散去，阳光普照大地。空气清新，能见度极佳。不仅是天气好了——整个废土似乎都变得安静了一些。收音机里有人用"老天开眼"来形容这场好天气。',
     choices:[
@@ -976,14 +982,14 @@ const EVENTS=[
       {text:'检修营地设施',eff:{fatigue:8},items:[{n:'太阳能板',q:[1,1]}],desc:'难得的好天气——最适合排查营地设备的隐患。你还装起了一块之前在废墟捡到的太阳能板，现在终于派上用场。'},
       {text:'什么也不做享受片刻宁静',eff:{fatigue:-5,morale:12},desc:'你坐在营地的台阶上晒着太阳。自从核战以来，这是第一次感受到"和平"是什么滋味。哪怕只有几天。'},
     ],
-    applyEffect:{id:'clear_skies',name:'晴朗天气',icon:'☀️',desc:'好天气buff，拾荒产出+30%，士气+5，防御+5',effects:{gatherBoost:0.3,moraleBoost:5,defBonus:5},days:rand(2,4)},
+    applyEffect:{id:'clear_skies',name:'晴朗天气',icon:'☀️',desc:'好天气buff，拾荒产出+30%，士气+5，防御+5',effects:{gatherBoost:0.3,moraleBoost:5,defBonus:5},days:[2,4]},
   },
   {id:'food_boom',cat:'world',ctx:{minDist:0,maxDist:99,seasons:['spring','summer','autumn']},narr:'🌿 <strong>全球事件：野生作物大丰收！</strong>\n\n今年的气候异常温和，加上变异植物的大量繁殖——废土上的野生作物在疯狂生长。灌木丛中浆果成串，废弃农田里野生谷物到处都是。这是废土给幸存者的一点馈赠。',
     choices:[
       {text:'全力采集储备粮食',eff:{fatigue:12},items:[{n:'罐头',q:[1,3]},{n:'蘑菇干',q:[2,4]},{n:'干粮',q:[2,3]}],desc:'你像丰收节的农民一样疯狂采集！几天积累了大量的食物——这些储备可能会在下一次饥荒时救你命。'},
       {text:'组织小队大规模采集',eff:{fatigue:10,morale:5},items:[{n:'种子',q:[1,3]},{n:'草药',q:[1,2]}],desc:'小队成员分头行动——有人采浆果，有人挖野菜，有人收集种子。收获满满还增强了团队凝聚力。'},
     ],
-    applyEffect:{id:'food_boom',name:'作物大丰收',icon:'🌿',desc:'野生食物+40%产出，采集疲劳减半',effects:{foodGatherMod:0.4,gatherFatigueHalf:1},days:rand(3,5)},
+    applyEffect:{id:'food_boom',name:'作物大丰收',icon:'🌿',desc:'野生食物+40%产出，采集疲劳减半',effects:{foodGatherMod:0.4,gatherFatigueHalf:1},days:[3,5]},
   },
   {id:'plague_outbreak',cat:'world',ctx:{minDist:0,maxDist:99},narr:'🚨 <strong>全球事件：废土瘟疫爆发！</strong>\n\n一种未知的疾病开始在幸存者之间传播——高烧、呕吐、皮肤溃烂。可能来自受污染的水源，也可能是变异病毒。你的营地必须采取紧急措施，否则所有人都可能被感染。',
     choices:[
@@ -997,8 +1003,39 @@ const EVENTS=[
       ]},
       {text:'祈祷并保守治疗',eff:{health:-12,infection:8},desc:'没有足够的药物。你只能用冷毛巾和草药尽力而为——在废土上，不是每个病都能治好的。'},
     ],
-    applyEffect:{id:'plague',name:'废土瘟疫',icon:'🦠',desc:'瘟疫蔓延，每日自动扣血-5，士气-3，恢复速度减半',effects:{healthDecay:5,moraleDecay:3,healPenalty:0.5},days:rand(4,7)},
+    applyEffect:{id:'plague',name:'废土瘟疫',icon:'🦠',desc:'瘟疫蔓延，每日自动扣血-5，士气-3，恢复速度减半',effects:{healthDecay:5,moraleDecay:3,healPenalty:0.5},days:[4,7]},
   },
+
+  // === 人物对话/独白/情报 ===
+  {id:'companion_fear',cat:'dialogue',ctx:{hasCompanions:true,minDist:0,maxDist:20},narr:'篝火旁，队友突然开口——声音里带着颤抖。"你说…我们会不会是最后一批活着的人了？"火焰噼啪作响，沉默了好几秒。',
+    choices:[
+      {text:'安慰他：只要团结就能活下去',eff:{morale:8},desc:'"废土残酷，但我们还有彼此。营地还在，希望就在。"队友点了点头，眼神坚定了一些。'},
+      {text:'说实话：我也不确定但会尽力',eff:{morale:-1},desc:'"不清楚。但每天醒来看到太阳升起，就算是赚了。"队友苦笑——这番实话反而让他觉得你真实。'},
+    ]},
+  {id:'companion_memory',cat:'dialogue',ctx:{hasCompanions:true,minDist:0,maxDist:15},narr:'探索中队友停下脚步，盯着远处一座废墟出神。"那里…长得跟我以前住的地方一模一样。门口有棵槐树，我妈总在阳台上晾衣服。"他的声音有些哽咽。',
+    choices:[
+      {text:'安静地听他说完',eff:{morale:6},desc:'你没有打断。有些记忆说出来，比憋在心里好受。"谢谢你听我说这些。"'},
+      {text:'分享你自己的回忆',eff:{morale:8},desc:'你也想起了过去的家。两个人在废墟中沉默良久——至少现在不是一个人扛着。'},
+    ]},
+  {id:'player_night_thoughts',cat:'dialogue',ctx:{night:true,minDist:0,maxDist:10},narr:'夜深了。一个人看着漫天星辰，思绪飘远——战前的世界真的存在过吗？那些街道、外卖、深夜的游戏、朋友的牢骚…都像上辈子的事了。',
+    choices:[
+      {text:'写日记记录想法',eff:{morale:5,fatigue:2},desc:'你翻出日记本。回头看之前的记录——已经走了这么远。也许有一天后人会读到这些。'},
+      {text:'对星空许个愿',eff:{morale:8},desc:'一个不可能的愿望——但抬头看星星时，你感到久违的平静。不管世界变成了什么样，星空没变。'},
+    ]},
+  {id:'intel_overheard',cat:'dialogue',ctx:{minDist:3,maxDist:18},narr:'躲在断墙后无意中听到几个人谈话。关键词飘了过来——"北边工厂地下二层有武器库…""别去，变异体巢穴。"他们没注意到你。',
+    choices:[
+      {text:'悄悄靠近偷听更多',outcomes:[
+        {w:5,eff:{fatigue:5},desc:'听到了更多——铁门需要工具撬开，但里面确实有军用物资。',intel:{type:'stash',loc:'废弃工厂地下二层',desc:'武器库，需要工具撬开铁门',icon:'🔫'}},
+        {w:5,eff:{fatigue:5,health:-3},desc:'靠太近了——有人回头，你赶紧缩回墙角。虽然没被看到但也吓得不轻。只听到大概方向。'},
+      ]},
+      {text:'悄悄退后离开',eff:{fatigue:2},desc:'好奇心太强的人往往活不长。你悄悄退后——但信息本身似乎是真的。'},
+    ]},
+  {id:'lost_companion_memory',cat:'dialogue',ctx:{lostCompanion:true,minDist:0,maxDist:20},narr:'路过一片荒芜的十字路口，忽然想起了那个已经不在的队友。恍惚间似乎还能看到他的背影——那个拍你肩膀说"明天会更好"的人，现在只剩回忆了。',
+    choices:[
+      {text:'停下脚步默哀片刻',eff:{morale:5,fatigue:-2},desc:'你闭上眼睛。有些人和事，即使再也回不来，也值得被记住。哪怕只是片刻。'},
+      {text:'在路边堆个小石堆',eff:{morale:8,fatigue:4},desc:'路边的石头堆了个小纪念碑。简陋，但至少证明有人活过，有人被记住。'},
+      {text:'继续赶路——活人还要活下去',eff:{morale:-2},desc:'深吸一口气加快脚步。只有活下去才对得起没能走到今天的人。不是冷血——是废土的生存法则。'},
+    ]},
 ];
 
 // ===== 材料掉落系统 =====
@@ -1056,6 +1093,37 @@ const S={
   activeEffects:[], // {id,name,icon,desc,effects:{...},daysLeft}
 };
 BODY_PARTS.forEach(p=>{S.body[p]={wounds:[]};});
+
+// ===== NPC背景故事生成 =====
+function generateNpcBackstory(npc){
+  var stories=[
+    ['曾是市中心医院的护士，核爆那天值夜班。','废墟中救过很多人的命，却救不了自己的同事。','最怕看到孩子的尸体——那让她想起医院里的儿科病房。'],
+    ['退伍军人，战争开始时正在休假。','家人都没能逃出城市——这也是他加入你的原因——孤独让他无法独行。','一个人的时候会反复擦拭那把军刀。刀是以前战友送的。'],
+    ['街头艺人，在战前靠弹吉他和杂耍为生。','地下室躲了两年，靠罐头和雨水活了下来。','偶尔会哼起战前的老歌，歌声在废墟中回荡时仿佛世界还没毁灭。'],
+    ['教师，教了一辈子初中物理。','用知识在废土上生存——自制净水器、简易发电机。','总在篝火旁给大家"上课"，虽然烦但让人觉得文明还没消失。'],
+    ['修车师傅，满手油污是常态。','几乎什么都能修——汽车、发电机、收音机。','最怀念的不是修车，是修完车后老婆端来的一碗热汤。'],
+    ['流浪汉，战前就已经习惯了街头生活。','废土上的生存法则对他来说几乎是本能。','"我是从旧世界就活在街头的——新世界不过是换了种残酷。"'],
+    ['大学生，战争爆发时正在图书馆准备期末考试。','靠图书馆的自动售货机活了下来——代价是再也没见过家人。','包里一直揣着一张全家福——虽然连照片上的人脸都开始模糊了。'],
+    ['酒吧保安，块头大心肠软。','用拳头保护过很多无辜的人——也亲眼看着更多人在眼前倒下。','很少说话，但每次战斗都第一个挡在前面。'],
+    ['图书管理员，安静而坚韧。','对化学和植物学有研究——帮她识别了废土上的可食用植物。','认为知识是人类最后的火种，随身带着几本撕不烂的书。'],
+    ['逃兵，开战第一天就扔掉了枪。','在废弃的地铁隧道里独自生活了很久。','最害怕的不是死，是死的时候连个说再见的人都没有。'],
+  ];
+  var s=pick(stories);
+  return {origin:s[0],trait:s[1],secret:s[2]};
+}
+function showCompanionDeath(npc){
+  if(!npc._backstory)npc._backstory=generateNpcBackstory(npc);
+  var bs=npc._backstory;
+  var overlay=document.getElementById('companion-death-overlay');
+  document.getElementById('cd-name').textContent=npc.icon+' '+npc.name;
+  document.getElementById('cd-story').innerHTML=
+    '<p>'+bs.origin+'</p>'+
+    '<p style="color:#999;margin-top:8px;">'+bs.trait+'</p>'+
+    '<p style="color:var(--text-dim);font-size:0.82em;margin-top:12px;font-style:italic;">"'+bs.secret+'"</p>'+
+    '<p style="margin-top:16px;color:#e94560;font-size:0.75em;">—— 存活了 '+S.day+' 天 | 死于废土</p>';
+  overlay.style.display='flex';
+  S.busy=true;
+}
 
 // ===== 全局效果系统 =====
 function addEffect(id,name,icon,desc,effects,days){
@@ -2568,7 +2636,7 @@ function executeBattle(attack){
     else{myLosses+=rand(0,2);battleLog+=`💢 第${round}轮：敌方猛攻！我方损伤。\n`;}
     // Teammate casualties
     if(Math.random()<0.25){const n=S.party.find(p=>p.alive&&Math.random()<0.5);if(n){partyInjure(n.id,rand(10,35));battleLog+=`🤕 ${n.name}在战斗中受伤！\n`;}}
-    if(Math.random()<0.08){const n=S.party.find(p=>p.alive);if(n){n.alive=false;n.health=0;battleLog+=`💀 <strong>${n.name}战死了！</strong>\n`;}}
+    if(Math.random()<0.08){const n=S.party.find(p=>p.alive);if(n){n.alive=false;n.health=0;battleLog+=`💀 <strong>${n.name}战死了！</strong>\n`;setTimeout(function(){showCompanionDeath(n);},800);}}
     // Player injury risk (body part specific)
     if(playerPresent&&Math.random()<0.2){const pid=pick(BODY_PARTS);const sev=rand(1,3);const injuries={head:['头部被弹片擦伤','一颗子弹擦过太阳穴','碎石击中了额头'],chest:['胸口被子弹击中——防弹衣救了你一命','弹片嵌入了肋骨','被冲击波震伤了内脏'],leftArm:['左臂被流弹击中，鲜血顺着袖子流下','左肩被碎片划开一道深口','左前臂中弹'],rightArm:['右臂被弹片击中','右手被流弹贯穿','右肩遭到重击'],leftLeg:['左腿中弹，钻心的疼痛','左膝被碎片击中','左大腿被划开'],rightLeg:['右腿被弹片击中，跌倒在地','右脚踝遭到重击','右小腿中弹']};const desc=pick(injuries[pid]||[`${PL[pid]}受伤`]);const sevDesc=sev===3?'严重':sev===2?'中度':'轻微';addWound(pid,sev,desc,sev>=2);S.blood=clamp(S.blood-sev*8,0,100);battleLog+=`🩸 <strong>${PL[pid]}受伤！</strong>${desc}（${sevDesc}伤，-${sev*8}生命）\n`;if(S.blood<=0){battleLog+=`💀 <strong>你倒在了战场上...</strong>\n`;die();return;}}
     if(enemyPower<=0){battleLog+='🎉 敌军溃散！\n';break;}
@@ -2665,11 +2733,12 @@ function doBroadcast(band){
 
 // ===== EVENT ENGINE =====
 function selectEvent(){
-  const ctx={minDist:S.distance,maxDist:S.distance,night:isNight(),day:isDaytime(),seasons:[S.season?.id],weather:[S.weather.precipType],atCamp:atCamp(),injured:S.blood<50||BODY_PARTS.some(p=>getPartStatus(p)!=='healthy'),hasParty:S.party.filter(p=>p.alive).length>0,pain:S.pain>30,tired:S.fatigue>55,hungry:S.nutrition<30,thirsty:S.hydration<30};
+  const ctx={minDist:S.distance,maxDist:S.distance,night:isNight(),day:isDaytime(),seasons:[S.season?.id],weather:[S.weather.precipType],atCamp:atCamp(),injured:S.blood<50||BODY_PARTS.some(p=>getPartStatus(p)!=='healthy'),hasParty:S.party.filter(p=>p.alive).length>0,hasCompanions:S.party.filter(p=>p.alive).length>0,lostCompanion:S.party.length>0&&S.party.filter(p=>!p.alive).length>0,pain:S.pain>30,tired:S.fatigue>55,hungry:S.nutrition<30,thirsty:S.hydration<30};
   let candidates=EVENTS.filter(ev=>{
     const c=ev.ctx;if(c.atCamp!==undefined&&c.atCamp!==ctx.atCamp)return false;if(c.night&&!ctx.night)return false;if(c.day&&!ctx.day)return false;
     if(c.seasons&&!c.seasons.some(s=>ctx.seasons.includes(s)))return false;if(c.weather&&!c.weather.some(w=>ctx.weather.includes(w)))return false;
-    if(c.injured&&!ctx.injured)return false;if(c.hasParty&&!ctx.hasParty)return false;if(c.pain&&ctx.pain<c.pain)return false;
+    if(c.injured&&!ctx.injured)return false;if(c.hasParty&&!ctx.hasParty)return false;if(c.hasCompanions&&!ctx.hasCompanions)return false;if(c.lostCompanion&&!ctx.lostCompanion)return false;
+    if(c.pain&&ctx.pain<c.pain)return false;
     if(c.tired&&!ctx.tired)return false;if(c.hungry&&!ctx.hungry)return false;if(c.thirsty&&!ctx.thirsty)return false;
     if(c.minDist!==undefined&&ctx.maxDist<c.minDist)return false;if(c.maxDist!==undefined&&ctx.minDist>c.maxDist)return false;
     return true;
@@ -3702,7 +3771,7 @@ async function pickChoice(idx){
   // 应用全局效果（buff/debuff事件）
   if(data&&data.ev&&data.ev.applyEffect){
     var ae=data.ev.applyEffect;
-    addEffect(ae.id,ae.name,ae.icon,ae.desc,ae.effects,typeof ae.days==='number'?ae.days:rand(ae.days[0],ae.days[1]));
+    addEffect(ae.id,ae.name,ae.icon,ae.desc,ae.effects,rand(ae.days[0],ae.days[1]));
     addStory(`🌍 <strong>全局事件触发：${ae.icon} ${ae.name}！</strong> ${ae.desc}（持续${typeof ae.days==='number'?ae.days:ae.days[0]+'-'+ae.days[1]}天）`,'world');
   }
   advanceHour(rand(1,3));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
