@@ -2068,7 +2068,7 @@ function campStabilityCheck(){
       if(Math.random()<0.5){rebel.alive=false;addStory(`${rebel.name}在叛乱中被镇压。营地付出了惨重代价。`,'danger');S.camp.stability=clamp(S.camp.stability-20,0,100);}
       else{const idx=S.party.indexOf(rebel);S.party.splice(idx,1);addStory(`${rebel.name}叛乱失败后逃离了营地。但带走了其他几个不满的人。`,'danger');S.camp.stability=clamp(S.camp.stability-30,0,100);}}}
   // Disobedience
-  if(g==='democracy'&&S.camp.stability<30){const dis=pick(S.party.filter(p=>p.alive&&p.loyalty<40));if(dis)dis.activity='idle';}
+  if(S.camp.governance==='democracy'&&S.camp.stability<30){const dis=pick(S.party.filter(p=>p.alive&&p.loyalty<40));if(dis)dis.activity='idle';}
 }
 
 // ===== CAMP BUILDING SYSTEM =====
