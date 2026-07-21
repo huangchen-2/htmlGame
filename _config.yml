@@ -1,15 +1,20 @@
 theme: jekyll-theme-minimal
-# 网站标题（浏览器标签、页面顶部大标题）
+# 网站标题
 title: htmlGame
 # 网站简介
-description: 网页对话小游戏展示主页
-# 你的GitHub用户名
-github_username: hSorryMcDonald
+description: 网页对话小游戏 & 技术博客
+# GitHub用户名
+github_username: SorryMcDonald
 # 仓库地址
 repository: SorryMcDonald/SorryMcDonald.github.io
-# 是否显示右上角下载ZIP按钮
+# 右上角下载按钮
 show_downloads: false
-# 侧边栏导航页面（可自行增减）
+# 侧边栏导航
 header_pages:
   - index.md
+  - blog.md
   - game.md
+# 博客文章链接格式
+permalink: /blog/:year/:month/:day/:title/
+# Markdown 引擎
+markdown: kramdown
