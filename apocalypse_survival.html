@@ -3737,8 +3737,9 @@ async function continueStory(){
   // Check weather warnings first
   if(!checkWeatherWarning()){
     // Select & process event
-    try{const ev=selectEvent();processEvent(ev);}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况，继续前进...','system');S.busy=false;btnDisabled(false);setChoices(['▶ 继续推进']);return;}
-    S.history.push({day:S.day,summary:ev.id});
+    var ev=null;
+    try{ev=selectEvent();processEvent(ev);}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况，继续前进...','system');S.busy=false;btnDisabled(false);setChoices(['▶ 继续推进']);return;}
+    if(ev)S.history.push({day:S.day,summary:ev.id});
   }
   updateUI();S.busy=false;btnDisabled(false);checkDeath();
 }
