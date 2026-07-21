@@ -4,14 +4,20 @@ title: 博客
 permalink: /blog/
 ---
 
-# 📝 博客文章
+<div class="blog-list">
 
-<ul>
+# <i class="fas fa-blog"></i> 博客文章
+
+<div class="post-grid">
 {% for post in site.posts %}
-  <li>
-    <strong>{{ post.date | date: "%Y-%m-%d" }}</strong> —
-    <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
-    <br><small>{{ post.description }}</small>
-  </li>
+  <a class="post-card" href="{{ post.url | relative_url }}">
+    <div class="post-meta">
+      <i class="far fa-calendar"></i> {{ post.date | date: "%Y年%m月%d日" }}
+    </div>
+    <h2>{{ post.title }}</h2>
+    <p>{{ post.description | default: post.excerpt | strip_html | truncate: 100 }}</p>
+  </a>
 {% endfor %}
-</ul>
+</div>
+
+</div>

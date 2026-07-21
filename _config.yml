@@ -1,20 +1,17 @@
-theme: jekyll-theme-minimal
-# 网站标题
-title: htmlGame
-# 网站简介
+# 网站设置
+title: SorryMcDonald
 description: 网页对话小游戏 & 技术博客
-# GitHub用户名
 github_username: SorryMcDonald
-# 仓库地址
-repository: SorryMcDonald/SorryMcDonald.github.io
-# 右上角下载按钮
-show_downloads: false
-# 侧边栏导航
-header_pages:
-  - index.md
-  - blog.md
-  - game.md
+
+# 作者信息
+author:
+  name: SorryMcDonald
+  bio: 全栈开发者 / 游戏爱好者
+  # email: your@email.com
+  # twitter: your_twitter
+
 # 博客文章链接格式
 permalink: /blog/:year/:month/:day/:title/
-# Markdown 引擎
+
+# Markdown
 markdown: kramdown

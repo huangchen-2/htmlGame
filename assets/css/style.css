@@ -1,0 +1,319 @@
+/* ========================================
+   Cover Card 首页
+   ======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+.cover-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.cover-container::before {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(233, 69, 96, 0.15) 0%, transparent 70%);
+  top: -200px;
+  right: -200px;
+  border-radius: 50%;
+}
+
+.cover-container::after {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(0, 201, 255, 0.12) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
+  border-radius: 50%;
+}
+
+.cover-card {
+  text-align: center;
+  z-index: 1;
+  padding: 40px;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 24px;
+  object-fit: cover;
+  background: rgba(255,255,255,0.1);
+}
+
+.name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.bio {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 32px;
+}
+
+.social-links {
+  margin-bottom: 40px;
+}
+
+.social-links a {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.6rem;
+  margin: 0 16px;
+  transition: color 0.3s, transform 0.3s;
+  display: inline-block;
+}
+
+.social-links a:hover {
+  color: #e94560;
+  transform: translateY(-3px);
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  backdrop-filter: blur(4px);
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   顶部导航栏
+   ======================================== */
+
+.top-nav {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 24px 0;
+}
+
+.top-nav a {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.95rem;
+  margin-right: 24px;
+  transition: color 0.2s;
+}
+
+.top-nav a:hover {
+  color: #e94560;
+}
+
+/* ========================================
+   博客列表页 - 卡片风格
+   ======================================== */
+
+.blog-list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.blog-list h1 {
+  font-size: 2rem;
+  margin-bottom: 32px;
+  color: #1a1a2e;
+}
+
+.blog-list h1 i {
+  color: #e94560;
+  margin-right: 8px;
+}
+
+.post-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.post-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.post-card h2 {
+  font-size: 1.25rem;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.post-card .post-meta {
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.post-card .post-meta i {
+  margin-right: 4px;
+}
+
+.post-card p {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* ========================================
+   文章详情页
+   ======================================== */
+
+.blog-post {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+.post-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.post-header h1 {
+  font-size: 2rem;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.post-header time {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.post-content {
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.post-content h1, .post-content h2, .post-content h3 {
+  color: #1a1a2e;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.post-content p {
+  margin-bottom: 1.2em;
+}
+
+.post-content a {
+  color: #e94560;
+}
+
+.post-content blockquote {
+  border-left: 4px solid #e94560;
+  padding-left: 16px;
+  color: #666;
+  margin: 1.5em 0;
+}
+
+.post-content img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.post-content ul, .post-content ol {
+  margin-bottom: 1.2em;
+  padding-left: 1.5em;
+}
+
+.post-content li {
+  margin-bottom: 0.4em;
+}
+
+.post-content code {
+  background: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.post-content pre {
+  background: #1a1a2e;
+  color: #eee;
+  padding: 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1.2em;
+}
+
+.post-content pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* ========================================
+   响应式
+   ======================================== */
+
+@media (max-width: 640px) {
+  .name {
+    font-size: 1.8rem;
+  }
+  .nav-btn {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+  .blog-post, .blog-list {
+    padding: 20px 16px;
+  }
+  .post-card {
+    padding: 20px;
+  }
+}

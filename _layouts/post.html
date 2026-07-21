@@ -1,0 +1,20 @@
+---
+layout: default
+---
+
+<nav class="top-nav">
+  <a href="{{ '/' | relative_url }}"><i class="fas fa-home"></i> 首页</a>
+  <a href="{{ '/blog/' | relative_url }}"><i class="fas fa-arrow-left"></i> 返回博客</a>
+</nav>
+
+<article class="blog-post">
+  <header class="post-header">
+    <h1>{{ page.title }}</h1>
+    <time datetime="{{ page.date | date: '%Y-%m-%d' }}">
+      <i class="far fa-calendar"></i> {{ page.date | date: "%Y年%m月%d日" }}
+    </time>
+  </header>
+  <div class="post-content">
+    {{ content }}
+  </div>
+</article>
