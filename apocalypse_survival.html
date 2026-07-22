@@ -1037,6 +1037,36 @@ const EVENTS=[
       {text:'在路边堆个小石堆',eff:{morale:8,fatigue:4},desc:'路边的石头堆了个小纪念碑。简陋，但至少证明有人活过，有人被记住。'},
       {text:'继续赶路——活人还要活下去',eff:{morale:-2},desc:'深吸一口气加快脚步。只有活下去才对得起没能走到今天的人。不是冷血——是废土的生存法则。'},
     ]},
+
+  // === 队友互动/支线 ===
+  {id:'companion_help_water',cat:'comp_quest',ctx:{hasCompanions:true,minDist:0,maxDist:15},narr:'你的一个队友突然拉住了你。"嘿，我快渴死了——昨天把水给了营地的小孩。你有多余的水吗？我会想办法补偿你的。"他的嘴唇干裂，眼神急切。',
+    choices:[
+      {text:'给他一瓶净水',items:[{n:'净水',q:[-1,-1]}],desc:'你拿出一瓶水递给他。队友感激地接过，一口气喝了半瓶。"欠你一次，真的。"他的忠诚明显提升了。',eff:{npcLoyalty:10}},
+      {text:'一起去附近找水源',eff:{fatigue:8},outcomes:[
+        {w:5,desc:'你们在一个废弃的地下室找到了完好的水泵。队友露出了久违的笑容。"跟你合作是我的幸运。"',eff:{npcLoyalty:8},items:[{n:'净水',q:[2,3]}]},
+        {w:3,desc:'走了很远只找到一个小水坑。量不多，但至少能解渴。队友说："至少没白跑——谢谢你陪我。"',eff:{npcLoyalty:5}},
+        {w:2,desc:'没找到任何水源。队友虽然失望，但对你愿意帮他这件事心怀感激。',eff:{npcLoyalty:3}},
+      ]},
+      {text:'告诉他目前水资源紧张',eff:{npcLoyalty:-5},desc:'"现在不是时候，营地用水必须统一分配。"队友默默点头，但眼神里闪过一丝失望。'},
+    ]},
+  {id:'companion_conflict',cat:'comp_quest',ctx:{hasCompanions:true,partySize:3},narr:'营地里爆发了争吵。两个队友意见不合——一个人想多分配物资给新来的伤员，另一个坚持平均分配才是公平的。气氛剑拔弩张，需要你来仲裁。',
+    choices:[
+      {text:'支持照顾伤员优先',desc:'"伤员需要更多资源恢复——这不是偏袒，是效率。"你的决定得到了医疗队友的支持。',eff:{npcLoyalty:5,npcMorale:-3}},
+      {text:'维持平均分配原则',desc:'"废土上每个人都是平等的——分配不能偏向任何人。"坚持原则让队伍更加团结。',eff:{morale:4}},
+      {text:'各退一步——增加拾荒解决',desc:'"别吵了——明天开始大家多跑一趟拾荒，多出来的物资优先给伤员。"两全其美，大家都没意见。',eff:{morale:3,fatigue:4}},
+    ]},
+  {id:'companion_training_offer',cat:'comp_quest',ctx:{hasCompanions:true,minDist:0,maxDist:20},narr:'队友走到你身边，压低声音说："我发现你不擅长武器维护——每次战斗后你的枪卡壳。我来教你几招吧？不收钱。"他咧嘴一笑。',
+    choices:[
+      {text:'接受训练，认真学习',desc:'队友手把手教你如何快速拆装枪械、清洁枪管。学到的不只是技巧——还有一种被关照的温暖。',eff:{fatigue:4,morale:6}},
+      {text:'谦虚拒绝，自己练习',desc:'"谢了，但我想自己摸索。"队友耸耸肩："随你——反正我的武器不会卡壳。下次可别怪我。"',eff:{}},
+      {text:'反过来教他营地建设',desc:'"那你也来帮我加固营地——互相学习。"两人花了半天一起干活，关系拉近了不少。',eff:{fatigue:6,morale:5}},
+    ]},
+  {id:'companion_secret',cat:'comp_quest',ctx:{hasCompanions:true,minDist:0,maxDist:25,night:true},narr:'篝火只剩余烬时，最沉默的那个队友突然开口："我有件事一直没说...我其实不是一个人逃出来的。我还有个弟弟——开战那天我们走散了。"他的声音在发抖。',
+    choices:[
+      {text:'承诺帮他寻找弟弟',desc:'"把你知道的信息告诉我。我们可以在探索时留意——废土虽然大，但奇迹不是没发生过。"队友的眼睛亮了起来。',eff:{npcLoyalty:15,morale:8}},
+      {text:'安慰他说也许还有希望',desc:'废土上每一天都可能发生奇迹。你没有给承诺，但你的安慰让他情绪安定了很多。',eff:{npcLoyalty:5,morale:4}},
+      {text:'沉默地拍了拍他的肩膀',desc:'有时候沉默比话语更有力量。在篝火的余烬中，你们就这样静静地坐了许久。',eff:{npcLoyalty:3}},
+    ]},
 ];
 
 // ===== 材料掉落系统 =====
