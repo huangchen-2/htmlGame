@@ -3715,15 +3715,18 @@ async function continueStory(){
     addStory(`核战第7年。你——一个${S.playerAge}岁的${S.playerGender=='男'?'男人':'女人'}——在营地中醒来。你的营地位于<strong>${S.currentBiome?.icon} ${S.currentBiome?.name}</strong>。${S.currentBiome?.desc||''}。物资匮乏，危险四伏——但希望还在。`,'system');
     addStory(`外面<strong>${S.weather.temperature}°C</strong>，体感<strong>${getFeelsLike()}°C</strong>。${S.enemyCamps.length>0?`附近有${S.enemyCamps.length}个敌对营地——小心行事。`:''}你背起背包，走向围栏边。`,'system');
   }else{
-    advanceHour(rand(4,8));addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
+    // 快速推进：每次跳过 8-16 小时
+    advanceHour(rand(8,16));
+    // 每日三餐自动消耗
+    if(S.hour>=6&&S.hour<=8&&!S._dayFed){S.nutrition=clamp(S.nutrition+rand(-8,-3),0,100);S.hydration=clamp(S.hydration+rand(-6,-2),0,100);S._dayFed=true;}
+    if(S.hour>=18)S._dayFed=false;
+    addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
     if(isNight()&&!atCamp()&&!S.hasCampfire)addStory('🌙 <strong>夜色笼罩。</strong>没有篝火的夜晚，危险潜伏在每个阴影中。','system');
     if(S.bodyWetness>50)addStory('💦 衣服湿透了，寒意渗透骨髓。','weather');
-    // Transition narration
     const trans=generateTransition();
     if(trans)addStory(trans,'system');
   }
   progressWounds();teammateTurn();tickTraining();tickStaffedBuildings();campStabilityCheck();tryHaveChild();growChildren();tickProduction();simulateCampEcology();checkCampDestroyed();checkAutoRecruit();updateUI();if(S.isDead){S.busy=false;btnDisabled(false);return;}
-  // Injury movement check
   const db=getInjuryDebuffs();if(db.cantLeave&&!atCamp()){
     addStory(`🚫 <strong>${db.cantLeaveReason}</strong>——无法行动！`,'medical');
     S.busy=false;btnDisabled(false);
@@ -3732,28 +3735,27 @@ async function continueStory(){
     if(medics.length>0)cantChoices.push('👨‍⚕️ 呼叫队医前来救治');
     setChoices(cantChoices);return;}
   if(db.needSurgery&&atCamp())addStory('🏥 <strong>胸部重伤！</strong>需要手术包或医疗包紧急手术。','medical');
-  // Enemy attack on player camp
-  // Stealth attack: if no one at camp, attacks happen silently (damage found on return)
   if(!atCamp()&&!S.party.some(p=>p.alive&&p.activity==='guard')){
     if(S._incomingAttack){S._incomingAttack.arriveHour--;if(S._incomingAttack.arriveHour<=0){executeBattle(S._incomingAttack);S._incomingAttack=null;}}
     else if(S.enemyCamps.length>0&&Math.random()<0.08){const ec=pick(S.enemyCamps.filter(c=>c.alive!==false));if(ec&&!S._silentAttack){S._silentAttack=ec;}}
   }
   if(atCamp())enemyAttackPlayer();
-  // Silent attack result when returning to camp
   if(atCamp()&&S._silentAttack){addStory(`💔 回到营地你发现<strong>${S._silentAttack.name}</strong>趁你不在时袭击了营地！物资被盗，建筑受损...`,'danger');S.camp.condition=clamp(S.camp.condition-rand(10,25),0,100);const ck=Object.keys(S.camp.supplies);for(let i=0;i<Math.min(3,ck.length);i++){const k=ck[rand(0,ck.length-1)];removeItem(k,rand(1,3),true);}S._silentAttack=null;
-    // Children may be hurt during undefended attack
     S.children.filter(c=>c.alive).forEach(c=>{
       if(Math.random()<0.3){c.health=clamp(c.health-rand(15,40),0,100);addStory(`😰 <strong>${c.name}</strong>在偷袭中受了伤——没有人保护${c.gender=='男'?'他':'她'}。`,'medical');
         if(c.health<=0){c.alive=false;addStory(`💀 <strong>${c.name}没能挺过这次袭击...</strong>`,'danger');}}
     });}
-  // Check radio broadcasts
   checkRadio();
-  // Check weather warnings first
   if(!checkWeatherWarning()){
-    // Select & process event
-    var ev=null;
-    try{ev=selectEvent();processEvent(ev);}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况，继续前进...','system');S.busy=false;btnDisabled(false);setChoices(['▶ 继续推进']);return;}
-    if(ev)S.history.push({day:S.day,summary:ev.id});
+    // 事件冷却：仅每 2-4 天触发一次
+    if(!S._lastEventDay)S._lastEventDay=0;
+    if(S.day - S._lastEventDay >= rand(2,4)){
+      var ev=null;
+      try{ev=selectEvent();processEvent(ev);S._lastEventDay=S.day;}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况，继续前进...','system');}
+      if(ev)S.history.push({day:S.day,summary:ev.id});
+    } else {
+      addStory(`⏳ 废土上的一天平静地过去了...`,'system');
+    }
   }
   updateUI();S.busy=false;btnDisabled(false);checkDeath();
 }
@@ -3790,7 +3792,7 @@ async function pickChoice(idx){
     addEffect(ae.id,ae.name,ae.icon,ae.desc,ae.effects,rand(ae.days[0],ae.days[1]));
     addStory(`🌍 <strong>全局事件触发：${ae.icon} ${ae.name}！</strong> ${ae.desc}（持续${typeof ae.days==='number'?ae.days:ae.days[0]+'-'+ae.days[1]}天）`,'world');
   }
-  advanceHour(rand(3,6));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
+  advanceHour(rand(6,12));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
 
   if(outcome)addStory(outcome,'ai');
   if(S.isDead){S.busy=false;btnDisabled(false);setStatus('');return;}
