@@ -1092,8 +1092,43 @@ const S={
   weather:{temperature:22,humidity:55,precipType:'none',precipIntensity:0,wind:'calm',windSpeed:5,icon:'☀️',desc:'晴朗温暖',isSnow:false},
   history:[],recentEvents:[],recentCats:[],isDead:false,causeOfDeath:'',busy:false,_weatherWarned:false,_galeWarned:false,_coldWarned:false,discoveredLocations:[],campStructures:[],_campDefMod:0,_campLevel:1,
   activeEffects:[], // {id,name,icon,desc,effects:{...},daysLeft}
+  achievements:[], // unlocked achievement ids
+  _milestoneChecked:{}, // track which milestones have fired
 };
 BODY_PARTS.forEach(p=>{S.body[p]={wounds:[]};});
+
+// ===== 里程碑成就系统 =====
+const ACHIEVEMENTS=[
+  {id:'survive_10',icon:'🕯️',name:'熬过十天',desc:'在废土上活过了10天',check:()=>S.day>=10},
+  {id:'survive_30',icon:'🔥',name:'第一个月',desc:'生存30天——你已经不是新手了',check:()=>S.day>=30},
+  {id:'survive_60',icon:'⭐',name:'老练的幸存者',desc:'60天了。你见过废土上最残酷和最温暖的东西',check:()=>S.day>=60},
+  {id:'survive_100',icon:'👑',name:'废土传奇',desc:'100天！你是真正的废土传奇',check:()=>S.day>=100},
+  {id:'first_recruit',icon:'🤝',name:'不再孤单',desc:'招募了第一个队友',check:()=>S.party.filter(p=>p.alive).length>=1},
+  {id:'team_of_3',icon:'👥',name:'三人行',desc:'小队达到3人',check:()=>S.party.filter(p=>p.alive).length>=3},
+  {id:'team_of_6',icon:'🏘️',name:'废土社区',desc:'小队达到6人',check:()=>S.party.filter(p=>p.alive).length>=6},
+  {id:'first_battle',icon:'⚔️',name:'初战告捷',desc:'赢得了第一场战斗',check:()=>(S._battlesWon||0)>=1},
+  {id:'battle_5',icon:'🛡️',name:'身经百战',desc:'赢得了5场战斗',check:()=>(S._battlesWon||0)>=5},
+  {id:'hoarder_30',icon:'📦',name:'囤积癖',desc:'营地物资超过30件',check:()=>campSCount()>=30},
+  {id:'scavenger_50',icon:'🔍',name:'拾荒达人',desc:'累计拾荒获得50件物品',check:()=>(S._totalScavenged||0)>=50},
+  {id:'explorer_5',icon:'🗺️',name:'探索者',desc:'发现5个地点',check:()=>S.discoveredLocations.length>=5},
+  {id:'first_child',icon:'👶',name:'新生命',desc:'第一个孩子的诞生',check:()=>S.children.filter(c=>c.alive).length>=1},
+];
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a=>{
+    if(S.achievements.includes(a.id))return;
+    if(!a.check())return;
+    if(S._milestoneChecked[a.id])return;
+    S._milestoneChecked[a.id]=true;
+    S.achievements.push(a.id);
+    showAchievement(a);
+  });
+}
+function showAchievement(a){
+  addStory(`🏆 <strong style="color:#ffd700;font-size:1.1em;">成就解锁：${a.icon} ${a.name}！</strong><br><span style="color:#ccc;">${a.desc}</span>`,'party');
+  // Flash effect on status bar
+  var st=document.getElementById('status-line');
+  if(st){st.style.color='#ffd700';st.textContent='🏆 '+a.icon+' '+a.name+' 解锁！';setTimeout(function(){st.style.color='';updateUI();},3000);}
+}
 
 // ===== NPC背景故事生成 =====
 function generateNpcBackstory(npc){
@@ -2662,7 +2697,7 @@ function executeBattle(attack){
   // Result
   const victory=enemyPower<=0||myLosses<enemyLosses*2;
   if(victory){
-    addStory(`🛡️ <strong>防守成功！</strong>${ec.name}损失惨重撤退了。我方损失${myLosses}人。`,'camp');modRep(8,'成功防御营地');
+    addStory(`🛡️ <strong>防守成功！</strong>${ec.name}损失惨重撤退了。我方损失${myLosses}人。`,'camp');modRep(8,'成功防御营地');if(!S._battlesWon)S._battlesWon=0;S._battlesWon++;
     const totalLoot=ec.supplies;ec.supplies=0;const lootCount=rand(3,8);
     for(let i=0;i<lootCount;i++){const n=pick(['弹药','罐头','金属片','武器零件','医疗包','净水']);addItem(n,rand(1,4));}
     addStory(`🎁 缴获战利品！从敌方营地缴获了大量物资（原库存${totalLoot}）。`,'action');
@@ -2810,7 +2845,7 @@ function applyItems(items,result){
   for(const it of items){let n=it.n;let q=Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1);
     if(q<0){removeItem(n,Math.abs(q));result.itemsLost.push({n,q:Math.abs(q)});}}
   for(const it of items){let n=it.n;let q=Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1);
-    if(q>0){addItem(n,q);result.itemsGained.push({n,q});if(canEquipItem(n))tryEquipBetter(n);}}
+    if(q>0){addItem(n,q);result.itemsGained.push({n,q});if(canEquipItem(n))tryEquipBetter(n);if(!S._totalScavenged)S._totalScavenged=0;S._totalScavenged+=q;}}
   return true;
 }
 
@@ -3759,6 +3794,7 @@ async function continueStory(){
       addStory(`⏳ 废土上的一天平静地过去了...`,'system');
     }
   }
+  checkAchievements();
   updateUI();S.busy=false;btnDisabled(false);checkDeath();
 }
 
