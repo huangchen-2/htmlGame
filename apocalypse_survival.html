@@ -1276,6 +1276,20 @@ function generateWeather(){
 function totalArmor(){let a=0;for(const s of['head','upper','lower','feet','body','hands','mask']){const c=S.clothing[s];if(c)a+=c.armor||0;}return a;}
 function totalRadResist(){let r=0;for(const s of['head','upper','lower','feet','body','hands','mask']){const c=S.clothing[s];if(c)r+=c.rad||0;}return r;}
 function totalWarmth(){let w=0;for(const s of['head','upper','lower','feet','body','hands','mask']){const c=S.clothing[s];if(c){w+=c.warmth;if(c.wet)w=Math.floor(w*0.4);}}return w;}
+function canEquipItem(name){var i=ITEMS[name];return i&&i.slot&&i.cat==='clothing';}
+function tryEquipBetter(name){
+  var info=ITEMS[name];if(!info||!info.slot||info.cat!=='clothing')return false;
+  var slot=info.slot,cur=S.clothing[slot];
+  if(cur&&cur.warmth>=info.warmth)return false; // current is warmer
+  // Remove from backpack first
+  if(!hasItem(name,1))return false;
+  removeItem(name,1);
+  // Put old item back if any
+  if(cur&&cur.name!=='无')addItem(cur.name,1);
+  S.clothing[slot]={name:name,warmth:info.warmth,wp:info.wp||0,wet:false};
+  addStory(`👔 穿上了 <strong>${info.e||''}${name}</strong>（${slot==='head'?'头部':slot==='upper'?'上衣':slot==='lower'?'裤子':slot==='feet'?'鞋子':slot}，保暖+${info.warmth}）`,'system');
+  return true;
+}
 function getFeelsLike(){let t=S.weather.temperature+getEffectSum('tempMod');if(S.weather.windSpeed>15)t-=Math.floor(S.weather.windSpeed/8);if(S.bodyWetness>0)t-=Math.floor(S.bodyWetness/10);t+=Math.floor(totalWarmth()/3);if(S.hasCampfire)t+=5;return Math.round(t);}
 function applyWetness(){
   const p=S.weather.precipType;if(p==='none'&&!S.hasCampfire){S.bodyWetness=clamp(S.bodyWetness-8,0,100);return;}
@@ -2794,7 +2808,7 @@ function applyItems(items,result){
   for(const it of items){let n=it.n;let q=Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1);
     if(q<0){removeItem(n,Math.abs(q));result.itemsLost.push({n,q:Math.abs(q)});}}
   for(const it of items){let n=it.n;let q=Array.isArray(it.q)?rand(it.q[0],it.q[1]):(it.q||1);
-    if(q>0){addItem(n,q);result.itemsGained.push({n,q});}}
+    if(q>0){addItem(n,q);result.itemsGained.push({n,q});if(canEquipItem(n))tryEquipBetter(n);}}
   return true;
 }
 
@@ -3701,7 +3715,7 @@ async function continueStory(){
     addStory(`核战第7年。你——一个${S.playerAge}岁的${S.playerGender=='男'?'男人':'女人'}——在营地中醒来。你的营地位于<strong>${S.currentBiome?.icon} ${S.currentBiome?.name}</strong>。${S.currentBiome?.desc||''}。物资匮乏，危险四伏——但希望还在。`,'system');
     addStory(`外面<strong>${S.weather.temperature}°C</strong>，体感<strong>${getFeelsLike()}°C</strong>。${S.enemyCamps.length>0?`附近有${S.enemyCamps.length}个敌对营地——小心行事。`:''}你背起背包，走向围栏边。`,'system');
   }else{
-    advanceHour(rand(1,3));addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
+    advanceHour(rand(4,8));addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
     if(isNight()&&!atCamp()&&!S.hasCampfire)addStory('🌙 <strong>夜色笼罩。</strong>没有篝火的夜晚，危险潜伏在每个阴影中。','system');
     if(S.bodyWetness>50)addStory('💦 衣服湿透了，寒意渗透骨髓。','weather');
     // Transition narration
@@ -3776,7 +3790,7 @@ async function pickChoice(idx){
     addEffect(ae.id,ae.name,ae.icon,ae.desc,ae.effects,rand(ae.days[0],ae.days[1]));
     addStory(`🌍 <strong>全局事件触发：${ae.icon} ${ae.name}！</strong> ${ae.desc}（持续${typeof ae.days==='number'?ae.days:ae.days[0]+'-'+ae.days[1]}天）`,'world');
   }
-  advanceHour(rand(1,3));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
+  advanceHour(rand(3,6));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
 
   if(outcome)addStory(outcome,'ai');
   if(S.isDead){S.busy=false;btnDisabled(false);setStatus('');return;}
