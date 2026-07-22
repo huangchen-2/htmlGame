@@ -2666,48 +2666,104 @@ function enemyAttackPlayer(){
 }
 
 function executeBattle(attack){
-  const{enemyCamp:ec,dir}=attack;let enemyPower=ec.size*2+ec.defense*0.5;
-  const playerPresent=atCamp();addStory(`⚔️ <strong>${ec.name}抵达！战斗开始！</strong>${playerPresent?'你亲自指挥防御。':'你不在营地，队友独自应战！'}`,'danger');
-  // Battle rounds
-  let battleLog='';let myLosses=0,enemyLosses=0;
-  for(let round=1;round<=rand(3,6);round++){
-    // Traps trigger first round
-    if(round===1){
-      var activeTraps=getActiveTraps();var trapDmg=0;
-      activeTraps.forEach(function(s){
-        var t=TRAPS.find(function(x){return x.id===s.id;});if(!t)return;if(t.alert)attack.alerted=true;
-        trapDmg+=t.dmg||0;s.dur=(s.dur||1)-1;if(s.dur<=0)s.active=false;s.type='ruin';
-        battleLog+='💥 '+t.icon+t.name+'触发！(-'+(t.dmg||0)+') ';
-      });
-      enemyPower=Math.max(0,enemyPower-trapDmg*3);if(trapDmg>0)battleLog+='陷阱造成'+trapDmg+'伤害！\n';
-    }
-    // Combat exchange
-    const myPwr=calcTotalDefense()/10+(playerPresent?3:1)+S.party.filter(p=>p.alive).length*(playerPresent?2:1);
-    const enPwr=enemyPower/5;const myRoll=rand(0,Math.floor(myPwr));const enRoll=rand(0,Math.floor(enPwr));
-    if(myRoll>enRoll){enemyLosses+=rand(1,4);enemyPower-=rand(3,10);battleLog+=`🔫 第${round}轮：你方占优！敌方-${enemyLosses}人。\n`;}
-    else{myLosses+=rand(0,2);battleLog+=`💢 第${round}轮：敌方猛攻！我方损伤。\n`;}
-    // Teammate casualties
-    if(Math.random()<0.25){const n=S.party.find(p=>p.alive&&Math.random()<0.5);if(n){partyInjure(n.id,rand(10,35));battleLog+=`🤕 ${n.name}在战斗中受伤！\n`;}}
-    if(Math.random()<0.08){const n=S.party.find(p=>p.alive);if(n){n.alive=false;n.health=0;battleLog+=`💀 <strong>${n.name}战死了！</strong>\n`;setTimeout(function(){showCompanionDeath(n);},800);}}
-    // Player injury risk (body part specific)
-    if(playerPresent&&Math.random()<0.2){const pid=pick(BODY_PARTS);const sev=rand(1,3);const injuries={head:['头部被弹片擦伤','一颗子弹擦过太阳穴','碎石击中了额头'],chest:['胸口被子弹击中——防弹衣救了你一命','弹片嵌入了肋骨','被冲击波震伤了内脏'],leftArm:['左臂被流弹击中，鲜血顺着袖子流下','左肩被碎片划开一道深口','左前臂中弹'],rightArm:['右臂被弹片击中','右手被流弹贯穿','右肩遭到重击'],leftLeg:['左腿中弹，钻心的疼痛','左膝被碎片击中','左大腿被划开'],rightLeg:['右腿被弹片击中，跌倒在地','右脚踝遭到重击','右小腿中弹']};const desc=pick(injuries[pid]||[`${PL[pid]}受伤`]);const sevDesc=sev===3?'严重':sev===2?'中度':'轻微';addWound(pid,sev,desc,sev>=2);S.blood=clamp(S.blood-sev*8,0,100);battleLog+=`🩸 <strong>${PL[pid]}受伤！</strong>${desc}（${sevDesc}伤，-${sev*8}生命）\n`;if(S.blood<=0){battleLog+=`💀 <strong>你倒在了战场上...</strong>\n`;die();return;}}
-    if(enemyPower<=0){battleLog+='🎉 敌军溃散！\n';break;}
-  }
-  addStory(battleLog.replace(/\n/g,'<br>'),'medical');
-  // Result
-  const victory=enemyPower<=0||myLosses<enemyLosses*2;
-  if(victory){
-    addStory(`🛡️ <strong>防守成功！</strong>${ec.name}损失惨重撤退了。我方损失${myLosses}人。`,'camp');modRep(8,'成功防御营地');if(!S._battlesWon)S._battlesWon=0;S._battlesWon++;
-    const totalLoot=ec.supplies;ec.supplies=0;const lootCount=rand(3,8);
-    for(let i=0;i<lootCount;i++){const n=pick(['弹药','罐头','金属片','武器零件','医疗包','净水']);addItem(n,rand(1,4));}
-    addStory(`🎁 缴获战利品！从敌方营地缴获了大量物资（原库存${totalLoot}）。`,'action');
-    S.enemyCamps=S.enemyCamps.filter(x=>x.id!==ec.id);
-    // Children safety check - may be hurt during battle
-    S.children.filter(c=>c.alive).forEach(c=>{
-      if(Math.random()<0.15){c.health=clamp(c.health-rand(10,30),0,100);addStory(`😰 <strong>${c.name}</strong>在战斗中受了惊吓和轻伤。`,'medical');}
-    });
+  const{enemyCamp:ec,dir}=attack;const playerPresent=atCamp();
+  addStory(`⚔️ <strong>${ec.name}抵达！战斗开始！</strong>${playerPresent?'你亲自指挥防御。':'你不在营地，队友独自应战！'}`,'danger');
+  // Init battle state
+  var bt={ec:ec,enemyPower:ec.size*2+ec.defense*0.5,playerPresent:playerPresent,round:1,maxRounds:rand(3,5),myLosses:0,enemyLosses:0,log:'',victory:false,trapsUsed:false};
+  // Show tactical choices
+  showBattleChoices(bt);
+}
+
+function showBattleChoices(bt){
+  var ch=[];
+  // Aggressive
+  var aggRisk=bt.playerPresent?0.3:0.15;
+  ch.push({text:'⚔️ 全力猛攻',desc:'集中火力猛攻，伤敌更多但自身风险也更大',act:function(){resolveBattleRound(bt,'agg');}});
+  // Defensive
+  var defRisk=bt.playerPresent?0.1:0.05;
+  ch.push({text:'🛡️ 稳守阵地',desc:'利用掩体和阵地防御，安全但推进慢',act:function(){resolveBattleRound(bt,'def');}});
+  // Tactical
+  if(!bt.trapsUsed&&getActiveTraps().length>0){
+    ch.push({text:'💣 引爆陷阱',desc:'触发预设陷阱造成大量伤害，仅限第一轮',act:function(){resolveBattleRound(bt,'trap');}});
+  }else if(hasItem('弹药',2)&&bt.round>1){
+    ch.push({text:'🎯 远程压制',desc:'消耗2弹药进行火力压制（减敌方战力）',act:function(){removeItem('弹药',2);resolveBattleRound(bt,'suppress');}});
   }else{
-    addStory(`💔 <strong>营地失守！</strong>${ec.name}占领了营地。`,playerPresent?'danger':'danger');modRep(-12,'营地失守');
+    ch.push({text:'🧠 战术周旋',desc:'利用地形周旋消耗敌人，平衡风险收益',act:function(){resolveBattleRound(bt,'tactical');}});
+  }
+  // Build display
+  var h='<div style="margin-bottom:6px;font-size:0.85em;">';
+  h+=`<strong>🛡️ 第${bt.round}/${bt.maxRounds}轮</strong> | `;
+  h+=`敌方：<span style="color:var(--danger)">${bt.enemyPower.toFixed(0)}战力</span> | `;
+  h+=`我方：<span style="color:var(--success)">${bt.myLosses}损失</span></div>`;
+  addStory(h,'danger');
+  var btns=ch.map(function(c,i){return `<button class="choice-btn" onclick="(function(){var f=${c.act.toString()};f();})()" style="border-left:3px solid ${i===0?'#e94560':i===1?'#4a90d9':'#f0a040'}">${i+1}. ${c.text}<br><span style="font-size:0.65em;color:var(--text-dim)">${c.desc}</span></button>`;}).join('');
+  document.getElementById('choices-area').innerHTML=btns;
+  S._currentBattle=bt;
+}
+
+function resolveBattleRound(bt,tactic){
+  var ec=bt.ec,playerPresent=bt.playerPresent;
+  var enPwr=bt.enemyPower/5,myPwr=calcTotalDefense()/10+(playerPresent?3:1)+S.party.filter(function(p){return p.alive;}).length*(playerPresent?2:1);
+  var myRoll,enRoll,log='';
+  if(tactic==='trap'){
+    bt.trapsUsed=true;
+    var trapDmg=0;getActiveTraps().forEach(function(s){
+      var t=TRAPS.find(function(x){return x.id===s.id;});if(!t)return;
+      trapDmg+=t.dmg||0;s.dur=(s.dur||1)-1;if(s.dur<=0)s.active=false;
+      log+='💥 '+t.icon+t.name+'触发！ ';
+    });
+    bt.enemyPower=Math.max(0,bt.enemyPower-trapDmg*3);
+    log+='陷阱造成'+trapDmg+'伤害！';
+    enRoll=rand(0,Math.floor(enPwr))*0.5;
+  }else if(tactic==='agg'){
+    myRoll=rand(0,Math.floor(myPwr*1.5));enRoll=rand(0,Math.floor(enPwr));
+    if(myRoll>enRoll){bt.enemyLosses+=rand(2,6);bt.enemyPower-=rand(5,15);log+='🔫 猛攻奏效！';}
+    else{bt.myLosses+=rand(1,3);log+='💢 猛攻受挫——敌方反击！';}
+    if(Math.random()<0.25&&playerPresent){woundPlayer();}
+  }else if(tactic==='def'){
+    myRoll=rand(0,Math.floor(myPwr*0.7));enRoll=rand(0,Math.floor(enPwr*0.6));
+    if(myRoll>enRoll){bt.enemyLosses+=rand(1,2);bt.enemyPower-=rand(2,6);log+='🛡️ 稳守反击——伤敌不多但阵脚稳固。';}
+    else{log+='🛡️ 严密的防御挡住了进攻。';}
+    if(Math.random()<0.08&&playerPresent){woundPlayer();}
+  }else if(tactic==='suppress'){
+    myRoll=rand(0,Math.floor(myPwr*1.2));enRoll=rand(0,Math.floor(enPwr*0.3));
+    bt.enemyLosses+=rand(1,3);bt.enemyPower-=rand(3,8);
+    log+='🎯 火力压制成功！敌方被压制，损失不小。';
+  }else{
+    myRoll=rand(0,Math.floor(myPwr));enRoll=rand(0,Math.floor(enPwr));
+    if(myRoll>enRoll){bt.enemyLosses+=rand(1,3);bt.enemyPower-=rand(3,8);log+='🔫 战术奏效！';}
+    else{bt.myLosses+=rand(0,2);log+='⚡ 势均力敌的一轮。';}
+    if(Math.random()<0.15&&playerPresent){woundPlayer();}
+  }
+  // Teammate casualty check
+  if(Math.random()<0.15){var n=S.party.find(function(p){return p.alive&&Math.random()<0.5;});if(n){partyInjure(n.id,rand(8,25));log+=' 🤕'+n.name+'受伤！';}}
+  if(Math.random()<0.05){var n=S.party.find(function(p){return p.alive;});if(n){n.alive=false;n.health=0;log+=' 💀'+n.name+'战死！';setTimeout(function(){showCompanionDeath(n);},800);}}
+  bt.log+=log;
+  addStory(log,'medical');
+  // Check end
+  bt.round++;
+  if(bt.enemyPower<=0){bt.victory=true;finishBattle(bt);return;}
+  if(bt.round>bt.maxRounds){finishBattle(bt);return;}
+  showBattleChoices(bt);
+}
+function woundPlayer(){
+  var pid=pick(BODY_PARTS);var sev=rand(1,2);
+  var injuries={head:['头部被弹片擦伤'],chest:['弹片嵌入了肋骨'],leftArm:['左臂被流弹击中'],rightArm:['右臂被弹片击中'],leftLeg:['左腿中弹'],rightLeg:['右腿被弹片击中']};
+  addWound(pid,sev,pick(injuries[pid]||['受伤']),sev>=2);
+  S.blood=clamp(S.blood-sev*6,0,100);
+  if(S.blood<=0){addStory('💀 <strong>你倒在了战场上...</strong>','danger');die();}
+}
+function finishBattle(bt){
+  var ec=bt.ec;
+  bt.victory=bt.victory||bt.enemyPower<=0||bt.myLosses<bt.enemyLosses*2;
+  if(bt.victory){
+    addStory(`🛡️ <strong>防守成功！</strong>${ec.name}损失惨重撤退了。我方损失${bt.myLosses}人。`,'camp');modRep(8,'成功防御营地');if(!S._battlesWon)S._battlesWon=0;S._battlesWon++;
+    var lootCount=rand(3,8);
+    for(var i=0;i<lootCount;i++){addItem(pick(['弹药','罐头','金属片','武器零件','医疗包','净水']),rand(1,4));}
+    addStory('🎁 缴获战利品！','action');
+    S.enemyCamps=S.enemyCamps.filter(function(x){return x.id!==ec.id;});
+  } else {
+    addStory(`💔 <strong>营地失守！</strong>${ec.name}占领了营地。`,'danger');modRep(-12,'营地失守');
     S.camp.condition=clamp(S.camp.condition-rand(30,50),0,100);
     // Destroy buildings (random 50%)
     initCampStructures();
@@ -2716,7 +2772,7 @@ function executeBattle(attack){
     const campKeys=Object.keys(S.camp.supplies);const lostCount=Math.min(campKeys.length,rand(3,8));
     for(let i=0;i<lostCount;i++){const k=campKeys[rand(0,campKeys.length-1)];if(S.camp.supplies[k]){const q=Math.min(rand(1,5),S.camp.supplies[k].qty);removeItem(k,q,true);addStory(`📤 损失营地物资：${k}×${q}`,'danger');}}
     // Teammates captured
-    if(!playerPresent&&S.party.filter(p=>p.alive).length>0){
+    if(!atCamp()&&S.party.filter(function(p){return p.alive;}).length>0){
       const captured=S.party.filter(p=>p.alive);addStory(`🔗 ${captured.map(p=>p.name).join('、')}被敌人俘虏！`,'danger');
       if(Math.random()<0.5){addStory('几天后，被俘的队友趁机逃回了营地。','party');}else{addStory('你试图交涉赎回队友...但废土上没有仁慈。','danger');S.party=S.party.filter(p=>!p.alive||Math.random()<0.3);}
     }
@@ -2729,6 +2785,9 @@ function executeBattle(attack){
     const fpid=pick(BODY_PARTS);addWound(fpid,rand(1,3),`营地攻防战中${PL[fpid]}受伤`,true);S.blood=clamp(S.blood-rand(10,25),0,100);
   }
   updateUI();checkDeath();
+  S._currentBattle=null;
+  S.busy=false;btnDisabled(false);
+  setChoices(['▶ 继续推进']);
 }
 
 function getActiveTraps(){
