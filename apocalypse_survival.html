@@ -1067,9 +1067,27 @@ const EVENTS=[
       {text:'安慰他说也许还有希望',desc:'废土上每一天都可能发生奇迹。你没有给承诺，但你的安慰让他情绪安定了很多。',eff:{npcLoyalty:5,morale:4}},
       {text:'沉默地拍了拍他的肩膀',desc:'有时候沉默比话语更有力量。在篝火的余烬中，你们就这样静静地坐了许久。',eff:{npcLoyalty:3}},
     ]},
-];
 
-// ===== 材料掉落系统 =====
+  // === 声誉事件 ===
+  {id:'rep_hero_rescue',cat:'rep_event',ctx:{minRep:50,minDist:0,maxDist:15},narr:'远处传来呼救声——一个平民家庭被变异体困在了废墟中。母亲的尖叫声和孩子的哭声让你无法无视。你的声誉让这些人听说"有个值得信赖的营地"。',
+    choices:[
+      {text:'冲过去救出他们',eff:{fatigue:12,health:-5},desc:'经过一番搏斗你击退了变异体。一家人感激涕零——母亲跪下来感谢你。你护送他们到了安全的地方。',items:[{n:'绷带',q:[1,2]}],repGain:10},
+      {text:'谨慎营救——先评估情况',eff:{fatigue:6},desc:'你没有冲动。观察了局势后找到最佳时机介入——成功解救了他们。他们承诺会把你的善行传遍废土。',repGain:6},
+      {text:'太危险了——这不是你的责任',eff:{morale:-3},desc:'你咬了咬牙转身离开了。背后传来孩子的哭声——但你告诉自己，在废土上，逞英雄的人死得最快。',repGain:-5},
+    ]},
+  {id:'rep_bandits_parley',cat:'rep_event',ctx:{maxRep:30,minDist:3,maxDist:18},narr:'一队武装人员拦住了你的去路。但他们没有直接开枪——领头的人打量了你一番："我们听说过你的事。你不是那种随便杀人的人。也许我们可以谈谈。"在废土上，坏名声有时比没名声更安全。',
+    choices:[
+      {text:'放下枪坐下来谈判',desc:'你的冷静让对方也放下了戒备。最终他们同意以物资交换安全通行权——双方都没流血。废土上，理性比暴力更稀缺。',repGain:5,items:[{n:'弹药',q:[2,3]}]},
+      {text:'警告他们不要挡路',desc:'"我虽然不惹事，但也不怕事。"对方犹豫了一下，最终让开了路。你的名声让你获得了尊重。',repGain:2},
+      {text:'先发制人攻击他们',eff:{health:-10,fatigue:15},desc:'你突然开火——虽然出其不意占了先机，但对方人多。一番恶战后你狼狈逃脱。在场的人都记住了你的背叛。',repGain:-15},
+    ]},
+  {id:'rep_outcast_warning',cat:'rep_event',ctx:{maxRep:10,minDist:0,maxDist:12},narr:'一个浑身是伤的幸存者踉跄着靠近你的营地。他看起来很害怕——不是对你，而是对你背后的名声。"求求你别伤害我——我只是想交换些食物。我听说你很危险，但我实在走投无路了。"他的恐惧真实得让人不安。',
+    choices:[
+      {text:'安抚他并提供帮助',desc:'"别怕——那些都是误会。来，先喝口水。"你递给他一瓶水和一些食物。他的眼神从恐惧变为难以置信——然后是泪水。"也许传言是错的。"',items:[{n:'净水',q:[-1,-1]},{n:'罐头',q:[-1,-1]}],repGain:8},
+      {text:'以公平价格交易',desc:'"我不免费——但你拿罐头来换水，公平交易。"恐惧慢慢消退——他知道至少在这里，规则是清楚的。',repGain:3},
+      {text:'吓唬他然后赶走',desc:'"没错——所以别在我营地周边逗留。滚。"幸存者连滚带爬地逃走了。谣言会越来越可怕——也越来越有用。',repGain:-5},
+    ]},
+];
 function getBiomeMaterialLoot(count){
   var b=S.currentBiome;var pool=[];
   // 通用材料池（所有群系都可能找到）
@@ -2133,7 +2151,11 @@ function repTitle(){
   if(r>=50)return{icon:'📢',name:'知名',d:'附近的幸存者都知道你的营地'};
   if(r>=30)return{icon:'👍',name:'有声誉',d:'有些人听说过你'};
   if(r>=15)return{icon:'🤝',name:'初识',d:'少数人知道你的存在'};
-  return{icon:'🌱',name:'无名',d:'废土上没人认识你'};
+  if(r>=0)return{icon:'🌱',name:'无名',d:'废土上没人认识你'};
+  if(r>=-10)return{icon:'👀',name:'可疑',d:'有些人觉得你不可信'};
+  if(r>=-25)return{icon:'⚠️',name:'危险',d:'废土传言你很危险'};
+  if(r>=-50)return{icon:'☠️',name:'恶名',d:'人们看到你就躲'};
+  return{icon:'💀',name:'恐惧',d:'废土上最可怕的名字——能止小儿夜啼'};
 }
 function repAttackMod(){const r=S.reputation;if(r>=80)return 0.2;if(r>=60)return 0.5;if(r>=40)return 0.75;if(r<15)return 1.5;return 1;}
 function checkAutoRecruit(){
@@ -2874,11 +2896,12 @@ function doBroadcast(band){
 
 // ===== EVENT ENGINE =====
 function selectEvent(){
-  const ctx={minDist:S.distance,maxDist:S.distance,night:isNight(),day:isDaytime(),seasons:[S.season?.id],weather:[S.weather.precipType],atCamp:atCamp(),injured:S.blood<50||BODY_PARTS.some(p=>getPartStatus(p)!=='healthy'),hasParty:S.party.filter(p=>p.alive).length>0,hasCompanions:S.party.filter(p=>p.alive).length>0,lostCompanion:S.party.length>0&&S.party.filter(p=>!p.alive).length>0,pain:S.pain>30,tired:S.fatigue>55,hungry:S.nutrition<30,thirsty:S.hydration<30};
+  const ctx={minDist:S.distance,maxDist:S.distance,night:isNight(),day:isDaytime(),seasons:[S.season?.id],weather:[S.weather.precipType],atCamp:atCamp(),injured:S.blood<50||BODY_PARTS.some(p=>getPartStatus(p)!=='healthy'),hasParty:S.party.filter(p=>p.alive).length>0,hasCompanions:S.party.filter(p=>p.alive).length>0,lostCompanion:S.party.length>0&&S.party.filter(p=>!p.alive).length>0,pain:S.pain>30,tired:S.fatigue>55,hungry:S.nutrition<30,thirsty:S.hydration<30,reputation:S.reputation||10,partySize:S.party.filter(p=>p.alive).length};
   let candidates=EVENTS.filter(ev=>{
     const c=ev.ctx;if(c.atCamp!==undefined&&c.atCamp!==ctx.atCamp)return false;if(c.night&&!ctx.night)return false;if(c.day&&!ctx.day)return false;
     if(c.seasons&&!c.seasons.some(s=>ctx.seasons.includes(s)))return false;if(c.weather&&!c.weather.some(w=>ctx.weather.includes(w)))return false;
     if(c.injured&&!ctx.injured)return false;if(c.hasParty&&!ctx.hasParty)return false;if(c.hasCompanions&&!ctx.hasCompanions)return false;if(c.lostCompanion&&!ctx.lostCompanion)return false;
+    if(c.minRep&&ctx.reputation<c.minRep)return false;if(c.maxRep&&ctx.reputation>c.maxRep)return false;if(c.partySize&&ctx.partySize<c.partySize)return false;
     if(c.pain&&ctx.pain<c.pain)return false;
     if(c.tired&&!ctx.tired)return false;if(c.hungry&&!ctx.hungry)return false;if(c.thirsty&&!ctx.thirsty)return false;
     if(c.minDist!==undefined&&ctx.maxDist<c.minDist)return false;if(c.maxDist!==undefined&&ctx.minDist>c.maxDist)return false;
@@ -2955,6 +2978,7 @@ function resolveChoice(idx){
     if(selectedOutcome.items&&!applyItems(selectedOutcome.items,result)){
       addStory(`❌ <strong>运气不佳！</strong>事情没有按预期发展——物资不足无法完成。`,'danger');return null;}
     if(selectedOutcome.lose){const names=Object.keys(S.inventory);for(let i=0;i<selectedOutcome.lose&&names.length>0;i++){const ln=names[rand(0,names.length-1)];removeItem(ln,1);result.itemsLost.push({n:ln,q:1});}}
+    if(selectedOutcome.repGain)modRep(selectedOutcome.repGain,'事件');
     if(selectedOutcome.dist)S.distance=clamp(S.distance+(selectedOutcome.dist||0),0,20);
     if(selectedOutcome.need&&hasItem(selectedOutcome.need,1)){removeItem(selectedOutcome.need,1);result.itemsLost.push({n:selectedOutcome.need,q:1});}
     // Add randomness: sometimes lose a random item when searching/scavenging
@@ -2972,6 +2996,7 @@ function resolveChoice(idx){
   if(ch.items&&!applyItems(ch.items,result)){
     addStory(`❌ <strong>交易失败！</strong>背包中没有足够的物资。`,'danger');return null;}
   if(ch.lose){const names=Object.keys(S.inventory);for(let i=0;i<ch.lose&&names.length>0;i++){const ln=names[rand(0,names.length-1)];removeItem(ln,1);result.itemsLost.push({n:ln,q:1});}}
+  if(ch.repGain)modRep(ch.repGain,'事件');
   if(ch.dist){S.distance=clamp(S.distance+(ch.dist||0),0,20);result.distChange=ch.dist;}
   if(ch.need&&hasItem(ch.need,1)){removeItem(ch.need,1);result.itemsLost.push({n:ch.need,q:1});}
   // Random mishap chance
