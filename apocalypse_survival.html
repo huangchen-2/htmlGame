@@ -2210,32 +2210,6 @@ function generateEnemyCamp(){
     spy:null, // NPC id of spy, if any
     sabotaged:false,poisoned:false,};
 }
-function showDiary(){
-  var h='<h3>📖 废土日记</h3><div style="max-height:60vh;overflow-y:auto;font-size:0.82em;line-height:1.8;">';
-  h+='<p style="color:var(--text-dim);margin-bottom:12px;">第'+S.day+'天 | '+repTitle().icon+' '+repTitle().name+' | 小队'+S.party.filter(function(p){return p.alive;}).length+'人 | 🏆成就'+S.achievements.length+'个</p>';
-  if(S.history.length===0){h+='<p style="color:var(--text-dim);">日记空空如也——你还没来得及写下什么。</p>';}
-  else{
-    var shown=0;
-    for(var i=S.history.length-1;i>=0&&shown<20;i--){
-      var ev=S.history[i];if(!ev||!ev.summary)continue;
-      h+='<p style="margin-bottom:4px;border-left:2px solid rgba(233,69,96,0.3);padding-left:10px;">';
-      h+='<strong style="color:var(--text-dim);font-size:0.7em;">📅 第'+ev.day+'天</strong><br>'+ev.summary;
-      h+='</p>';shown++;
-    }
-  }
-  // Achievements section
-  if(S.achievements.length>0){
-    h+='<hr style="border-color:rgba(255,255,255,0.05);margin:12px 0;"><strong>🏆 已解锁成就：</strong><br>';
-    S.achievements.forEach(function(aid){
-      var a=ACHIEVEMENTS.find(function(x){return x.id===aid;});
-      if(a)h+='<span style="margin-right:8px;font-size:0.9em;">'+a.icon+' '+a.name+'</span>';
-    });
-  }
-  h+='</div><div class="btn-row"><button class="btn small" onclick="setChoices([\'😴 休息恢复体力\',\'🔧 整備营地\',\'🌍 外出探索废土\',\'⚔️ 查看敌对营地\',\'📖 翻看日记\']);document.getElementById(\'modal-overlay\').classList.remove(\'active\');">关闭</button></div>';
-  var modal=document.getElementById('modal');var ov=document.getElementById('modal-overlay');
-  modal.innerHTML=h;ov.classList.add('active');
-}
-
 function showEnemyCamps(){
   const modal=document.getElementById('modal'),ov=document.getElementById('modal-overlay');
   let h='<h3>⚔️ 敌对营地</h3>';
@@ -3881,7 +3855,7 @@ async function continueStory(){
   if(S.isDead||S.busy)return;
   // At camp: show camp menu instead of random events
   if(atCamp()&&!S._currentEvent&&S.history.length>0){
-    setChoices(['😴 休息恢复体力','🔧 整备营地(建造/储物/升级)','🌍 外出探索废土','⚔️ 查看敌对营地','📖 翻看日记']);
+    setChoices(['😴 休息恢复体力','🔧 整备营地(建造/储物/升级)','🌍 外出探索废土','⚔️ 查看敌对营地']);
     S._currentEvent=null;setStatus('在营地');return;
   }
   S.busy=true;btnDisabled(true);setStatus('⏳ 时间流逝...');setChoices([]);
@@ -3948,7 +3922,6 @@ async function pickChoice(idx){
     if(ct.includes('整备营地')){S.busy=false;btnDisabled(false);setStatus('');setChoices(['🏕️ 查看营地布局','📦 管理仓库','🔨 工作台制作','📦 升级储物箱']);return;}
     if(ct.includes('外出探索')){S.distance=0.5;S.busy=false;btnDisabled(false);setStatus('');await continueStory();return;}
     if(ct.includes('查看敌对')){S.busy=false;btnDisabled(false);setStatus('');showEnemyCamps();return;}
-    if(ct.includes('翻看日记')){S.busy=false;btnDisabled(false);setStatus('');showDiary();return;}
     if(ct.includes('加固营地')){S.busy=false;btnDisabled(false);setStatus('');upgradeDefense();return;}
     if(ct.includes('查看营地布局')){S.busy=false;btnDisabled(false);setStatus('');showCampView();return;}
     if(ct.includes('管理仓库')){S.busy=false;btnDisabled(false);setStatus('');openStorageUI();return;}
