@@ -2878,8 +2878,8 @@ function btnDisabled(v){document.querySelectorAll('#bottom .btn,.choice-btn').fo
 // ===== VITAL RATES =====
 function getVitalRates(){
   let bloodRate=0,bleedCount=0;for(const pid of BODY_PARTS)for(const w of S.body[pid].wounds){if(w.bleeding&&!w.bandaged){bloodRate-=w.severity*3;bleedCount++;}}
-  let hydRate=-3*(1+getEffectSum('waterConsumeMod'));if(S.weather.temperature>30)hydRate-=2;if(S.weather.temperature>38)hydRate-=2;if(S.weather.windSpeed>20)hydRate-=1;
-  let nutRate=-2*(1+getEffectSum('foodConsumeMod'));if(S.weather.temperature<5)nutRate-=1;if(S.weather.temperature<-10)nutRate-=1;
+  let hydRate=-5*(1+getEffectSum('waterConsumeMod'));if(S.weather.temperature>30)hydRate-=3;if(S.weather.temperature>38)hydRate-=3;if(S.weather.windSpeed>20)hydRate-=2;
+  let nutRate=-4*(1+getEffectSum('foodConsumeMod'));if(S.weather.temperature<5)nutRate-=2;if(S.weather.temperature<-10)nutRate-=3;
   let fatRate=3;if(S.weather.temperature<5)fatRate+=2;if(S.pain>40)fatRate+=1;if(isNight())fatRate+=1;if(hasEffect('plague'))fatRate+=2;
   const feels=getFeelsLike();const tempDrift=(feels+2-S.coreTemp)*0.3;
   let wetRate=0;const p=S.weather.precipType;if(p==='drizzle')wetRate=5;else if(p==='rain')wetRate=15;else if(p==='heavy_rain')wetRate=30;else if(S.weather.isSnow)wetRate=8;else wetRate=-10;if(S.hasCampfire)wetRate-=15;
@@ -3718,7 +3718,7 @@ async function continueStory(){
     // 快速推进：每次跳过 8-16 小时
     advanceHour(rand(8,16));
     // 每日三餐自动消耗
-    if(S.hour>=6&&S.hour<=8&&!S._dayFed){S.nutrition=clamp(S.nutrition+rand(-8,-3),0,100);S.hydration=clamp(S.hydration+rand(-6,-2),0,100);S._dayFed=true;}
+    if(S.hour>=6&&S.hour<=8&&!S._dayFed){S.nutrition=clamp(S.nutrition+rand(-15,-6),0,100);S.hydration=clamp(S.hydration+rand(-12,-5),0,100);S._dayFed=true;}
     if(S.hour>=18)S._dayFed=false;
     addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
     if(isNight()&&!atCamp()&&!S.hasCampfire)addStory('🌙 <strong>夜色笼罩。</strong>没有篝火的夜晚，危险潜伏在每个阴影中。','system');
