@@ -2023,6 +2023,26 @@ function growChildren(){
 
 // ===== PRODUCTION BUILDING TICK =====
 let _prodTicks=0;
+function tickMaintenance(){
+  // 每天每个建筑消耗木材维护，否则掉耐久
+  if(!S._maintDay||S._maintDay!==S.day){
+    S._maintDay=S.day;
+    initCampStructures();
+    var cost=S.campStructures.filter(function(s){return s.type==='building'&&!s.type==='ruin';}).length;
+    if(cost>0&&atCamp()){
+      if(hasItem('木材',cost)){removeItem('木材',cost);}
+      else{
+        // 维护不足——建筑随机损坏
+        var blds=S.campStructures.filter(function(s){return s.type==='building';});
+        if(blds.length>0){
+          var b=pick(blds);b.dur=(b.dur||100)-rand(10,25);
+          if(b.dur<=0){b.type='ruin';addStory(`⚠️ <strong>${b.name}年久失修，坍塌了！</strong>维护不够——废土不养懒人。`,'camp');}
+          else{addStory(`🔧 <strong>${b.name}</strong>因缺少木材维护而损坏（耐久${b.dur}%）。`,'camp');}
+        }
+      }
+    }
+  }
+}
 function tickProduction(){
   _prodTicks++;if(_prodTicks%2!==0)return;
   initCampStructures();
@@ -3963,7 +3983,7 @@ async function continueStory(){
     const trans=generateTransition();
     if(trans)addStory(trans,'system');
   }
-  progressWounds();teammateTurn();tickTraining();tickStaffedBuildings();campStabilityCheck();tryHaveChild();growChildren();tickProduction();simulateCampEcology();checkCampDestroyed();checkAutoRecruit();updateUI();if(S.isDead){S.busy=false;btnDisabled(false);return;}
+  progressWounds();teammateTurn();tickTraining();tickStaffedBuildings();tickMaintenance();campStabilityCheck();tryHaveChild();growChildren();tickProduction();simulateCampEcology();checkCampDestroyed();checkAutoRecruit();updateUI();if(S.isDead){S.busy=false;btnDisabled(false);return;}
   const db=getInjuryDebuffs();if(db.cantLeave&&!atCamp()){
     addStory(`🚫 <strong>${db.cantLeaveReason}</strong>——无法行动！`,'medical');
     S.busy=false;btnDisabled(false);
