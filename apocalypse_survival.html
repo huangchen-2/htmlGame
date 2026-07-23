@@ -1087,6 +1087,43 @@ const EVENTS=[
       {text:'以公平价格交易',desc:'"我不免费——但你拿罐头来换水，公平交易。"恐惧慢慢消退——他知道至少在这里，规则是清楚的。',repGain:3},
       {text:'吓唬他然后赶走',desc:'"没错——所以别在我营地周边逗留。滚。"幸存者连滚带爬地逃走了。谣言会越来越可怕——也越来越有用。',repGain:-5},
     ]},
+
+  // === 主线：信号源 ===
+  {id:'signal_source_1',cat:'discovery',ctx:{minDist:3,maxDist:15,quest:'signal'},narr:'在一栋倒塌的通讯塔废墟中，你发现了一个还在工作的信号转发器。屏幕显示："…避难所7号…坐标片段1/5…北纬34°…"这是战前最后的广播残片——有人留下了线索。',
+    choices:[
+      {text:'仔细记录信号数据',eff:{fatigue:6},desc:'你小心翼翼地抄录了屏幕上的数据。虽然看不懂全部内容，但直觉告诉你——把这些碎片拼起来，也许能找到真正的希望。'},
+      {text:'拆下转发器带回营地研究',eff:{fatigue:10},items:[{n:'电子零件',q:[1,3]}],desc:'连设备一起带走。在营地里好好研究——这可能是整个废土上最有价值的发现。'},
+    ],
+    questSignal:1, // 获得信号碎片
+  },
+  {id:'signal_source_2',cat:'discovery',ctx:{minDist:5,maxDist:18,quest:'signal'},narr:'一座废弃的军事基地深处，你找到了一间上锁的通讯室。铁门撬开后，里面是一台还在运行的加密终端。屏幕上闪烁着一行字："…第二片段…坐标补全…东经118°…"',
+    choices:[
+      {text:'用工具撬开加密模块',need:'工具',eff:{fatigue:10},desc:'你拆下了加密模块的存储芯片。数据应该还在——这是第二块拼图。'},
+      {text:'手工抄录屏幕数据',eff:{fatigue:8},desc:'没有工具但你有纸笔。花了很久抄写代码——虽然慢，但数据没错。'},
+    ],
+    questSignal:1,
+  },
+  {id:'signal_source_3',cat:'discovery',ctx:{minDist:4,maxDist:14,quest:'signal'},narr:'一个老旧的收音机反复播放着同一段录音："这里是中央避难所管理局…以下为紧急坐标广播…第三段…海拔约1200米…"播放器已经循环了七年，电池快耗尽了。',
+    choices:[
+      {text:'更换电池保持播放',items:[{n:'电池',q:[-1,-1]}],eff:{fatigue:3},desc:'你给播放器换上了新电池。完整的广播内容清晰多了——第三段坐标确认。'},
+      {text:'快速记录关键数据',eff:{fatigue:5},desc:'电池马上要没电了——你在最后几分钟飞快地记下了坐标信息。'},
+    ],
+    questSignal:1,
+  },
+  {id:'signal_source_4',cat:'discovery',ctx:{minDist:6,maxDist:20,quest:'signal'},narr:'一个地堡的墙上刻着一行字，旁边倒着一具白骨。字是用小刀刻的："如果你看到这个——我已经走不动了。第四段坐标如下…继续往西走，别回头。"死者手里还攥着一张褪色的照片。',
+    choices:[
+      {text:'默默鞠躬后记录坐标',eff:{morale:-2},desc:'你花了几分钟在死者面前默哀。然后小心地抄下了墙上的坐标。他的死不会白费。'},
+      {text:'收好照片带走',eff:{morale:4},desc:'你把褪色的照片放进背包——这是某人的一生。然后记录下了他留给世界的最后信息。'},
+    ],
+    questSignal:1,
+  },
+  {id:'signal_source_5',cat:'discovery',ctx:{minDist:8,maxDist:25,quest:'signal'},narr:'在一座山顶的气象站里，你找到了最后一块拼图。一台气象卫星的备用终端仍在发送数据——每隔六小时，它会广播一次完整的避难所坐标。你只需要等到下一个广播窗口。',
+    choices:[
+      {text:'等待广播窗口并记录',eff:{fatigue:8},desc:'你守了几个小时。广播响起的一刻你屏住了呼吸——最后一段坐标收到了。五块拼图终于凑齐了。'},
+      {text:'拆走终端硬盘',eff:{fatigue:14},items:[{n:'电子零件',q:[2,4]}],desc:'你不想等了——直接把硬盘拆下来带走。回去慢慢解析，反正前4段已经有了。'},
+    ],
+    questSignal:1,
+  },
 ];
 function getBiomeMaterialLoot(count){
   var b=S.currentBiome;var pool=[];
@@ -1142,8 +1179,31 @@ const S={
   activeEffects:[], // {id,name,icon,desc,effects:{...},daysLeft}
   achievements:[], // unlocked achievement ids
   _milestoneChecked:{}, // track which milestones have fired
+  mainQuest:{signals:0,totalNeeded:5,shelterUnlocked:false,completed:false}, // 主线进度
 };
 BODY_PARTS.forEach(p=>{S.body[p]={wounds:[]};});
+
+// ===== 主线任务：收集信号源找避难所 =====
+function checkMainQuest(){
+  if(!S.mainQuest)S.mainQuest={signals:0,totalNeeded:5,shelterUnlocked:false,completed:false};
+  if(S.mainQuest.completed)return;
+  if(S.mainQuest.signals>=S.mainQuest.totalNeeded&&!S.mainQuest.shelterUnlocked){
+    S.mainQuest.shelterUnlocked=true;
+    addStory(`📡 <strong style="color:#ffd700">所有信号源已收集！</strong>坐标完整了——避难所就在西边120公里处。是时候结束流浪了。`,'party');
+  }
+}
+function completeGame(){
+  S.mainQuest.completed=true;
+  addStory(`🏆 <strong style="color:#ffd700;font-size:1.2em;">你做到了。</strong><br><br>经过${S.day}天的废土挣扎，你终于站在了避难所大门前。门后是干净的空气、充足的食物、温暖的光。你回头看了一眼来时的路——那些倒下的人、那些熬过的夜——<br><br><strong>你活下来了。这不是终点——但这是一个句号。</strong>`,'party');
+  var ov=document.getElementById('modal-overlay');var modal=document.getElementById('modal');
+  var h='<div style="text-align:center;padding:20px;"><h2 style="color:#ffd700;font-size:1.6em;">🏆 废土纪元 · 通关</h2>';
+  h+='<p style="color:#ccc;font-size:0.9em;">存活<strong>'+S.day+'</strong>天 | '+repTitle().icon+repTitle().name;
+  h+=' | 🏆'+S.achievements.length+'成就 | 👥'+S.party.filter(function(p){return p.alive;}).length+'人</p>';
+  h+='<p style="color:var(--text-dim);font-size:0.8em;margin:12px 0;">你找到了人类最后的避难所——<br>但废土的故事永远不会真正结束。</p>';
+  h+='<button class="btn primary" onclick="document.getElementById(\'modal-overlay\').classList.remove(\'active\');setChoices([\'▶ 继续流浪\']);">继续流浪</button></div>';
+  modal.innerHTML=h;ov.classList.add('active');
+  setChoices(['▶ 继续流浪']);updateUI();
+}
 
 // ===== 里程碑成就系统 =====
 const ACHIEVEMENTS=[
@@ -2973,6 +3033,7 @@ function selectEvent(){
     if(c.seasons&&!c.seasons.some(s=>ctx.seasons.includes(s)))return false;if(c.weather&&!c.weather.some(w=>ctx.weather.includes(w)))return false;
     if(c.injured&&!ctx.injured)return false;if(c.hasParty&&!ctx.hasParty)return false;if(c.hasCompanions&&!ctx.hasCompanions)return false;if(c.lostCompanion&&!ctx.lostCompanion)return false;
     if(c.minRep&&ctx.reputation<c.minRep)return false;if(c.maxRep&&ctx.reputation>c.maxRep)return false;if(c.partySize&&ctx.partySize<c.partySize)return false;
+    if(c.quest==='signal'&&(!S.mainQuest||S.mainQuest.signals>=S.mainQuest.totalNeeded))return false; // 信号已集齐则不再触发
     if(c.pain&&ctx.pain<c.pain)return false;
     if(c.tired&&!ctx.tired)return false;if(c.hungry&&!ctx.hungry)return false;if(c.thirsty&&!ctx.thirsty)return false;
     if(c.minDist!==undefined&&ctx.maxDist<c.minDist)return false;if(c.maxDist!==undefined&&ctx.minDist>c.maxDist)return false;
@@ -3050,6 +3111,7 @@ function resolveChoice(idx){
       addStory(`❌ <strong>运气不佳！</strong>事情没有按预期发展——物资不足无法完成。`,'danger');return null;}
     if(selectedOutcome.lose){const names=Object.keys(S.inventory);for(let i=0;i<selectedOutcome.lose&&names.length>0;i++){const ln=names[rand(0,names.length-1)];removeItem(ln,1);result.itemsLost.push({n:ln,q:1});}}
     if(selectedOutcome.repGain)modRep(selectedOutcome.repGain,'事件');
+    if(selectedOutcome.questSignal||data.ev.questSignal){if(!S.mainQuest)S.mainQuest={signals:0,totalNeeded:5};S.mainQuest.signals++;addStory(`📡 <strong>信号碎片已收集！</strong>(${S.mainQuest.signals}/${S.mainQuest.totalNeeded})`,'party');checkMainQuest();}
     if(selectedOutcome.dist)S.distance=clamp(S.distance+(selectedOutcome.dist||0),0,20);
     if(selectedOutcome.need&&hasItem(selectedOutcome.need,1)){removeItem(selectedOutcome.need,1);result.itemsLost.push({n:selectedOutcome.need,q:1});}
     // Add randomness: sometimes lose a random item when searching/scavenging
@@ -3068,6 +3130,7 @@ function resolveChoice(idx){
     addStory(`❌ <strong>交易失败！</strong>背包中没有足够的物资。`,'danger');return null;}
   if(ch.lose){const names=Object.keys(S.inventory);for(let i=0;i<ch.lose&&names.length>0;i++){const ln=names[rand(0,names.length-1)];removeItem(ln,1);result.itemsLost.push({n:ln,q:1});}}
   if(ch.repGain)modRep(ch.repGain,'事件');
+  if(ch.questSignal||data.ev.questSignal){if(!S.mainQuest)S.mainQuest={signals:0,totalNeeded:5};S.mainQuest.signals++;addStory(`📡 <strong>信号碎片已收集！</strong>(${S.mainQuest.signals}/${S.mainQuest.totalNeeded})`,'party');checkMainQuest();}
   if(ch.dist){S.distance=clamp(S.distance+(ch.dist||0),0,20);result.distChange=ch.dist;}
   if(ch.need&&hasItem(ch.need,1)){removeItem(ch.need,1);result.itemsLost.push({n:ch.need,q:1});}
   // Random mishap chance
@@ -3961,7 +4024,9 @@ async function continueStory(){
   if(S.isDead||S.busy)return;
   // At camp: show camp menu instead of random events
   if(atCamp()&&!S._currentEvent&&S.history.length>0){
-    setChoices(['😴 休息恢复体力','🔧 整备营地(建造/储物/升级)','🌍 外出探索废土','⚔️ 查看敌对营地','📖 翻看日记']);
+    var campChoices=['😴 休息恢复体力','🔧 整备营地(建造/储物/升级)','🌍 外出探索废土','⚔️ 查看敌对营地','📖 翻看日记'];
+    if(S.mainQuest&&S.mainQuest.shelterUnlocked&&!S.mainQuest.completed){campChoices.push('📡 前往避难所（通关）');}
+    setChoices(campChoices);
     S._currentEvent=null;setStatus('在营地');return;
   }
   S.busy=true;btnDisabled(true);setStatus('⏳ 时间流逝...');setChoices([]);
@@ -4031,6 +4096,7 @@ async function pickChoice(idx){
     if(ct.includes('外出探索')){S.distance=0.5;S.busy=false;btnDisabled(false);setStatus('');await continueStory();return;}
     if(ct.includes('查看敌对')){S.busy=false;btnDisabled(false);setStatus('');showEnemyCamps();return;}
     if(ct.includes('翻看日记')){S.busy=false;btnDisabled(false);setStatus('');showDiary();return;}
+    if(ct.includes('前往避难所')){S.busy=false;btnDisabled(false);setStatus('');completeGame();return;}
     if(ct.includes('加固营地')){S.busy=false;btnDisabled(false);setStatus('');upgradeDefense();return;}
     if(ct.includes('查看营地布局')){S.busy=false;btnDisabled(false);setStatus('');showCampView();return;}
     if(ct.includes('管理仓库')){S.busy=false;btnDisabled(false);setStatus('');openStorageUI();return;}
@@ -4077,7 +4143,7 @@ function resetGame(){
   S.day=1;S.hour=8;S.minute=0;S.season=SEASONS[0];S.seasonDay=1;S.distance=0;S.hasCampfire=false;
   S.blood=100;S.nutrition=80;S.hydration=85;S.fatigue=15;S.pain=0;S.infectionLevel=0;S.coreTemp=37;S.bodyWetness=0;
   S.clothing=getDefaultEquip();
-  S.inventory={};S.camp={supplies:{},defense:0,condition:100,governance:'dictatorship',stability:60};S.party=[];S.history=[];S.recentEvents=[];S.recentCats=[];S.discoveredLocations=[];S.locationVisits={};S.enemyCamps=[];S.currentBiome=randomBiome();for(let i=0;i<rand(1,3);i++)S.enemyCamps.push(generateEnemyCamp());S.campStructures=[];S._campDefMod=0;S._campLevel=1;S.spouse=null;S.children=[];S.backpackSlots=4;S._incomingAttack=null;S._silentAttack=null;S._campDestroyed=false;S.locationVisits={};S.chestLevel=1;S._gunBonus=0;S.reputation=10;S.isDead=false;S.causeOfDeath='';S.busy=false;S._currentEvent=null;S._currentBattle=null;S._lastEventDay=0;S._weatherWarned=false;S._galeWarned=false;S._coldWarned=false;S._dayFed=false;S._warnedHunger=false;S._warnedStarving=false;S._warnedThirst=false;S._warnedDehydrated=false;S._warnedBlood=false;S._warnedTired=false;S._warnedCold=false;S._warnedHot=false;S._warnedInfection=false;S._warnedPain=false;S.achievements=[];S._milestoneChecked={};S._totalScavenged=0;S._battlesWon=0;S.activeEffects=[];S.activePolicies=[];S.backpackWeight=0;S.skills={scavenge:0,combat:0,medical:0,build:0,leadership:0};S.skillXP={scavenge:0,combat:0,medical:0,build:0,leadership:0};
+  S.inventory={};S.camp={supplies:{},defense:0,condition:100,governance:'dictatorship',stability:60};S.party=[];S.history=[];S.recentEvents=[];S.recentCats=[];S.discoveredLocations=[];S.locationVisits={};S.enemyCamps=[];S.currentBiome=randomBiome();for(let i=0;i<rand(1,3);i++)S.enemyCamps.push(generateEnemyCamp());S.campStructures=[];S._campDefMod=0;S._campLevel=1;S.spouse=null;S.children=[];S.backpackSlots=4;S._incomingAttack=null;S._silentAttack=null;S._campDestroyed=false;S.locationVisits={};S.chestLevel=1;S._gunBonus=0;S.reputation=10;S.isDead=false;S.causeOfDeath='';S.busy=false;S._currentEvent=null;S._currentBattle=null;S._lastEventDay=0;S._weatherWarned=false;S._galeWarned=false;S._coldWarned=false;S._dayFed=false;S._warnedHunger=false;S._warnedStarving=false;S._warnedThirst=false;S._warnedDehydrated=false;S._warnedBlood=false;S._warnedTired=false;S._warnedCold=false;S._warnedHot=false;S._warnedInfection=false;S._warnedPain=false;S.achievements=[];S._milestoneChecked={};S._totalScavenged=0;S._battlesWon=0;S.activeEffects=[];S.mainQuest={signals:0,totalNeeded:5,shelterUnlocked:false,completed:false};S.activePolicies=[];S.backpackWeight=0;S.skills={scavenge:0,combat:0,medical:0,build:0,leadership:0};S.skillXP={scavenge:0,combat:0,medical:0,build:0,leadership:0};
   BODY_PARTS.forEach(p=>{S.body[p].wounds=[];});
   generateWeather();addItem('绷带',2);addItem('净水',2);addItem('罐头',2);addItem('木材',3);
   document.getElementById('death-overlay').classList.remove('active');document.getElementById('story-box').innerHTML='';document.getElementById('choices-area').innerHTML='';
