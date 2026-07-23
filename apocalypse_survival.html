@@ -2875,6 +2875,7 @@ function enemyAttackPlayer(){
     {text:'派队友回防自己在外面',ch:{outcome:'你让队友回去防守，自己留在外面。希望他们能守住。'}},
     {text:'不理会继续当前行动',ch:{outcome:'你选择相信营地的防御。如果营地失守，后果自负。'}},
   ]};
+  appendExploreOptions(S._currentEvent.choices);
 }
 
 function executeBattle(attack){
@@ -3084,6 +3085,15 @@ function selectEvent(){
   return ev;
 }
 
+function appendExploreOptions(choices){
+  if(!atCamp()){
+    if(!choices.find(function(c){return c.text.includes('返回营地');})){
+      choices.push({text:'🏕️ 返回营地',disabled:false,idx:choices.length,ch:{outcome:'你决定先回营地再说。',dist:-S.distance,eff:{fatigue:S.distance*2}}});
+    }
+    choices.push({text:'💧 寻找水源',disabled:false,idx:choices.length,ch:{outcome:'',act:'findWater'}});
+    choices.push({text:'🏹 尝试狩猎',disabled:false,idx:choices.length,ch:{outcome:'',act:'hunt'}});
+  }
+}
 function processEvent(ev){
   addStory(ev.narr,'ai');
   const choices=ev.choices.map((ch,i)=>{
@@ -3091,11 +3101,7 @@ function processEvent(ev){
     return{text:ch.text,disabled:!!(ch.need&&!hasItem(ch.need,1)),idx:i,ch:ch};
   });
   // 固定探索选项：返回营地/搜索物资/寻找水源/狩猎
-  if(!atCamp()){
-    choices.push({text:'🏕️ 返回营地',disabled:false,idx:choices.length,ch:{outcome:'你决定先回营地再说。',dist:-S.distance,eff:{fatigue:S.distance*2}}});
-    choices.push({text:'💧 寻找水源',disabled:false,idx:choices.length,ch:{outcome:'',act:'findWater'}});
-    choices.push({text:'🏹 尝试狩猎',disabled:false,idx:choices.length,ch:{outcome:'',act:'hunt'}});
-  }
+  appendExploreOptions(choices);
   S._currentEvent={ev,choices};
   setChoices(choices.map(c=>c.disabled?`${c.text}（需要${c.ch.need}）`:c.text));
 }
@@ -3193,7 +3199,13 @@ function buildOutcomeText(result){
 
 // ===== STORY =====
 function addStory(t,c='ai'){const b=document.getElementById('story-box');const d=document.createElement('div');d.className='msg '+c;d.innerHTML=t;b.appendChild(d);b.scrollTop=b.scrollHeight;}
-function setChoices(cs){const a=document.getElementById('choices-area');if(!cs||cs.length===0){a.innerHTML='';return;}a.innerHTML=cs.map((c,i)=>`<button class="choice-btn" onclick="pickChoice(${i})">${i+1}. ${c}</button>`).join('');}
+function setChoices(cs){const a=document.getElementById('choices-area');if(!cs||cs.length===0){a.innerHTML='';return;}// 探索中自动追加水源/狩猎（营地菜单、受伤菜单等除外）
+var isExplore=!atCamp()&&S.distance>0&&!S.isDead&&S.history.length>0;
+var hasExplore=cs.some(function(c){return c.includes('寻找水源')||c.includes('尝试狩猎');});
+if(isExplore&&!hasExplore&&cs.length>0&&!cs[0].includes('休息')&&!cs[0].includes('整备')&&!cs[0].includes('治疗')){
+  cs=cs.concat(['💧 寻找水源','🏹 尝试狩猎']);
+}
+a.innerHTML=cs.map((c,i)=>`<button class="choice-btn" onclick="pickChoice(${i})">${i+1}. ${c}</button>`).join('');}
 function setStatus(m){document.getElementById('status-line').textContent=m;}
 function btnDisabled(v){document.querySelectorAll('#bottom .btn,.choice-btn').forEach(b=>b.disabled=v);}
 
