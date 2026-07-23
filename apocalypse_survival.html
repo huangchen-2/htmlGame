@@ -4164,19 +4164,18 @@ async function pickChoice(idx){
   S.busy=true;btnDisabled(true);setStatus('⏳ 命运展开中...');
   const ct=data.choices[idx].text;setChoices([]);addStory(`<strong>👉 ${ct}</strong>`,'action');
 
-  const outcome=resolveChoice(idx);
-  // 应用全局效果（buff/debuff事件）
-  if(data&&data.ev&&data.ev.applyEffect){
-    var ae=data.ev.applyEffect;
-    addEffect(ae.id,ae.name,ae.icon,ae.desc,ae.effects,rand(ae.days[0],ae.days[1]));
-    addStory(`🌍 <strong>全局事件触发：${ae.icon} ${ae.name}！</strong> ${ae.desc}（持续${typeof ae.days==='number'?ae.days:ae.days[0]+'-'+ae.days[1]}天）`,'world');
-  }
-  advanceHour(rand(6,12));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
-
-  if(outcome)addStory(outcome,'ai');
+  try{
+    const outcome=resolveChoice(idx);
+    // 应用全局效果（buff/debuff事件）
+    if(data&&data.ev&&data.ev.applyEffect){
+      var ae=data.ev.applyEffect;
+      addEffect(ae.id,ae.name,ae.icon,ae.desc,ae.effects,rand(ae.days[0],ae.days[1]));
+      addStory(`🌍 <strong>全球事件触发：${ae.icon} ${ae.name}！</strong> ${ae.desc}（持续${typeof ae.days==='number'?ae.days:ae.days[0]+'-'+ae.days[1]}天）`,'world');
+    }
+    advanceHour(rand(6,12));progressWounds();teammateTurn();applyWetness();updateCoreTemp();
+    if(outcome)addStory(outcome,'ai');
+  }catch(e){console.error('Resolve error:',e);}
   if(S.isDead){S.busy=false;btnDisabled(false);setStatus('');return;}
-
-  // Don't auto-chain — show "continue" button so narrative stays coherent
   S._currentEvent=null;
   setChoices(['▶ 继续推进']);
   S.busy=false;btnDisabled(false);setStatus('');updateUI();checkDeath();
