@@ -4078,11 +4078,11 @@ async function continueStory(){
     addStory(`<strong>━━━ 📅 第1天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
     addStory(`外面<strong>${S.weather.temperature}°C</strong>，体感<strong>${getFeelsLike()}°C</strong>。${S.enemyCamps.length>0?`附近有${S.enemyCamps.length}个敌对营地——小心行事。`:''}你背起背包，走向围栏边。`,'system');
   }else{
-    // 快速推进：每次跳过 2-5 天
-    advanceHour(rand(48,120));
-    // 每日三餐自动消耗（按经过天数计）
-    var daysPassed=Math.max(1,Math.floor(rand(2,5)));
-    for(var d=0;d<daysPassed;d++){S.nutrition=clamp(S.nutrition+rand(-15,-6),0,100);S.hydration=clamp(S.hydration+rand(-12,-5),0,100);}
+    // 每次推进几小时
+    advanceHour(rand(4,8));
+    // 每日自动消耗
+    if(S.hour>=6&&S.hour<=8&&!S._dayFed){S.nutrition=clamp(S.nutrition+rand(-15,-6),0,100);S.hydration=clamp(S.hydration+rand(-12,-5),0,100);S._dayFed=true;}
+    if(S.hour>=18)S._dayFed=false;
     addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
     if(isNight()&&!atCamp()&&!S.hasCampfire)addStory('🌙 <strong>夜色笼罩。</strong>没有篝火的夜晚，危险潜伏在每个阴影中。','system');
     if(S.bodyWetness>50)addStory('💦 衣服湿透了，寒意渗透骨髓。','weather');
