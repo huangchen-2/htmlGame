@@ -1984,9 +1984,10 @@ function teammateTurn(){
     else if(n.loyalty<40&&!n._warned.lowLoyalty){n._warned.lowLoyalty=true;addStory(`🤔 <strong>${n.name}看起来不太高兴。</strong>也许该和他聊聊，或者给他一些物资增进信任。`,'party');}
     if(n.morale<20&&!n._warned.lowMorale){n._warned.lowMorale=true;addStory(`😞 <strong>${n.name}的精神状态很差。</strong>"我不知道还能在这里撑多久..."这句话最近经常挂在嘴边。`,'party');}
     if(n.loyalty<20&&n.morale<20&&!n._warned.desperate){n._warned.desperate=true;addStory(`🚨 <strong style="color:var(--danger)">${n.name}濒临崩溃！</strong>如果你不尽快改善他的处境——提高忠诚或恢复士气——他可能会做出极端的事。`,'party');}
-    // 恢复后重置预警标记
-    if(n.loyalty>=40){n._warned.lowLoyalty=false;n._warned.veryLowLoyalty=false;n._warned.desperate=false;}
-    if(n.morale>=30)n._warned.lowMorale=false;
+    // 滞后重置：触发值<重置值，防抖
+    if(n.loyalty>=45){n._warned.lowLoyalty=false;n._warned.veryLowLoyalty=false;n._warned.desperate=false;}
+    if(n.morale>=35)n._warned.lowMorale=false;
+    if(n.loyalty>=25||n.morale>=25)n._warned.desperate=false;
 
     // Desertion: low morale + low loyalty (with warning already given)
     if(n.morale<15&&n.loyalty<30&&Math.random()<0.12){
@@ -2117,7 +2118,7 @@ function tickMaintenance(){
   if(!S._maintDay||S._maintDay!==S.day){
     S._maintDay=S.day;
     initCampStructures();
-    var cost=S.campStructures.filter(function(s){return s.type==='building'&&!s.type==='ruin';}).length;
+    var cost=S.campStructures.filter(function(s){return s.type==='building'&&s.type!=='ruin';}).length;
     if(cost>0&&atCamp()){
       if(hasItem('木材',cost)){removeItem('木材',cost);}
       else{
@@ -3062,7 +3063,7 @@ function selectEvent(){
     if(c.seasons&&!c.seasons.some(s=>ctx.seasons.includes(s)))return false;if(c.weather&&!c.weather.some(w=>ctx.weather.includes(w)))return false;
     if(c.injured&&!ctx.injured)return false;if(c.hasParty&&!ctx.hasParty)return false;if(c.hasCompanions&&!ctx.hasCompanions)return false;if(c.lostCompanion&&!ctx.lostCompanion)return false;
     if(c.minRep&&ctx.reputation<c.minRep)return false;if(c.maxRep&&ctx.reputation>c.maxRep)return false;if(c.partySize&&ctx.partySize<c.partySize)return false;
-    if(c.quest==='signal'&&(!S.mainQuest||S.mainQuest.signals>=S.mainQuest.totalNeeded))return false; // 信号已集齐则不再触发
+    if(c.quest==='signal'&&S.mainQuest&&S.mainQuest.signals>=S.mainQuest.totalNeeded)return false; // 信号已集齐则不再触发
     if(c.pain&&ctx.pain<c.pain)return false;
     if(c.tired&&!ctx.tired)return false;if(c.hungry&&!ctx.hungry)return false;if(c.thirsty&&!ctx.thirsty)return false;
     if(c.minDist!==undefined&&ctx.maxDist<c.minDist)return false;if(c.maxDist!==undefined&&ctx.minDist>c.maxDist)return false;
@@ -3963,18 +3964,22 @@ function checkVitalWarnings(){
   if(S.fatigue>60&&S.fatigue<80&&!S._warnedTired){S._warnedTired=true;warns.push('😫 眼皮越来越重——该休息了。');}
   if(S.fatigue>=80){warns.push('😫 <strong style="color:var(--danger)">精疲力竭！</strong>继续行动可能会带来严重后果。');}
   if(S.fatigue<50)S._warnedTired=false;
-  // 体温
-  if(S.coreTemp<34.5&&!S._warnedCold){S._warnedCold=true;warns.push('🥶 浑身发抖，手指失去了知觉——你需要取暖。');}
-  if(S.coreTemp<32){warns.push('🥶 <strong style="color:var(--danger)">体温过低！</strong>生命危险！');}
-  if(S.coreTemp>38.5&&!S._warnedHot){S._warnedHot=true;warns.push('🔥 身体发烫，额头滚烫——你可能发烧了。');}
-  if(S.coreTemp>=35){S._warnedCold=false;}
-  if(S.coreTemp<=37.5)S._warnedHot=false;
-  // 感染
-  if(S.infectionLevel>40&&!S._warnedInfection){S._warnedInfection=true;warns.push('🦠 伤口周围红肿发热——感染在扩散。');}
-  if(S.infectionLevel<=30)S._warnedInfection=false;
-  // 疼痛
-  if(S.pain>50&&!S._warnedPain){S._warnedPain=true;warns.push('💢 疼痛让你无法集中注意力——止痛药在背包里吗？');}
-  if(S.pain<30)S._warnedPain=false;
+  // 体温（新手第4天起）
+  if(noviceLevel()>=2){
+    if(S.coreTemp<34.5&&!S._warnedCold){S._warnedCold=true;warns.push('🥶 浑身发抖，手指失去了知觉——你需要取暖。');}
+    if(S.coreTemp<32){warns.push('🥶 <strong style="color:var(--danger)">体温过低！</strong>生命危险！');}
+    if(S.coreTemp>38.5&&!S._warnedHot){S._warnedHot=true;warns.push('🔥 身体发烫，额头滚烫——你可能发烧了。');}
+    if(S.coreTemp>=35){S._warnedCold=false;}
+    if(S.coreTemp<=37.5)S._warnedHot=false;
+  }
+  // 感染（新手第8天起）
+  if(noviceLevel()>=3){
+    if(S.infectionLevel>40&&!S._warnedInfection){S._warnedInfection=true;warns.push('🦠 伤口周围红肿发热——感染在扩散。');}
+    if(S.infectionLevel<=30)S._warnedInfection=false;
+    // 疼痛
+    if(S.pain>50&&!S._warnedPain){S._warnedPain=true;warns.push('💢 疼痛让你无法集中注意力——止痛药在背包里吗？');}
+    if(S.pain<30)S._warnedPain=false;
+  }
 
   warns.forEach(function(w){addStory(w,'medical');});
 }
@@ -4168,7 +4173,7 @@ async function pickChoice(idx){
 }
 
 // ===== DEATH =====
-function checkDeath(){if(S.blood<=0){S.causeOfDeath='失血过多';die();}if(S.infectionLevel>=95){S.causeOfDeath='败血症';die();}if(S.coreTemp<30){S.causeOfDeath='失温症（冻死）';die();}if(S.coreTemp>43){S.causeOfDeath='高热致死';die();}if(S.nutrition<=0){S.causeOfDeath='饥饿';die();}if(S.hydration<=0){S.causeOfDeath='脱水';die();}}
+function checkDeath(){if(S.blood<=0){S.causeOfDeath='失血过多';die();}var lv=noviceLevel();if(S.infectionLevel>=95&&lv>=3){S.causeOfDeath='败血症';die();}if(S.coreTemp<30&&lv>=2){S.causeOfDeath='失温症（冻死）';die();}if(S.coreTemp>43&&lv>=2){S.causeOfDeath='高热致死';die();}if(S.nutrition<=0){S.causeOfDeath='饥饿';die();}if(S.hydration<=0){S.causeOfDeath='脱水';die();}}
 function die(){
   S.isDead=true;updateUI();btnDisabled(true);setChoices([]);
   const ov=document.getElementById('death-overlay');ov.querySelector('.death-days').textContent=`☠️ 存活 ${S.day} 天 | ${S.season?.name||''}季 | 死因：${S.causeOfDeath} | 小队${S.party.filter(p=>p.alive).length}人`;
@@ -4180,7 +4185,7 @@ function resetGame(){
   S.day=1;S.hour=8;S.minute=0;S.season=SEASONS[0];S.seasonDay=1;S.distance=0;S.hasCampfire=false;
   S.blood=100;S.nutrition=80;S.hydration=85;S.fatigue=15;S.pain=0;S.infectionLevel=0;S.coreTemp=37;S.bodyWetness=0;
   S.clothing=getDefaultEquip();
-  S.inventory={};S.camp={supplies:{},defense:0,condition:100,governance:'dictatorship',stability:60};S.party=[];S.history=[];S.recentEvents=[];S.recentCats=[];S.discoveredLocations=[];S.locationVisits={};S.enemyCamps=[];S.currentBiome=randomBiome();for(let i=0;i<rand(1,3);i++)S.enemyCamps.push(generateEnemyCamp());S.campStructures=[];S._campDefMod=0;S._campLevel=1;S.spouse=null;S.children=[];S.backpackSlots=4;S._incomingAttack=null;S._silentAttack=null;S._campDestroyed=false;S.locationVisits={};S.chestLevel=1;S._gunBonus=0;S.reputation=10;S.isDead=false;S.causeOfDeath='';S.busy=false;S._currentEvent=null;S._currentBattle=null;S._lastEventDay=0;S._weatherWarned=false;S._galeWarned=false;S._coldWarned=false;S._dayFed=false;S._warnedHunger=false;S._warnedStarving=false;S._warnedThirst=false;S._warnedDehydrated=false;S._warnedBlood=false;S._warnedTired=false;S._warnedCold=false;S._warnedHot=false;S._warnedInfection=false;S._warnedPain=false;S.achievements=[];S._milestoneChecked={};S._totalScavenged=0;S._battlesWon=0;S.activeEffects=[];S.mainQuest={signals:0,totalNeeded:5,shelterUnlocked:false,completed:false};S.activePolicies=[];S.backpackWeight=0;S.skills={scavenge:0,combat:0,medical:0,build:0,leadership:0};S.skillXP={scavenge:0,combat:0,medical:0,build:0,leadership:0};
+  S.inventory={};S.camp={supplies:{},defense:0,condition:100,governance:'dictatorship',stability:60};S.party=[];S.history=[];S.recentEvents=[];S.recentCats=[];S.discoveredLocations=[];S.locationVisits={};S.enemyCamps=[];S.currentBiome=randomBiome();for(let i=0;i<rand(1,3);i++)S.enemyCamps.push(generateEnemyCamp());S.campStructures=[];S._campDefMod=0;S._campLevel=1;S.spouse=null;S.children=[];S.backpackSlots=10;S._incomingAttack=null;S._silentAttack=null;S._campDestroyed=false;S.locationVisits={};S.chestLevel=1;S._gunBonus=0;S.reputation=10;S.isDead=false;S.causeOfDeath='';S.busy=false;S._currentEvent=null;S._currentBattle=null;S._lastEventDay=0;S._weatherWarned=false;S._galeWarned=false;S._coldWarned=false;S._dayFed=false;S._warnedHunger=false;S._warnedStarving=false;S._warnedThirst=false;S._warnedDehydrated=false;S._warnedBlood=false;S._warnedTired=false;S._warnedCold=false;S._warnedHot=false;S._warnedInfection=false;S._warnedPain=false;S.achievements=[];S._milestoneChecked={};S._totalScavenged=0;S._battlesWon=0;S.activeEffects=[];S.mainQuest={signals:0,totalNeeded:5,shelterUnlocked:false,completed:false};S.activePolicies=[];S.backpackWeight=0;S.skills={scavenge:0,combat:0,medical:0,build:0,leadership:0};S.skillXP={scavenge:0,combat:0,medical:0,build:0,leadership:0};
   BODY_PARTS.forEach(p=>{S.body[p].wounds=[];});
   generateWeather();addItem('绷带',2);addItem('净水',2);addItem('罐头',2);addItem('木材',3);
   document.getElementById('death-overlay').classList.remove('active');document.getElementById('story-box').innerHTML='';document.getElementById('choices-area').innerHTML='';
@@ -4285,7 +4290,7 @@ function pickIdentity(id){
   S.currentBiome=randomBiome();for(let i=0;i<rand(1,3);i++)S.enemyCamps.push(generateEnemyCamp());
   S.campStructures=[];S._campDefMod=0;S._campLevel=1;S.spouse=null;S.children=[];
   S.backpackSlots=10;S.backpackWeight=0;S.backpackMaxWeight=50;S._incomingAttack=null;S._silentAttack=null;S._campDestroyed=false;
-  S.chestLevel=1;S.chestLevel=1;S._gunBonus=(iden.bonus.combatPower||0);S.reputation=10;S.isDead=false;S.causeOfDeath='';S.busy=false;S._currentEvent=null;
+  S.chestLevel=1;S._gunBonus=(iden.bonus.combatPower||0);S.reputation=10;S.isDead=false;S.causeOfDeath='';S.busy=false;S._currentEvent=null;S._currentBattle=null;S._lastEventDay=0;S._weatherWarned=false;S._galeWarned=false;S._coldWarned=false;S._dayFed=false;S._noviceLevel=1;S._maintDay=0;S._warnedHunger=false;S._warnedStarving=false;S._warnedThirst=false;S._warnedDehydrated=false;S._warnedBlood=false;S._warnedTired=false;S._warnedCold=false;S._warnedHot=false;S._warnedInfection=false;S._warnedPain=false;S.mainQuest={signals:0,totalNeeded:5,shelterUnlocked:false,completed:false};S.activePolicies=[];S.backpackWeight=0;
   // Apply identity bonuses
   if(iden.bonus.freeMedTent){if(!S.campStructures)S.campStructures=[];S.campStructures.push({type:'building',id:'medtent',icon:'⛺',name:'医疗帐篷',def:0,_prodCounter:0});}
   if(iden.bonus.freeGreenhouse){if(!S.campStructures)S.campStructures=[];S.campStructures.push({type:'building',id:'greenhouse',icon:'🌱',name:'大棚',def:0,_prodCounter:0});}
