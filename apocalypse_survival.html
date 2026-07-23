@@ -1626,7 +1626,7 @@ function recruitNPC(name){
   S.party.push(npc);addStory(`👥 <strong>${npc.e} ${npc.name}加入了小队！</strong>特长：${npc.sn}。${npc.d}`,'party');updateUI();
 }
 
-function initNpcBody(npc){npc.body={};npc.clothing=npc.clothing||{head:{name:'无',warmth:0,wp:0},upper:{name:'破旧夹克',warmth:5,wp:20},lower:{name:'破旧裤子',warmth:3,wp:15},feet:{name:'旧靴子',warmth:4,wp:30},body:{name:'无',warmth:0,wp:0},hands:{name:'无',warmth:0,wp:0},mask:{name:'无',warmth:0,wp:0}};npc.weapon=npc.weapon||{name:'无'};BODY_PARTS.forEach(function(p){npc.body[p]={wounds:[]};});}
+function initNpcBody(npc){npc.body={};npc.clothing=npc.clothing||{head:{name:'无',warmth:0,wp:0},upper:{name:'破旧夹克',warmth:5,wp:20},lower:{name:'破旧裤子',warmth:3,wp:15},feet:{name:'旧靴子',warmth:4,wp:30},body:{name:'无',warmth:0,wp:0},hands:{name:'无',warmth:0,wp:0},mask:{name:'无',warmth:0,wp:0}};npc.weapon=npc.weapon||{name:'无'};npc._warned={lowLoyalty:false,veryLowLoyalty:false,lowMorale:false,desperate:false};BODY_PARTS.forEach(function(p){npc.body[p]={wounds:[]};});}
 function addItemToNpc(npc,name,qty){if(!npc||qty<=0)return;if(!npc.inventory[name])npc.inventory[name]={qty:0};npc.inventory[name].qty+=qty;}
 function removeItemFromNpc(npc,name,qty){if(!npc||!npc.inventory[name]||npc.inventory[name].qty<qty)return false;npc.inventory[name].qty-=qty;if(npc.inventory[name].qty<=0)delete npc.inventory[name];return true;}
 function npcHasItem(npc,name,qty){return npc&&npc.inventory[name]&&npc.inventory[name].qty>=qty;}
@@ -1978,15 +1978,24 @@ function teammateTurn(){
     if(n.morale<25)n.loyalty=clamp(n.loyalty-3,0,100);
 
     // === Consequences ===
-    // Desertion: low morale + low loyalty
-    if(n.morale<15&&n.loyalty<30&&Math.random()<0.15){
-      addStory(`💔 <strong>${n.name}离开了团队。</strong>"对不起...我撑不下去了。"${n.name}带着自己的背包消失在废土中。`,'party');
-      // Drop their items
+    // 背叛预兆系统
+    if(!n._warned){n._warned={lowLoyalty:false,veryLowLoyalty:false,lowMorale:false,desperate:false};}
+    if(n.loyalty<25&&!n._warned.veryLowLoyalty){n._warned.veryLowLoyalty=true;addStory(`⚠️ <strong>${n.name}最近行为异常</strong>——总是偷偷打量你的背包，说话也少了。`,'party');}
+    else if(n.loyalty<40&&!n._warned.lowLoyalty){n._warned.lowLoyalty=true;addStory(`🤔 <strong>${n.name}看起来不太高兴。</strong>也许该和他聊聊，或者给他一些物资增进信任。`,'party');}
+    if(n.morale<20&&!n._warned.lowMorale){n._warned.lowMorale=true;addStory(`😞 <strong>${n.name}的精神状态很差。</strong>"我不知道还能在这里撑多久..."这句话最近经常挂在嘴边。`,'party');}
+    if(n.loyalty<20&&n.morale<20&&!n._warned.desperate){n._warned.desperate=true;addStory(`🚨 <strong style="color:var(--danger)">${n.name}濒临崩溃！</strong>如果你不尽快改善他的处境——提高忠诚或恢复士气——他可能会做出极端的事。`,'party');}
+    // 恢复后重置预警标记
+    if(n.loyalty>=40){n._warned.lowLoyalty=false;n._warned.veryLowLoyalty=false;n._warned.desperate=false;}
+    if(n.morale>=30)n._warned.lowMorale=false;
+
+    // Desertion: low morale + low loyalty (with warning already given)
+    if(n.morale<15&&n.loyalty<30&&Math.random()<0.12){
+      addStory(`💔 <strong>${n.name}离开了团队。</strong>"对不起...我撑不下去了。"${n.name}带着自己的背包消失在废土中。你早有预感。`,'party');
       for(const [nm,d]of Object.entries(n.inventory||{})){for(let i=0;i<d.qty;i++)addItem(nm,1);}
       n.alive=false;continue;}
-    // Betrayal: very low loyalty
-    if(n.loyalty<15&&Math.random()<0.1){
-      addStory(`💔 <strong>${n.name}背叛了你！</strong>趁着夜色偷走了一些物资，消失得无影无踪。`,'party');
+    // Betrayal: very low loyalty (with warning already given)
+    if(n.loyalty<15&&Math.random()<0.08){
+      addStory(`💔 <strong>${n.name}背叛了你！</strong>那些异常的行为终于有了答案——趁着夜色偷走物资，消失得无影无踪。`,'party');
       const myKeys=Object.keys(S.inventory);for(let i=0;i<Math.min(3,myKeys.length);i++){const k=myKeys[rand(0,myKeys.length-1)];removeItem(k,rand(1,2));}
       n.alive=false;continue;}
     // Death from neglect
