@@ -4078,11 +4078,11 @@ async function continueStory(){
     addStory(`<strong>━━━ 📅 第1天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
     addStory(`外面<strong>${S.weather.temperature}°C</strong>，体感<strong>${getFeelsLike()}°C</strong>。${S.enemyCamps.length>0?`附近有${S.enemyCamps.length}个敌对营地——小心行事。`:''}你背起背包，走向围栏边。`,'system');
   }else{
-    // 快速推进：每次跳过 8-16 小时
-    advanceHour(rand(8,16));
-    // 每日三餐自动消耗
-    if(S.hour>=6&&S.hour<=8&&!S._dayFed){S.nutrition=clamp(S.nutrition+rand(-15,-6),0,100);S.hydration=clamp(S.hydration+rand(-12,-5),0,100);S._dayFed=true;}
-    if(S.hour>=18)S._dayFed=false;
+    // 快速推进：每次跳过 2-5 天
+    advanceHour(rand(48,120));
+    // 每日三餐自动消耗（按经过天数计）
+    var daysPassed=Math.max(1,Math.floor(rand(2,5)));
+    for(var d=0;d<daysPassed;d++){S.nutrition=clamp(S.nutrition+rand(-15,-6),0,100);S.hydration=clamp(S.hydration+rand(-12,-5),0,100);}
     addStory(`<strong>━━━ 第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name} | ${S.weather.icon}${S.weather.temperature}°C | 体感${getFeelsLike()}°C ━━━</strong>`,'system');
     if(isNight()&&!atCamp()&&!S.hasCampfire)addStory('🌙 <strong>夜色笼罩。</strong>没有篝火的夜晚，危险潜伏在每个阴影中。','system');
     if(S.bodyWetness>50)addStory('💦 衣服湿透了，寒意渗透骨髓。','weather');
@@ -4112,9 +4112,9 @@ async function continueStory(){
   checkVitalWarnings();
   checkRadio();
   if(!checkWeatherWarning()){
-    // 事件冷却：新手期(前5天)每天都有事件，之后每2-4天一次
+    // 事件冷却：3-5个月一次事件（1月=15天）
     if(!S._lastEventDay)S._lastEventDay=0;
-    var cooldown=S.day<=5?1:rand(2,4);
+    var cooldown=rand(45,75);
     if(S.day - S._lastEventDay >= cooldown){
       var ev=null;
       try{ev=selectEvent();processEvent(ev);S._lastEventDay=S.day;}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况，继续前进...','system');setChoices(['▶ 继续推进']);}
