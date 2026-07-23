@@ -4087,7 +4087,7 @@ function continueGame(){
     document.getElementById('choices-area').innerHTML='';
     addStory(`<strong>━━━ 💾 继续第${S.day}天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
     addStory(`你从上次的冒险中醒来，世界依旧残酷。`,'system');
-    btnDisabled(false);updateUI();setStatus('💾 已载入存档');
+    btnDisabled(false);updateUI();setStatus('💾 已载入存档');setChoices(['▶ 继续推进']);
   }else{setStatus('⚠️ 存档损坏，请重新开始');}
 }
 
