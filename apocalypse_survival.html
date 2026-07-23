@@ -4112,12 +4112,21 @@ async function continueStory(){
   checkVitalWarnings();
   checkRadio();
   if(!checkWeatherWarning()){
-    // 预定事件日：到这个天数就触发
-    if(!S._nextEventDay||S._nextEventDay<=0)S._nextEventDay=S.day+rand(12,18);
-    if(S.day >= S._nextEventDay){
-      var ev=null;
-      try{ev=selectEvent();processEvent(ev);S._nextEventDay=S.day+rand(12,18);}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况...','system');}
-      if(ev)S.history.push({day:S.day,summary:ev.id});
+    // 普通事件每次推进都可能触发
+    // 全球事件冷却：一个月（15天）一次
+    if(!S._lastWorldEventDay)S._lastWorldEventDay=0;
+    var ev=null;
+    try{ev=selectEvent();}catch(e){console.error('Select error:',e);}
+    // 如果是全球事件但冷却未到，重选一个普通事件
+    if(ev&&ev.cat==='world'&&S.day-S._lastWorldEventDay<rand(12,18)){
+      // 全球事件冷却中，换选普通事件
+      var filtered=EVENTS.filter(function(e){return e.cat!=='world'&&!S.recentEvents.includes(e.id);});
+      if(filtered.length>0)ev=pick(filtered);
+      else ev=null; // 没有合适的普通事件就跳过
+    }
+    if(ev){
+      try{processEvent(ev);if(ev.cat==='world')S._lastWorldEventDay=S.day;}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况...','system');setChoices(['▶ 继续推进','🏕️ 返回营地','🔍 搜索物资']);}
+      S.history.push({day:S.day,summary:ev.id});
     } else {
       setChoices(['▶ 继续推进','🏕️ 返回营地','🔍 搜索物资']);
     }
