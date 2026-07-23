@@ -3756,10 +3756,10 @@ function fieldRest(){
   S.busy=false;btnDisabled(false);
   var db=getInjuryDebuffs();
   if(db.cantLeave&&!atCamp()){
-    setChoices(['😴 继续休息','💊 使用医疗物品治疗','🏕️ 挣扎返回营地']);
+    setChoices(['😴 继续休息','💊 治疗伤口','🏕️ 挣扎回营地']);
     S._currentEvent=null;setStatus(db.cantLeaveReason);
   }else{
-    setChoices(['▶ 继续推进','🏕️ 返回营地','🔍 搜索物资','💧 寻找水源','🏹 尝试狩猎']);
+    setChoices(['▶ 继续前行','🏕️ 返回营地','🔍 搜索物资','💧 寻找水源','🏹 尝试狩猎']);
     S._currentEvent=null;setStatus('');
   }
 }
@@ -4161,7 +4161,7 @@ async function pickChoice(idx){
   if(!data||!data.choices||!data.choices[idx]){
     const btns=document.querySelectorAll('.choice-btn');const ct=btns[idx]?.textContent?.replace(/^\d+\.\s*/,'')||'';
     if(ct.includes('继续休息')||ct.includes('休息恢复')){S.busy=false;btnDisabled(false);setStatus('');if(atCamp()){await restAtCamp();}else{fieldRest();}return;}
-    if(ct.includes('挣扎返回营地')){S.busy=false;btnDisabled(false);setStatus('🏕️ 缓慢返回...');S.distance=0;advanceHour(rand(6,12));S.fatigue=clamp(S.fatigue+15,0,100);progressWounds();updateUI();addStory('🏕️ 你忍着剧痛一瘸一拐地走回了营地。每走一步都在抽气——但至少营地有医疗物资和篝火。','medical');setChoices(['😴 休息恢复体力','🔧 整备营地','📖 翻看日记']);return;}
+    if(ct.includes('挣扎回营地')){S.busy=false;btnDisabled(false);setStatus('🏕️ 缓慢返回...');S.distance=0;advanceHour(rand(6,12));S.fatigue=clamp(S.fatigue+15,0,100);progressWounds();updateUI();addStory('🏕️ 你忍着剧痛一瘸一拐地走回了营地。每走一步都在抽气——但至少营地有医疗物资和篝火。','medical');setChoices(['😴 休息恢复体力','🔧 整备营地','📖 翻看日记']);return;}
     if(ct.includes('整备营地')){S.busy=false;btnDisabled(false);setStatus('');setChoices(['🏕️ 查看营地布局','📦 管理仓库','🔨 工作台制作','📦 升级储物箱']);return;}
     if(ct.includes('外出探索')){S.distance=0.5;S.busy=false;btnDisabled(false);setStatus('');await continueStory();return;}
     if(ct.includes('查看敌对')){S.busy=false;btnDisabled(false);setStatus('');showEnemyCamps();return;}
