@@ -3090,8 +3090,12 @@ function processEvent(ev){
     let disabled='';if(ch.need&&!hasItem(ch.need,1))disabled='disabled';
     return{text:ch.text,disabled:!!(ch.need&&!hasItem(ch.need,1)),idx:i,ch:ch};
   });
-  // Always add "return to camp" option (hidden when already at camp)
-  if(!atCamp())choices.push({text:'🏕️ 返回营地',disabled:false,idx:choices.length,ch:{outcome:'你决定先回营地再说。',dist:-S.distance,eff:{fatigue:S.distance*2}}});
+  // 固定探索选项：返回营地/搜索物资/寻找水源/狩猎
+  if(!atCamp()){
+    choices.push({text:'🏕️ 返回营地',disabled:false,idx:choices.length,ch:{outcome:'你决定先回营地再说。',dist:-S.distance,eff:{fatigue:S.distance*2}}});
+    choices.push({text:'💧 寻找水源',disabled:false,idx:choices.length,ch:{outcome:'',act:'findWater'}});
+    choices.push({text:'🏹 尝试狩猎',disabled:false,idx:choices.length,ch:{outcome:'',act:'hunt'}});
+  }
   S._currentEvent={ev,choices};
   setChoices(choices.map(c=>c.disabled?`${c.text}（需要${c.ch.need}）`:c.text));
 }
@@ -3126,6 +3130,9 @@ function applyItems(items,result){
 function resolveChoice(idx){
   const data=S._currentEvent;if(!data||!data.choices||!data.choices[idx])return null;
   const ch=data.choices[idx].ch;if(!ch||ch.disabled)return null;
+  // 快捷操作：寻找水源/狩猎
+  if(ch.act==='findWater'){var wadv=rand(1,3);S.fatigue=clamp(S.fatigue+wadv*4,0,100);advanceHour(wadv);var biome=S.currentBiome;if(biome&&biome.water>=5){addItem('净水',rand(1,3));return'💧 你找到了一条小溪，装满了水壶。';}else if(Math.random()<0.5){addItem('净水',rand(1,2));return'💧 你在低洼处找到了一些积水，过滤后勉强能喝。';}else{return'💧 找了很久也没找到水源——这片区域太干旱了。';}}
+  if(ch.act==='hunt'){var hadv=rand(2,4);S.fatigue=clamp(S.fatigue+hadv*5,0,100);advanceHour(hadv);if(Math.random()<0.6){addItem('变异兽肉',rand(1,3));return'🏹 你捕到了一只小型变异兽——今晚有肉吃了。';}else{return'🏹 追踪了半天，猎物还是跑掉了。下次运气会好的。';}}
   const result={itemsGained:[],itemsLost:[],effects:[],distChange:0};
   let selectedOutcome=null;
 
