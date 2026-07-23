@@ -1183,6 +1183,26 @@ const S={
 };
 BODY_PARTS.forEach(p=>{S.body[p]={wounds:[]};});
 
+// ===== 新手渐进解锁 =====
+function noviceLevel(){
+  if(S.day<=3)return 1; // 基础：血液/营养/水分/体力
+  if(S.day<=7)return 2; // 进阶：+体温/湿度/基础伤口
+  return 3; // 完整：所有系统
+}
+function checkNoviceUnlock(){
+  var prev=S._noviceLevel||1;var cur=noviceLevel();
+  if(cur>prev){
+    if(cur===2){addStory('📖 <strong>你对废土有了更深的理解。</strong>现在你需要关注体温和身体湿度——环境不再只是背景。','system');}
+    if(cur===3){addStory('📖 <strong>废土的危险在你面前展开了全貌。</strong>伤口感染、部位伤病、疼痛管理——现在所有生存系统都已解锁。欢迎来到真正的废土。','system');}
+    S._noviceLevel=cur;
+  }
+}
+function isUnlocked(feature){
+  var l=noviceLevel();
+  if(feature==='infection'||feature==='pain'||feature==='woundDetail')return l>=3;
+  if(feature==='coreTemp'||feature==='wetness'||feature==='wound')return l>=2;
+  return true; // blood/nutrition/hydration/fatigue always shown
+}
 // ===== 主线任务：收集信号源找避难所 =====
 function checkMainQuest(){
   if(!S.mainQuest)S.mainQuest={signals:0,totalNeeded:5,shelterUnlocked:false,completed:false};
@@ -3205,7 +3225,14 @@ function updateUI(){
     {l:'💢 疼痛',v:S.pain,lb:vLabel('pain',S.pain),c:vColor('pain',S.pain)},
     {l:'🦠 感染',v:S.infectionLevel,lb:vLabel('infectionLevel',S.infectionLevel),c:vColor('infectionLevel',S.infectionLevel),rate:rates.infRate,rt:fmtRate(rates.infRate,'%')},
     {l:'💦 湿度',v:S.bodyWetness+'%',lb:S.bodyWetness<20?'干燥':S.bodyWetness<45?'微湿':S.bodyWetness<70?'潮湿':'湿透',c:S.bodyWetness<45?'v-info':S.bodyWetness<70?'v-warn':'v-danger',rate:rates.wetRate,rt:fmtRate(rates.wetRate,'%')}];
-  document.getElementById('vitals-list').innerHTML=vv.map(v=>{const rh=(v.rate!==undefined&&v.rt)?` <span style="font-size:0.65em;color:${v.rate<0?'var(--danger)':v.rate>0?'var(--warning)':'var(--text-dim)'}">${v.rt}${v.ex||''}</span>`:'';const crh=v.cr?` <span style="font-size:0.6em;color:var(--danger)">${v.cr}</span>`:'';return`<div class="sp-row"><span class="sp-label">${v.l}</span><span class="sp-val ${v.c}">${v.lb||v.v}</span>${rh}${crh}</div>`;}).join('');
+  // 新手渐进解锁：过滤复杂体征
+  var lv=noviceLevel();var shown=vv.filter(function(v){
+    if(lv>=3)return true;
+    if(lv===2)return !v.l.includes('感染')&&!v.l.includes('疼痛');
+    return v.l.includes('血液')||v.l.includes('营养')||v.l.includes('水分')||v.l.includes('体力');
+  });
+  if(lv<3)shown.push({l:'🔒 更多体征',v:'第'+(lv===1?'4':'8')+'天解锁',lb:'',c:'v-info'});
+  document.getElementById('vitals-list').innerHTML=shown.map(v=>{const rh=(v.rate!==undefined&&v.rt)?` <span style="font-size:0.65em;color:${v.rate<0?'var(--danger)':v.rate>0?'var(--warning)':'var(--text-dim)'}">${v.rt}${v.ex||''}</span>`:'';const crh=v.cr?` <span style="font-size:0.6em;color:var(--danger)">${v.cr}</span>`:'';return`<div class="sp-row"><span class="sp-label">${v.l}</span><span class="sp-val ${v.c}">${v.lb||v.v}</span>${rh}${crh}</div>`;}).join('');
   // Info bar
   document.getElementById('ib-biome-icon').textContent=S.currentBiome?.icon||'🏘️';document.getElementById('ib-biome').textContent=S.currentBiome?.name||'郊区';
   document.getElementById('ib-se-icon').textContent=S.season?.icon||'🌸';document.getElementById('ib-season').textContent=S.season?.name||'春';
@@ -4067,6 +4094,7 @@ async function continueStory(){
       if(Math.random()<0.3){c.health=clamp(c.health-rand(15,40),0,100);addStory(`😰 <strong>${c.name}</strong>在偷袭中受了伤——没有人保护${c.gender=='男'?'他':'她'}。`,'medical');
         if(c.health<=0){c.alive=false;addStory(`💀 <strong>${c.name}没能挺过这次袭击...</strong>`,'danger');}}
     });}
+  checkNoviceUnlock();
   checkVitalWarnings();
   checkRadio();
   if(!checkWeatherWarning()){
