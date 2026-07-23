@@ -3744,6 +3744,25 @@ async function returnToCamp(){
 }
 
 // ===== REST AT CAMP =====
+function fieldRest(){
+  S.busy=true;btnDisabled(true);setStatus('😴 就地休息...');setChoices([]);
+  advanceHour(rand(2,4));
+  S.fatigue=clamp(S.fatigue-15,0,100);
+  S.blood=clamp(S.blood+5,0,100);
+  S.pain=clamp(S.pain-10,0,100);
+  if(S.infectionLevel>0)S.infectionLevel=clamp(S.infectionLevel-2,0,100);
+  progressWounds();updateUI();checkDeath();
+  addStory('😴 你在原地休息了几个小时。虽然没有营地的舒适，但至少恢复了一些体力。','action');
+  S.busy=false;btnDisabled(false);
+  var db=getInjuryDebuffs();
+  if(db.cantLeave&&!atCamp()){
+    setChoices(['尝试休息恢复','使用医疗物品治疗']);
+    S._currentEvent=null;setStatus(db.cantLeaveReason);
+  }else{
+    setChoices(['▶ 继续推进','🏕️ 返回营地','🔍 搜索物资']);
+    S._currentEvent=null;setStatus('');
+  }
+}
 async function restAtCamp(){
   if(S.isDead||S.busy||!atCamp())return;S.busy=true;btnDisabled(true);setStatus('😴 休息中...');setChoices([]);
   advanceHour(rand(2,4));teammateTurn();
@@ -4141,7 +4160,7 @@ async function pickChoice(idx){
   // Handle camp menu choices (no active event)
   if(!data||!data.choices||!data.choices[idx]){
     const btns=document.querySelectorAll('.choice-btn');const ct=btns[idx]?.textContent?.replace(/^\d+\.\s*/,'')||'';
-    if(ct.includes('休息恢复')){S.busy=false;btnDisabled(false);setStatus('');await restAtCamp();return;}
+    if(ct.includes('休息恢复')){S.busy=false;btnDisabled(false);setStatus('');if(atCamp()){await restAtCamp();}else{fieldRest();}return;}
     if(ct.includes('整备营地')){S.busy=false;btnDisabled(false);setStatus('');setChoices(['🏕️ 查看营地布局','📦 管理仓库','🔨 工作台制作','📦 升级储物箱']);return;}
     if(ct.includes('外出探索')){S.distance=0.5;S.busy=false;btnDisabled(false);setStatus('');await continueStory();return;}
     if(ct.includes('查看敌对')){S.busy=false;btnDisabled(false);setStatus('');showEnemyCamps();return;}
