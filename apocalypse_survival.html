@@ -3932,7 +3932,10 @@ async function continueStory(){
       if(ev)S.history.push({day:S.day,summary:ev.id});
     } else {
       addStory(`⏳ 废土上的一天平静地过去了...`,'system');
+      setChoices(['▶ 继续推进']);
     }
+  } else {
+    setChoices(['▶ 继续推进']);
   }
   checkAchievements();
   updateUI();S.busy=false;btnDisabled(false);checkDeath();
