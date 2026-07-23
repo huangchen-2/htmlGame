@@ -1626,7 +1626,7 @@ function recruitNPC(name){
   S.party.push(npc);addStory(`👥 <strong>${npc.e} ${npc.name}加入了小队！</strong>特长：${npc.sn}。${npc.d}`,'party');updateUI();
 }
 
-function initNpcBody(npc){npc.body={};npc.clothing=npc.clothing||{head:{name:'无',warmth:0,wp:0},upper:{name:'破旧夹克',warmth:5,wp:20},lower:{name:'破旧裤子',warmth:3,wp:15},feet:{name:'旧靴子',warmth:4,wp:30},body:{name:'无',warmth:0,wp:0},hands:{name:'无',warmth:0,wp:0},mask:{name:'无',warmth:0,wp:0}};npc.weapon=npc.weapon||{name:'无'};npc._warned={lowLoyalty:false,veryLowLoyalty:false,lowMorale:false,desperate:false};BODY_PARTS.forEach(function(p){npc.body[p]={wounds:[]};});}
+function initNpcBody(npc){npc.body={};npc.wounds=[];npc.clothing=npc.clothing||{head:{name:'无',warmth:0,wp:0},upper:{name:'破旧夹克',warmth:5,wp:20},lower:{name:'破旧裤子',warmth:3,wp:15},feet:{name:'旧靴子',warmth:4,wp:30},body:{name:'无',warmth:0,wp:0},hands:{name:'无',warmth:0,wp:0},mask:{name:'无',warmth:0,wp:0}};npc.weapon=npc.weapon||{name:'无'};npc._warned={lowLoyalty:false,veryLowLoyalty:false,lowMorale:false,desperate:false};BODY_PARTS.forEach(function(p){npc.body[p]={wounds:[]};});}
 function addItemToNpc(npc,name,qty){if(!npc||qty<=0)return;if(!npc.inventory[name])npc.inventory[name]={qty:0};npc.inventory[name].qty+=qty;}
 function removeItemFromNpc(npc,name,qty){if(!npc||!npc.inventory[name]||npc.inventory[name].qty<qty)return false;npc.inventory[name].qty-=qty;if(npc.inventory[name].qty<=0)delete npc.inventory[name];return true;}
 function npcHasItem(npc,name,qty){return npc&&npc.inventory[name]&&npc.inventory[name].qty>=qty;}
