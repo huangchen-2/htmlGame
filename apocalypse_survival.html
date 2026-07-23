@@ -4074,8 +4074,8 @@ async function continueStory(){
   // Auto-increase distance when exploring (not at camp and not first turn)
   if(!atCamp()&&(S.day>1||S.history.length>0)){S.distance=clamp(S.distance+randF(0.5,2),0,20);}
   if(S.day===1&&S.hour===8&&S.distance===0&&S.history.length===0){
-    generateWeather();addStory(`<strong>━━━ 📅 第1天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
-    addStory(`核战第7年。你——一个${S.playerAge}岁的${S.playerGender=='男'?'男人':'女人'}——在营地中醒来。你的营地位于<strong>${S.currentBiome?.icon} ${S.currentBiome?.name}</strong>。${S.currentBiome?.desc||''}。物资匮乏，危险四伏——但希望还在。`,'system');
+    // 身份介绍已在 pickIdentity 中展示，这里只补一句过渡
+    addStory(`<strong>━━━ 📅 第1天 ${timeString()} | ${S.season.icon}${S.season.name}季 | ${S.weather.icon}${S.weather.temperature}°C ${S.weather.desc} ━━━</strong>`,'system');
     addStory(`外面<strong>${S.weather.temperature}°C</strong>，体感<strong>${getFeelsLike()}°C</strong>。${S.enemyCamps.length>0?`附近有${S.enemyCamps.length}个敌对营地——小心行事。`:''}你背起背包，走向围栏边。`,'system');
   }else{
     // 快速推进：每次跳过 8-16 小时
@@ -4112,9 +4112,10 @@ async function continueStory(){
   checkVitalWarnings();
   checkRadio();
   if(!checkWeatherWarning()){
-    // 事件冷却：仅每 2-4 天触发一次
+    // 事件冷却：新手期(前5天)每天都有事件，之后每2-4天一次
     if(!S._lastEventDay)S._lastEventDay=0;
-    if(S.day - S._lastEventDay >= rand(2,4)){
+    var cooldown=S.day<=5?1:rand(2,4);
+    if(S.day - S._lastEventDay >= cooldown){
       var ev=null;
       try{ev=selectEvent();processEvent(ev);S._lastEventDay=S.day;}catch(e){console.error('Event error:',e);addStory('⚠️ 探索中遇到了未知情况，继续前进...','system');setChoices(['▶ 继续推进']);}
       if(ev)S.history.push({day:S.day,summary:ev.id});
