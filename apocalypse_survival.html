@@ -81,7 +81,38 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-seri
 #death-overlay .death-days{color:#ccc;margin-bottom:12px;font-size:0.82em;}
 .typing::after{content:'▊';animation:blink 1s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-</style>
+
+/* ===== 响应式 ===== */
+@media(max-width:600px){
+  #header h1{font-size:1em;letter-spacing:2px;}
+  #info-bar{font-size:0.6em;gap:3px;padding:3px 4px;}
+  .info-chip{padding:3px 5px;gap:2px;}
+  #main{flex-direction:column;align-items:center;gap:6px;padding:4px;min-height:unset;}
+  #left-col{width:100%;max-width:100%;gap:4px;}
+  #right-bar{width:100%;flex-direction:row;flex-wrap:wrap;gap:4px;justify-content:center;}
+  #right-bar button{width:auto;flex:0 1 auto;min-width:60px;padding:6px 8px;font-size:0.65em;min-height:36px;}
+  #char-svg{width:90px;height:180px;}
+  #story-box{max-height:35vh;min-height:100px;font-size:0.78em;padding:8px;}
+  .choice-btn{padding:12px 10px;font-size:0.82em;min-height:44px;}
+  .btn{padding:8px 12px;font-size:0.65em;}
+  #bottom{gap:4px;padding:4px 4px 8px;}
+  #modal{max-width:95vw;padding:12px;font-size:0.9em;}
+  #modal h3{font-size:0.9em;}
+  .sp-title{font-size:0.7em;}
+  .sp-row{font-size:0.7em;}
+  #inv-row{font-size:0.7em;}
+  #status-line{font-size:0.7em;}
+}
+@media(min-width:601px) and (max-width:850px){
+  #main{flex-direction:column;align-items:center;}
+  #left-col{width:100%;max-width:400px;}
+  #right-bar{width:100%;flex-direction:row;flex-wrap:wrap;gap:4px;justify-content:center;}
+  #right-bar button{width:auto;min-width:80px;padding:5px 10px;}
+  .choice-btn{min-height:40px;padding:10px;}
+}
+@media(min-width:851px){
+  #right-bar button{min-height:32px;}
+}
 </head>
 <body>
 

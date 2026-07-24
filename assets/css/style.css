@@ -674,17 +674,25 @@ body {
    ======================================== */
 
 @media (max-width: 640px) {
-  .name {
-    font-size: 1.8rem;
+  .cover-card {
+    padding: 30px 24px 28px;
+    max-width: 92%;
   }
-  .nav-btn {
-    padding: 12px 20px;
-    font-size: 0.9rem;
-  }
-  .blog-post, .blog-list {
-    padding: 20px 16px;
-  }
-  .post-card {
-    padding: 20px;
-  }
+  .name { font-size: 1.5rem; }
+  .avatar { width: 90px; height: 90px; margin-top: -70px; }
+  .nav-btn { padding: 10px 16px; font-size: 0.82rem; }
+  .nav-links { gap: 8px; }
+  .blog-post, .blog-list { padding: 16px 10px; }
+  .blog-hero { padding: 30px 16px 20px; }
+  .blog-hero h1 { font-size: 1.6rem; }
+  .post-card { padding: 18px; }
+  .post-header h1 { font-size: 1.5rem; }
+  .post-content { font-size: 0.95rem; line-height: 1.7; }
+  .post-nav { flex-direction: column; padding: 0 10px; }
+  .post-nav a { padding: 12px 16px; }
+  .top-nav { padding: 12px 10px 0; }
+  .top-nav a { font-size: 0.8rem; margin-right: 12px; }
+  .live-clock { font-size: 0.7rem; }
+  .stars::before { width: 2px; height: 2px; }
+  .stars::after { width: 2px; height: 2px; }
 }
